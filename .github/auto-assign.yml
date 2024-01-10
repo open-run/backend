@@ -1,0 +1,9 @@
+addReviewers: true
+addAssignees: author
+
+reviewers:
+  - yjkellyjoo
+  - jryouda
+  - sonjh919
+
+numberOfReviewers: 2
