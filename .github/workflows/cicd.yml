@@ -13,17 +13,16 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
-          java-version: 1.17
+          distribution: 'corretto'
+          java-version: '17'
 
     - name: Grant execute permission for gradlew
-      working-directory: ./app
       run: chmod +x ./gradlew
       shell: bash
 
     - name: Build with Gradle
-      working-directory: ./app
       run: ./gradlew clean build
       shell: bash
 
@@ -37,19 +36,21 @@ jobs:
     - name: Generate deployment package
       run: |
         mkdir -p deploy
-        cp app/build/libs/app.jar deploy/openur-1.jar
+        cp build/libs/*.jar deploy/openur.jar
         cp Procfile deploy/Procfile
         cp -r .ebextensions deploy/.ebextensions
-        cd deploy && zip -r openur-label-${{steps.current-time.outputs.formattedTime}}-${{github.sha}} .
+        cd deploy && zip -r openur.zip .
 
     - name: Build and Deploy to AWS Elastic Beanstalk
-      uses: einaregilsson/beanstalk-deploy@v14
+      uses: einaregilsson/beanstalk-deploy@v21
       with:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        application_name: "openur"
-        environment_name: "Openur-env"
-        version_label: "v${{ github.run_number }}"
-        region: "ap-northeast-2"
-        deployment_package: "deploy/openur-label-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}.zip"
+        application_name: yjkellyjoo
+        environment_name: Yjkellyjoo-env
+        version_label: v${{ github.run_number }}
+        use_existing_version_if_available: true
+        region: ap-northeast-2
+        deployment_package: deploy/openur.zip
+        wait_for_environment_recovery: 180
         wait_for_deployment: true

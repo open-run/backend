@@ -1,1 +1,1 @@
-web: java -jar openur-1.jar
+web: java -jar openur.jar
