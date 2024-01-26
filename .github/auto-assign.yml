@@ -1,5 +1,5 @@
 addReviewers: true
-addAssignees: author
+addAssignees: true
 
 reviewers:
   - yjkellyjoo
