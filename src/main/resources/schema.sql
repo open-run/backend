@@ -1,6 +1,12 @@
 -- Create ENUM type for provider if not exists
-DROP TYPE IF EXISTS provider_enum;
-CREATE TYPE provider_enum AS ENUM ('GOOGLE', 'NAVER', 'KAKAO');
+DO
+'BEGIN
+  IF (NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = ''provider_enum''))
+  THEN
+    CREATE TYPE provider_enum AS ENUM (''GOOGLE'', ''NAVER'', ''KAKAO'');
+  END IF;
+END;
+';
 
 -- Create table TB_USERS if not exists
 CREATE TABLE IF NOT EXISTS tb_users (
