@@ -1,3 +1,6 @@
+server:
+  port: 5000
+
 spring:
   datasource:
     url: jdbc:postgresql://host:5432/database_name?useSSL=false
