@@ -1,1 +1,1 @@
-web: appstart
+web: java -jar openur.jar
