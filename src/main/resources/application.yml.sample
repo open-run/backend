@@ -3,6 +3,7 @@ server:
 
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://host:3306/database_name?useSSL=false
     username: database_username
     password: database_password
