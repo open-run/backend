@@ -3,6 +3,6 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://host:5432/database_name?useSSL=false
+    url: jdbc:mysql://host:3306/database_name?useSSL=false
     username: database_username
     password: database_password
