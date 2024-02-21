@@ -1,5 +1,6 @@
-package io.openur.oauth;
+package io.openur.global.config;
 
+import io.openur.domain.user.service.OAuth2UserService;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import org.springframework.context.annotation.Bean;
@@ -14,11 +15,11 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration {
+public class SecurityConfig {
 
     private final OAuth2UserService oAuthService;
 
-    public SecurityConfiguration(OAuth2UserService oAuthService) {
+    public SecurityConfig(OAuth2UserService oAuthService) {
         this.oAuthService = oAuthService;
     }
 
