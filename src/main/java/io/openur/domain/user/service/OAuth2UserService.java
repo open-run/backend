@@ -1,4 +1,4 @@
-package io.openur.oauth;
+package io.openur.domain.user.service;
 
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
