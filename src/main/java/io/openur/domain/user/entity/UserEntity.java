@@ -10,15 +10,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-//@Entity
-//@Getter
-//@Table(name = "TB_USER")
-//@NoArgsConstructor
-//@AllArgsConstructor
+@Entity
+@Getter
+@Table(name = "TB_USERS")
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserEntity {
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long userId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userId;
 
     // 이어서 작성..
 

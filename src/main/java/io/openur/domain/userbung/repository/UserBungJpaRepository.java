@@ -1,5 +1,5 @@
 package io.openur.domain.userbung.repository;
 
-public class UserbungJpaRepository {
+public class UserBungJpaRepository {
 
 }
