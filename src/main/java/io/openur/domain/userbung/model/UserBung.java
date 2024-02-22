@@ -1,5 +1,5 @@
 package io.openur.domain.userbung.model;
 
-public class Userbung {
+public class UserBung {
 
 }
