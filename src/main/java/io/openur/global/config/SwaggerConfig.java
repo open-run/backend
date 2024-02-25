@@ -15,7 +15,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public OpenAPI springShopOpenAPI() {
+    public OpenAPI springOpenurOpenAPI() {
         String title = "openur";
         String description = "openur 프로젝트";
 
