@@ -1,22 +1,34 @@
-name: openur-backend-to-beanstalk
+name: openur-backend
 
 on:
   push:
     branches:
-    - main
+    - BE-13/junhyung
+
+permissions:
+    contents: read
+
+env:
+    DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/openur
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v3
       with:
           distribution: 'corretto'
           java-version: '17'
+
+#    - name: Set up application.properties
+#      run: |
+#        cd ./src/main/resources
+#        touch ./application.properties
+#        echo ./src/main/resources/${{ secrets.APPLICATION }}
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
@@ -26,31 +38,31 @@ jobs:
       run: ./gradlew clean build
       shell: bash
 
-    - name: Get current time
-      uses: 1466587594/get-current-time@v2
-      id: current-time
-      with:
-        format: YYYYMMDDTHHmm
-        utcOffset: "+09:00"
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ env.DOCKER_IMAGE_NAME }}:latest
 
-    - name: Generate deployment package
-      run: |
-        mkdir -p deploy
-        cp build/libs/*.jar deploy/openur.jar
-        cp Procfile deploy/Procfile
-        cp -r .ebextensions deploy/.ebextensions
-        cd deploy && zip -r openur.zip .
+    - name: Login to Docker Hub using Access Token
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
-    - name: Build and Deploy to AWS Elastic Beanstalk
-      uses: einaregilsson/beanstalk-deploy@v21
+    - name: Push the Docker image
+      run: docker push ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
       with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        application_name: todo
-        environment_name: Todo-env
-        version_label: v${{ github.run_number }}
-        use_existing_version_if_available: true
-        region: ap-northeast-2
-        deployment_package: deploy/openur.zip
-        wait_for_environment_recovery: 180
-        wait_for_deployment: true
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+              sudo docker pull ${{ env.DOCKER_IMAGE_NAME }}
+              sudo docker run -d -p 8080:8080 ${{ env.DOCKER_IMAGE_NAME }}
+#              CONTAINER_ID=$(sudo docker ps -q --filter "publish=80-8080")
+#
+#              if [ ! -z "$CONTAINER_ID" ]; then
+#                sudo docker stop $CONTAINER_ID
+#                sudo docker rm $CONTAINER_ID
+#              fi
+              
+
+#              sudo docker run --name ${{ env.CONTAINER_NAME }} -d -p 80:8080 -e TZ=Asia/Seoul ${{ env.DOCKER_HUB }}
