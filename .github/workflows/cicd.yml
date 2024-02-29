@@ -3,7 +3,7 @@ name: openur-backend
 on:
   push:
     branches:
-    - BE-13/junhyung
+    - main
 
 permissions:
     contents: read
