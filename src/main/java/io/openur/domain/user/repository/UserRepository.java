@@ -2,12 +2,11 @@ package io.openur.domain.user.repository;
 
 
 import io.openur.domain.user.entity.UserEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 
 public interface UserRepository {
+    // QUESTION: What is the purpose of this interface repository?
 
-    // ex
-    public void save(UserEntity userEntity);
+    void save(UserEntity userEntity);
+    UserEntity findByEmail(String email);
 }
