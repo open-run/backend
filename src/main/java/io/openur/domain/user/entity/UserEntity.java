@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,13 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
-
-    // 이어서 작성..
-
+    private Boolean withdraw;
+    private String nickname;
+    private String email;
+    private Boolean identityAuthenticated;
+    private String provider;
+    private Boolean blackListed;
+    private Timestamp createdDate;
+    private Timestamp lastLoginDate;
+    private String blockchainAddress;
 }

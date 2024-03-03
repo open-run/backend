@@ -9,9 +9,13 @@ import org.springframework.stereotype.Repository;
 public class UserRepositoryImpl implements UserRepository{
     private final UserJpaRepository userJpaRepository;
 
-    // ex
     @Override
     public void save(UserEntity userEntity) {
         userJpaRepository.save(userEntity);
+    }
+
+    @Override
+    public UserEntity findByEmail(String email) {
+        return userJpaRepository.findByEmail(email);
     }
 }
