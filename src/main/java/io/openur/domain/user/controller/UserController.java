@@ -1,5 +1,6 @@
 package io.openur.domain.user.controller;
 
+import io.openur.domain.user.dto.GetUserDto;
 import io.openur.domain.user.dto.PostUserDto;
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.service.UserService;
@@ -30,17 +31,25 @@ public class UserController {
 
     @GetMapping("/v1/user")
     @Operation(summary = "유저 정보 가져오기")
-    public ResponseEntity<PostUserDto> getUserInfo(@PathVariable Long userId) {
+    public ResponseEntity<GetUserDto> getUserInfo(@PathVariable Long userId) {
         UserEntity userEntity = userService.getUserById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        PostUserDto postUserDto = new PostUserDto(
-            userEntity.getIsNewAccount(),
+        GetUserDto getUserDto = new GetUserDto(
+            userEntity.getUserId(),
+            userEntity.getWithdraw(),
+            userEntity.getNickname(),
             userEntity.getEmail(),
-            userEntity.getNickname()
+            userEntity.getIdentityAuthenticated(),
+            userEntity.getProvider(),
+            userEntity.getBlackListed(),
+            userEntity.getCreatedDate(),
+            userEntity.getLastLoginDate(),
+            userEntity.getBlockchainAddress(),
+            userEntity.getIsNewAccount()
         );
 
-        return ResponseEntity.ok().body(postUserDto);
+        return ResponseEntity.ok().body(getUserDto);
     }
 
 
