@@ -18,5 +18,4 @@ public class GetUserDto {
     private Timestamp createdDate;
     private Timestamp lastLoginDate;
     private String blockchainAddress;
-    private Boolean isNewAccount = false;
 }
