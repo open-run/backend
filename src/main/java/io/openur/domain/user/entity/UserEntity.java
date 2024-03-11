@@ -29,5 +29,4 @@ public class UserEntity {
     private Timestamp createdDate;
     private Timestamp lastLoginDate;
     private String blockchainAddress;
-    private Boolean isNewAccount = false;
 }

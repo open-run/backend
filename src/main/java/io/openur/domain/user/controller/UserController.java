@@ -45,8 +45,7 @@ public class UserController {
             userEntity.getBlackListed(),
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
-            userEntity.getBlockchainAddress(),
-            userEntity.getIsNewAccount()
+            userEntity.getBlockchainAddress()
         );
 
         return ResponseEntity.ok().body(getUserDto);
