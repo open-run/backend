@@ -2,7 +2,7 @@ package io.openur.domain.user.model;
 
 
 import io.openur.domain.user.entity.UserEntity;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 
 // QUESTION: What is the purpose of this class? Separate setter from UserEntity?
@@ -15,8 +15,8 @@ public class User {
     private Boolean identityAuthenticated;
     private Provider provider;
     private Boolean blackListed;
-    private Timestamp createdDate;
-    private Timestamp lastLoginDate;
+    private LocalDateTime createdDate;
+    private LocalDateTime lastLoginDate;
     private String blockchainAddress;
 
     public User(String email) {
@@ -31,7 +31,7 @@ public class User {
             userEntity.getNickname(),
             userEntity.getEmail(),
             userEntity.getIdentityAuthenticated(),
-            Provider.valueOf(userEntity.getProvider()),
+            userEntity.getProvider(),
             userEntity.getBlackListed(),
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
@@ -46,7 +46,7 @@ public class User {
             nickname,
             email,
             identityAuthenticated,
-            provider.name(),
+            provider,
             blackListed,
             createdDate,
             lastLoginDate,
