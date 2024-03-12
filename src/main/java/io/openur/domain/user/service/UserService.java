@@ -1,12 +1,12 @@
 package io.openur.domain.user.service;
 
+import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.repository.UserRepository;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +18,15 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public Optional<UserEntity> getUserById(Long userId) {
-        return userRepository.findById(userId);
+    public GetUserResponseDto getUserById(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found"));
+        return new GetUserResponseDto(userEntity);
     }
 
-    public boolean ExistNickName(String nickname) {
+
+
+    public boolean existNickname(String nickname) {
         return !userRepository.existsByNickname(nickname);
     }
 }

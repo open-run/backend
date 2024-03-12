@@ -1,15 +1,20 @@
 package io.openur.domain.user.controller;
 
-import io.openur.domain.user.dto.ExistNickNameDto;
-import io.openur.domain.user.dto.GetUserDto;
+import io.openur.domain.user.dto.ExistNicknameRequestDto;
+import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.PostUserDto;
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.service.UserService;
 import io.openur.global.common.Response;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -27,32 +32,25 @@ public class UserController {
                 .build());
     }
 
-    @GetMapping("/v1/user")
+    @GetMapping("/v1/users")
     @Operation(summary = "유저 정보 가져오기")
-    public ResponseEntity<GetUserDto> getUserInfo(@PathVariable Long userId) {
-        UserEntity userEntity = userService.getUserById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-        GetUserDto getUserDto = new GetUserDto(
-            userEntity.getUserId(),
-            userEntity.getWithdraw(),
-            userEntity.getNickname(),
-            userEntity.getEmail(),
-            userEntity.getIdentityAuthenticated(),
-            userEntity.getProvider(),
-            userEntity.getBlackListed(),
-            userEntity.getCreatedDate(),
-            userEntity.getLastLoginDate(),
-            userEntity.getBlockchainAddress()
-        );
-
-        return ResponseEntity.ok().body(getUserDto);
+    public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(@PathVariable Long userId) {
+        GetUserResponseDto getUserResponseDto = userService.getUserById(userId);
+        return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
+            .message("success")
+            .data(getUserResponseDto)
+            .build());
     }
 
-    @PostMapping("/v1/users/nickname/exist")
-    public ResponseEntity<Boolean> checkNickname(@RequestBody ExistNickNameDto nicknameCheckDto) {
-        boolean ExistNickName = userService.ExistNickName(nicknameCheckDto.getNickname());
-        return ResponseEntity.ok().body(ExistNickName);
+    @GetMapping("/v1/users/nickname/exist")
+    @Operation(summary = "닉네임 중복 체크")
+    public ResponseEntity<Response<Boolean>> existNickname(@RequestBody @Valid ExistNicknameRequestDto existNicknameRequestDto) {
+        boolean existNickname = userService.existNickname(
+            existNicknameRequestDto.getNickname());
+        return ResponseEntity.ok().body(Response.<Boolean>builder()
+            .message("success")
+            .data(existNickname)
+            .build());
     }
 
 
