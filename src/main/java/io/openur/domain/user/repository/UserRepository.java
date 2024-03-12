@@ -12,4 +12,6 @@ public interface UserRepository {
     UserEntity findByEmail(String email);
 
     Optional<UserEntity> findById(Long userId);
+
+    boolean existsByNickname(String nickname);
 }

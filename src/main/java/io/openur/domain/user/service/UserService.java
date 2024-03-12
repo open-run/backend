@@ -22,4 +22,7 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
+    public boolean ExistNickName(String nickname) {
+        return !userRepository.existsByNickname(nickname);
+    }
 }
