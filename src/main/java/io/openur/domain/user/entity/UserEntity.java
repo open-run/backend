@@ -1,6 +1,7 @@
 package io.openur.domain.user.entity;
 
 
+import io.openur.domain.user.model.Provider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,12 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -31,7 +30,7 @@ public class UserEntity {
     private String nickname;
     private String email;
     private Boolean identityAuthenticated;
-    private String provider;
+    private Provider provider;
     private Boolean blackListed;
 
     @CreatedDate

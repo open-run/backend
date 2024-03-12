@@ -1,6 +1,7 @@
 package io.openur.domain.user.dto;
 
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.user.model.Provider;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,7 +16,7 @@ public class GetUserResponseDto {
     private final String nickname;
     private final String email;
     private Boolean identityAuthenticated;
-    private String provider;
+    private Provider provider;
     private Boolean blackListed;
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
