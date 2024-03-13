@@ -19,14 +19,15 @@ public class UserRepositoryImpl implements UserRepository{
     public UserEntity findByEmail(String email) {
         return userJpaRepository.findByEmail(email);
     }
+    //Yejin Kelly Joo, findByEmail needs to be changed to Optional.
 
     @Override
     public Optional<UserEntity> findById(Long userId) {
-        return Optional.empty();
+        return userJpaRepository.findById(userId);
     }
 
     @Override
     public boolean existsByNickname(String nickname) {
-        return false;
+        return userJpaRepository.existsByNickname(nickname);
     }
 }
