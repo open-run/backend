@@ -7,19 +7,18 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class UserRepositoryImpl implements UserRepository{
+public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public void save(UserEntity userEntity) {
-        userJpaRepository.save(userEntity);
+    public UserEntity save(UserEntity userEntity) {
+        return userJpaRepository.save(userEntity);
     }
 
     @Override
     public UserEntity findByEmail(String email) {
-        return userJpaRepository.findByEmail(email);
+        return userJpaRepository.findByEmail(email).orElse(null);
     }
-    //Yejin Kelly Joo, findByEmail needs to be changed to Optional.
 
     @Override
     public Optional<UserEntity> findById(Long userId) {
