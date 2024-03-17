@@ -1,35 +1,18 @@
 spring:
-    jpa:
-        hibernate:
-            ddl-auto: none
-        open-in-view: false
-    sql:
-        init:
-            mode: always
+    datasource:
+        url: jdbc:mysql://host:3306/database_name?useSSL=false
+        username: ${{ secrets.DATASOURCE_USERNAME }}
+        password: ${{ secrets.DATASOURCE_PASSWORD }}
 
-datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://host:3306/database_name?useSSL=false
-    username: ${{ secrets.DATASOURCE_USERNAME }}
-    password: ${{ secrets.DATASOURCE_PASSWORD }}
-
-security:
-    oauth2:
-        client:
-            registration:
-                kakao:
-                    client-id: ${{ secrets.KAKAO_CLIENT_ID }}
-                    redirect-uri: http://localhost:8080/login/oauth2/code/kakao
-                    client-authentication-method: client_secret_post
-                    authorization-grant-type: authorization_code
-                    scope: account_email
-                    client-name: kakao
-            provider:
-                kakao:
-                    authorization-uri: https://kauth.kakao.com/oauth/authorize
-                    token-uri: https://kauth.kakao.com/oauth/token
-                    user-info-uri: https://kapi.kakao.com/v2/user/me
-                    user_name_attribute: id
+    security:
+        oauth2:
+            client:
+                registration:
+                    kakao:
+                        client-id: ${{ secrets.KAKAO_CLIENT_ID }}
+                    naver:
+                        client-id: ${{ secrets.NAVER_CLIENT_ID }}
+                        client-secret: ${{ secrets.NAVER_CLIENT_SECRET }}
 
 jwt:
     secret:
