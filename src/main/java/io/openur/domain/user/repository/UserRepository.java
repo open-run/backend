@@ -7,8 +7,10 @@ import java.util.Optional;
 
 public interface UserRepository {
     // QUESTION: What is the purpose of this interface repository?
+    // Answer: 확장성 고려
 
-    void save(UserEntity userEntity);
+    UserEntity save(UserEntity userEntity);
+
     UserEntity findByEmail(String email);
 
     Optional<UserEntity> findById(Long userId);

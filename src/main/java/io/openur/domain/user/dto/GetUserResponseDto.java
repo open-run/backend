@@ -6,12 +6,10 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.sql.Timestamp;
-
 @Getter
 @AllArgsConstructor
 public class GetUserResponseDto {
-    private Long userId;
+    private String userId;
     private Boolean withdraw;
     private final String nickname;
     private final String email;
@@ -24,14 +22,14 @@ public class GetUserResponseDto {
 
     public GetUserResponseDto(UserEntity userEntity) {
         this.userId = userEntity.getUserId();
-            this.withdraw = userEntity.getWithdraw();
-            this.nickname = userEntity.getNickname();
-            this.email = userEntity.getEmail();
-            this.identityAuthenticated = userEntity.getIdentityAuthenticated();
-            this.provider = userEntity.getProvider();
-            this.blackListed = userEntity.getBlackListed();
-            this.createdDate = userEntity.getCreatedDate();
-            this.lastLoginDate = userEntity.getLastLoginDate();
-            this.blockchainAddress = userEntity.getBlockchainAddress();
+        this.withdraw = userEntity.getWithdraw();
+        this.nickname = userEntity.getNickname();
+        this.email = userEntity.getEmail();
+        this.identityAuthenticated = userEntity.getIdentityAuthenticated();
+        this.provider = userEntity.getProvider();
+        this.blackListed = userEntity.getBlacklisted();
+        this.createdDate = userEntity.getCreatedDate();
+        this.lastLoginDate = userEntity.getLastLoginDate();
+        this.blockchainAddress = userEntity.getBlockchainAddress();
     }
 }

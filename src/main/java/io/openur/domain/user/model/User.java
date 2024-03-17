@@ -3,26 +3,43 @@ package io.openur.domain.user.model;
 
 import io.openur.domain.user.entity.UserEntity;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 // QUESTION: What is the purpose of this class? Separate setter from UserEntity?
+// Answer: Service에서 UserEntity 객체의 getter/setter를 직접적으로 사용하지 않기 위해
+// Service와 Entity 사이의 모델 레이어를 추가함.
 @AllArgsConstructor
 public class User {
-    private Long userId;
+    private String userId;
     private Boolean withdraw;
+    @Getter
     private String nickname;
+    @Getter
     private String email;
     private Boolean identityAuthenticated;
     private Provider provider;
-    private Boolean blackListed;
+    private Boolean blacklisted;
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String blockchainAddress;
 
-    public User(String email) {
+    public User(
+        String email,
+        Provider provider
+    ) {
+        this.userId = UUID.randomUUID().toString();
+        this.withdraw = false;
+        this.nickname = null;
         this.email = email;
+        this.identityAuthenticated = false;
+        this.provider = provider;
+        this.blacklisted = false;
+        this.createdDate = LocalDateTime.now();
+        this.lastLoginDate = LocalDateTime.now();
+        this.blockchainAddress = "0x";
     }
-
 
     public static User from(final UserEntity userEntity){
         return new User(
@@ -32,7 +49,7 @@ public class User {
             userEntity.getEmail(),
             userEntity.getIdentityAuthenticated(),
             userEntity.getProvider(),
-            userEntity.getBlackListed(),
+            userEntity.getBlacklisted(),
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
             userEntity.getBlockchainAddress()
@@ -47,7 +64,7 @@ public class User {
             email,
             identityAuthenticated,
             provider,
-            blackListed,
+            blacklisted,
             createdDate,
             lastLoginDate,
             blockchainAddress
