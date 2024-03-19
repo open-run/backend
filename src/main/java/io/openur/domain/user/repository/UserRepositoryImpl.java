@@ -1,7 +1,7 @@
 package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -21,8 +21,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<UserEntity> findById(Long userId) {
-        return userJpaRepository.findById(userId);
+    public UserEntity findById(Long userId) {
+        return userJpaRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
     @Override

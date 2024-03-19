@@ -3,7 +3,6 @@ package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
 
-import java.util.Optional;
 
 public interface UserRepository {
     // QUESTION: What is the purpose of this interface repository?
@@ -13,7 +12,7 @@ public interface UserRepository {
 
     UserEntity findByEmail(String email);
 
-    Optional<UserEntity> findById(Long userId);
+    UserEntity findById(Long userId);
 
     boolean existsByNickname(String nickname);
 }
