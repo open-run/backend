@@ -42,7 +42,7 @@ public class KakaoService extends LoginService {
     // https://kauth.kakao.com/oauth/authorize?client_id={clientId}&redirect_uri=http://localhost:8080/v1/users/login/kakao&response_type=code
     public GetUsersLoginDto login(String code, String state) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
-        String accessToken = this.getAccessToken(code, clientId, null, redirectUri, tokenUri);
+        String accessToken = this.getAccessToken(code, clientId, redirectUri, tokenUri);
 
         // 2. 토큰으로 카카오 API 호출 : "액세스 토큰"으로 "카카오 사용자 정보" 가져오기
         OauthUserInfoDto kakaoUserInfo = getUserInfo(accessToken);
