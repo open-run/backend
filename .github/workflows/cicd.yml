@@ -24,11 +24,11 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
 
-#    - name: Set up application.properties
-#      run: |
-#        cd ./src/main/resources
-#        touch ./application.properties
-#        echo ./src/main/resources/${{ secrets.APPLICATION }}
+    - name: Set up application.yml
+      run: |
+        cd ./src/main/resources
+        touch ./application.yml
+        echo ${{ secrets.APPLICATION }} > ./application.yml
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
