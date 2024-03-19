@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -26,12 +25,17 @@ public abstract class LoginService {
 
     public abstract GetUsersLoginDto login(String code, String state) throws JsonProcessingException;
 
+    protected String getAccessToken(String code, String clientId, String redirectUri, String tokenUri)
+        throws JsonProcessingException {
+        return this.getAccessToken(code, clientId, redirectUri, tokenUri, null);
+    }
+
     protected String getAccessToken(
         String code,
         String clientId,
-        @Nullable String clientSecret,
         String redirectUri,
-        String tokenUri
+        String tokenUri,
+        String clientSecret
         ) throws JsonProcessingException {
         URI uri = UriComponentsBuilder.fromUriString(tokenUri).encode().build().toUri();
 
@@ -42,9 +46,7 @@ public abstract class LoginService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", clientId);
-        if (clientSecret != null) {
-            body.add("client_secret", clientSecret);
-        }
+        body.add("client_secret", clientSecret);
         body.add("redirect_uri", redirectUri);
         body.add("code", code);
 
