@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepositoryImpl userRepository;
 
-    public GetUserResponseDto getUserById(Long userId) {
+    public GetUserResponseDto getUserById(String userId) {
         UserEntity userEntity = userRepository.findById(userId);
         return new GetUserResponseDto(userEntity);
     }
@@ -25,7 +25,7 @@ public class UserService {
     }
 
     @Transactional
-    public void saveSurveyResult(Long userId, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
+    public void saveSurveyResult(String userId, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         User user = User.from(userRepository.findById(userId));
 
         user.update(patchUserSurveyRequestDto);

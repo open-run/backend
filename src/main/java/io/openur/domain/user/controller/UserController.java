@@ -6,6 +6,7 @@ import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.model.Provider;
+import io.openur.domain.user.model.User;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
 import io.openur.domain.user.service.oauth.LoginServiceFactory;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -57,7 +59,7 @@ public class UserController {
     @Operation(summary = "유저 정보 가져오기")
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
 		// TODO: change to jwtToken as RequestHeader
-		@PathVariable Long userId
+		@PathVariable String userId
 	) {
         GetUserResponseDto getUserResponseDto = userService.getUserById(userId);
         return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
@@ -79,25 +81,20 @@ public class UserController {
             .build());
     }
 
-    @PatchMapping("/v1/users/{userId}")
+    @PatchMapping("/v1/users")
     @Operation(summary = "설문조사 결과 저장")
     public ResponseEntity<Response<Void>> saveSurveyResult(
-        @PathVariable Long userId,
+        @RequestAttribute("User") User user,
         @RequestBody @Valid PatchUserSurveyRequestDto patchUserSurveyRequestDto
     ) {
-        userService.saveSurveyResult(userId, patchUserSurveyRequestDto);
+        userService.saveSurveyResult(user.toEntity().getUserId(), patchUserSurveyRequestDto);
 
-        return ResponseEntity.created(createUri(userId))
+        return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().build().toUri())
             .body(Response.<Void>builder()
                 .message("success")
                 .build());
     }
 
-    private URI createUri(Long todoId) {
-        return ServletUriComponentsBuilder.fromCurrentRequest()
-            .path("/{id}")
-            .buildAndExpand(todoId)
-            .toUri();
-    }
+
 
 }
