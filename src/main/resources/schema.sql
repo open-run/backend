@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS tb_users (
                                         blacklisted BOOLEAN DEFAULT FALSE,
                                         created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                         last_login_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                        blockchain_address VARCHAR(42) NOT NULL DEFAULT '0x'
+                                        blockchain_address VARCHAR(42) NOT NULL DEFAULT '0x',
+                                        learningFace VARCHAR(8) DEFAULT NULL,
+                                        learningFrequency SMALLINT(4) DEFAULT NULL
+
 );
 
 -- tb_withdraws 테이블 생성 (존재하지 않을 경우에만)

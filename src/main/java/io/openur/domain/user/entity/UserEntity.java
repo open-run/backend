@@ -35,6 +35,8 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Provider provider;
     private Boolean blacklisted;
+    private String learningFace;
+    private String learningFrequency;
 
     @CreatedDate
     @Column(updatable = false)
@@ -47,5 +49,4 @@ public class UserEntity {
     // TODO: blockchain address 생성 및 기본 아바타 추가 기능
     private String blockchainAddress;
 
-    // TODO: 설문조사 데이터 (러닝빈도, 러닝페이스) 추가
 }
