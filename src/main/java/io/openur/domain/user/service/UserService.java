@@ -1,7 +1,9 @@
 package io.openur.domain.user.service;
 
 import io.openur.domain.user.dto.GetUserResponseDto;
+import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,9 +20,15 @@ public class UserService {
         return new GetUserResponseDto(userEntity);
     }
 
-
-
     public boolean existNickname(String nickname) {
         return !userRepository.existsByNickname(nickname);
+    }
+
+    @Transactional
+    public void saveSurveyResult(Long userId, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
+        User user = User.from(userRepository.findById(userId));
+
+        user.update(patchUserSurveyRequestDto);
+        userRepository.update(user);
     }
 }

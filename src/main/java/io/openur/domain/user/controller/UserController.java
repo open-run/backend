@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.openur.domain.user.dto.ExistNicknameRequestDto;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
+import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
@@ -12,12 +13,15 @@ import io.openur.global.common.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 @RestController
@@ -75,5 +79,25 @@ public class UserController {
             .build());
     }
 
+    @PatchMapping("/v1/users/{userId}")
+    @Operation(summary = "설문조사 결과 저장")
+    public ResponseEntity<Response<Void>> saveSurveyResult(
+        @PathVariable Long userId,
+        @RequestBody @Valid PatchUserSurveyRequestDto patchUserSurveyRequestDto
+    ) {
+        userService.saveSurveyResult(userId, patchUserSurveyRequestDto);
+
+        return ResponseEntity.created(createUri(userId))
+            .body(Response.<Void>builder()
+                .message("success")
+                .build());
+    }
+
+    private URI createUri(Long todoId) {
+        return ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(todoId)
+            .toUri();
+    }
 
 }

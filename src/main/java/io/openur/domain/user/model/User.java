@@ -1,6 +1,7 @@
 package io.openur.domain.user.model;
 
 
+import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.entity.UserEntity;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -24,6 +25,8 @@ public class User {
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String blockchainAddress;
+    private String learningFace;
+    private Long learningFrequency;
 
     public User(
         String email,
@@ -39,6 +42,8 @@ public class User {
         this.createdDate = LocalDateTime.now();
         this.lastLoginDate = LocalDateTime.now();
         this.blockchainAddress = "0x";
+        this.learningFace = null;
+        this.learningFrequency = null;
     }
 
     public static User from(final UserEntity userEntity){
@@ -52,7 +57,9 @@ public class User {
             userEntity.getBlacklisted(),
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
-            userEntity.getBlockchainAddress()
+            userEntity.getBlockchainAddress(),
+            userEntity.getLearningFace(),
+            userEntity.getLearningFrequency()
         );
     }
 
@@ -67,9 +74,17 @@ public class User {
             blacklisted,
             createdDate,
             lastLoginDate,
-            blockchainAddress
+            blockchainAddress,
+            learningFace,
+            learningFrequency
+
         );
     }
 
 
+    public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
+        this.nickname = patchUserSurveyRequestDto.getNickname();
+        this.learningFace = patchUserSurveyRequestDto.getLearningFace();
+        this.learningFrequency = patchUserSurveyRequestDto.getLearningFrequency();
+    }
 }

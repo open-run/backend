@@ -1,13 +1,14 @@
 package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.user.model.User;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class UserRepositoryImpl implements UserRepository {
+    public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
 
     @Override
@@ -28,5 +29,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByNickname(String nickname) {
         return userJpaRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public void update(User user) {
+        userJpaRepository.save(user.toEntity());
     }
 }
