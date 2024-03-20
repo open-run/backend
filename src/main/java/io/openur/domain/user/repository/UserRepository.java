@@ -2,6 +2,7 @@ package io.openur.domain.user.repository;
 
 
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.user.model.User;
 
 
 public interface UserRepository {
@@ -15,4 +16,6 @@ public interface UserRepository {
     UserEntity findById(Long userId);
 
     boolean existsByNickname(String nickname);
+
+    void update(User user);
 }

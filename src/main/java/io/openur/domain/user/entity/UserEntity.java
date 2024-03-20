@@ -35,8 +35,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Provider provider;
     private Boolean blacklisted;
-    private String learningFace;
-    private String learningFrequency;
+
 
     @CreatedDate
     @Column(updatable = false)
@@ -48,5 +47,8 @@ public class UserEntity {
     private LocalDateTime lastLoginDate;
     // TODO: blockchain address 생성 및 기본 아바타 추가 기능
     private String blockchainAddress;
+
+    private String learningFace;
+    private Long learningFrequency;
 
 }
