@@ -17,3 +17,7 @@ spring:
 jwt:
     secret:
         key: ${{ secrets.JWT_SECRET_KEY }}
+
+openur:
+    server:
+        host: http://${server_ip}:8080
