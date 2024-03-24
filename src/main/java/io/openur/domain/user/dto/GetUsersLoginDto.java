@@ -8,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GetUsersLoginDto {
     private final String email;
-    private final @Nullable String nickname;
+    private final String nickname;
     private final String jwtToken;
 }
