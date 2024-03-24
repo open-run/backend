@@ -25,8 +25,8 @@ public class User {
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String blockchainAddress;
-    private String learningFace;
-    private Long learningFrequency;
+    private String runningFace;
+    private Integer runningFrequency;
 
     public User(
         String email,
@@ -42,8 +42,8 @@ public class User {
         this.createdDate = LocalDateTime.now();
         this.lastLoginDate = LocalDateTime.now();
         this.blockchainAddress = "0x";
-        this.learningFace = null;
-        this.learningFrequency = null;
+        this.runningFace = null;
+        this.runningFrequency = null;
     }
 
     public static User from(final UserEntity userEntity){
@@ -58,8 +58,8 @@ public class User {
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
             userEntity.getBlockchainAddress(),
-            userEntity.getLearningFace(),
-            userEntity.getLearningFrequency()
+            userEntity.getRunningFace(),
+            userEntity.getRunningFrequency()
         );
     }
 
@@ -75,8 +75,8 @@ public class User {
             createdDate,
             lastLoginDate,
             blockchainAddress,
-            learningFace,
-            learningFrequency
+            runningFace,
+            runningFrequency
 
         );
     }
