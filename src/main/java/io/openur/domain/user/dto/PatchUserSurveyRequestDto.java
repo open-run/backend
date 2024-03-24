@@ -12,6 +12,6 @@ public class PatchUserSurveyRequestDto {
     private String nickname;
 
     @Pattern(regexp = "\\d{2}'\\d{2}\"", message = "형식에 맞지 않습니다.")
-    private String runningFace;
+    private String runningPace;
     private Integer runningFrequency;
 }

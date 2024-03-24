@@ -19,6 +19,8 @@ public class GetUserResponseDto {
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String blockchainAddress;
+    private String runningPace;
+    private Integer runningFrequency;
 
     public GetUserResponseDto(UserEntity userEntity) {
         this.userId = userEntity.getUserId();
@@ -31,5 +33,7 @@ public class GetUserResponseDto {
         this.createdDate = userEntity.getCreatedDate();
         this.lastLoginDate = userEntity.getLastLoginDate();
         this.blockchainAddress = userEntity.getBlockchainAddress();
+        this.runningPace = userEntity.getRunningPace();
+        this.runningFrequency = userEntity.getRunningFrequency();
     }
 }

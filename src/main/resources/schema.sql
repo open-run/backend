@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS tb_users (
                                         created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                         last_login_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                         blockchain_address VARCHAR(42) NOT NULL DEFAULT '0x',
-                                        runningFace VARCHAR(8) DEFAULT NULL,
-                                        runningFrequency SMALLINT(4) DEFAULT NULL
+                                        running_pace VARCHAR(8) DEFAULT NULL,
+                                        running_frequency SMALLINT(4) DEFAULT NULL
 
 );
 
