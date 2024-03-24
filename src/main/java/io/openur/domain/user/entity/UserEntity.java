@@ -48,7 +48,7 @@ public class UserEntity {
     // TODO: blockchain address 생성 및 기본 아바타 추가 기능
     private String blockchainAddress;
 
-    private String runningFace;
+    private String runningPace;
     private Integer runningFrequency;
 
 }
