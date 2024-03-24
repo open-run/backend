@@ -5,6 +5,7 @@ import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.entity.UserEntity;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -83,8 +84,14 @@ public class User {
 
 
     public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
-        this.nickname = patchUserSurveyRequestDto.getNickname();
-        this.learningFace = patchUserSurveyRequestDto.getLearningFace();
-        this.learningFrequency = patchUserSurveyRequestDto.getLearningFrequency();
+        applyIfNotNull(patchUserSurveyRequestDto.getNickname(), newNickname -> this.nickname = newNickname);
+        applyIfNotNull(patchUserSurveyRequestDto.getRunningFace(), newRunningFace -> this.runningFace = newRunningFace);
+        applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(), newRunningFrequency -> this.runningFrequency = newRunningFrequency);
+    }
+
+    private <T> void applyIfNotNull(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 }
