@@ -1,5 +1,6 @@
 package io.openur.global.config;
 
+import io.openur.global.Filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -22,14 +24,14 @@ public class SecurityConfig {
             sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
 
-        // TODO: /v1/users/login 제외 모든 call에 대한 jwt 인증 설정
-//        http.authorizeHttpRequests((authorizeHttpRequests) ->
-//            authorizeHttpRequests
-//                .requestMatchers("/v1/users/**").permitAll() // '/v1/users/'로 시작하는 요청 모두 접근 허가
-//                .anyRequest().authenticated() // 그 외 모든 요청 인증처리
-//        );
-//        http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
-//        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(), JwtAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        http.authorizeHttpRequests((authorizeHttpRequests) ->
+            authorizeHttpRequests
+                .requestMatchers("/v1/users/**").permitAll() // '/v1/users/'로 시작하는 요청 모두 접근 허가
+                .anyRequest().authenticated() // 그 외 모든 요청 인증처리
+        );
 
         return http.build();
     }
