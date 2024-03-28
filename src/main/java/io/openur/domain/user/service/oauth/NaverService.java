@@ -40,7 +40,7 @@ public class NaverService extends LoginService {
     // https://nid.naver.com/oauth2.0/authorize?client_id={clientId}&response_type=code&redirect_uri=http://localhost:8080/v1/users/login/naver
     public GetUsersLoginDto login(String code, String state) throws JsonProcessingException {
         // 1. 접근 토큰 요청
-        String accessToken = this.getAccessToken(code, clientId, clientSecret, redirectUri, tokenUri);
+        String accessToken = this.getAccessToken(code, clientId, redirectUri, tokenUri, clientSecret);
 
         // 2. 사용자 정보 요청
         OauthUserInfoDto naverUserInfo = getUserInfo(accessToken);
