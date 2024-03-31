@@ -1,5 +1,7 @@
 package io.openur.domain.user.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.entity.UserEntity;
@@ -22,6 +24,16 @@ public class UserService {
 
     public boolean existNickname(String nickname) {
         return !userRepository.existsByNickname(nickname);
+    }
+
+    public GetUserResponseDto getUserEmail(String authorizationHeader){
+        Claims claims = Jwts.parser().parseClaimsJws(authorizationHeader).getBody();
+
+        // 클레임에서 이메일 추출
+        String email = claims.getSubject();
+
+        UserEntity userEntity = userRepository.findByEmail(email);
+        return new GetUserResponseDto(userEntity);
     }
 
     @Transactional
