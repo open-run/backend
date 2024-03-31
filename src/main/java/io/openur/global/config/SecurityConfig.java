@@ -35,7 +35,12 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((authorizeHttpRequests) ->
             authorizeHttpRequests
-                .requestMatchers("/v1/users/{userId}").permitAll() // '/v1/users/'로 시작하는 요청 모두 접근 허가
+                .requestMatchers(
+                    "/v1/users/login/**",
+                    "/v1/users/nickname/exist",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
+                ).permitAll() // '/v1/users/'로 시작하는 요청 모두 접근 허가
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
 
