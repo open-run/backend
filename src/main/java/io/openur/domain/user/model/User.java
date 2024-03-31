@@ -26,7 +26,7 @@ public class User {
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String blockchainAddress;
-    private String runningFace;
+    private String runningPace;
     private Integer runningFrequency;
 
     public User(
@@ -43,7 +43,7 @@ public class User {
         this.createdDate = LocalDateTime.now();
         this.lastLoginDate = LocalDateTime.now();
         this.blockchainAddress = "0x";
-        this.runningFace = null;
+        this.runningPace = null;
         this.runningFrequency = null;
     }
 
@@ -59,7 +59,7 @@ public class User {
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
             userEntity.getBlockchainAddress(),
-            userEntity.getRunningFace(),
+            userEntity.getRunningPace(),
             userEntity.getRunningFrequency()
         );
     }
@@ -76,7 +76,7 @@ public class User {
             createdDate,
             lastLoginDate,
             blockchainAddress,
-            runningFace,
+            runningPace,
             runningFrequency
 
         );
@@ -85,7 +85,7 @@ public class User {
 
     public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         applyIfNotNull(patchUserSurveyRequestDto.getNickname(), newNickname -> this.nickname = newNickname);
-        applyIfNotNull(patchUserSurveyRequestDto.getRunningFace(), newRunningFace -> this.runningFace = newRunningFace);
+        applyIfNotNull(patchUserSurveyRequestDto.getRunningPace(), newRunningPace -> this.runningPace = newRunningPace);
         applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(), newRunningFrequency -> this.runningFrequency = newRunningFrequency);
     }
 

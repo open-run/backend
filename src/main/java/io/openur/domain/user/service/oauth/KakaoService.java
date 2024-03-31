@@ -65,7 +65,7 @@ public class KakaoService extends LoginService {
         String email = jsonNode.get("kakao_account")
             .get("email").asText();
 
-        log.info("카카오 사용자 이메일: " + email);
+        log.info("카카오 사용자 정보: " + email);
         return new OauthUserInfoDto(email, Provider.kakao);
     }
 }
