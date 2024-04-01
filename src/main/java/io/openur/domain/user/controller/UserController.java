@@ -10,17 +10,18 @@ import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
 import io.openur.domain.user.service.oauth.LoginServiceFactory;
 import io.openur.global.common.Response;
+import io.openur.global.jwt.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class UserController {
     private final LoginServiceFactory loginServiceFactory;
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping("/v1/users/login/{authServer}")
     @Operation(summary = "유저 로그인 성공 시 정보 반환")
@@ -58,16 +60,21 @@ public class UserController {
     @GetMapping("/v1/users/{userId}")
     @Operation(summary = "유저 정보 가져오기")
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
-        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
-		// TODO: change to jwtToken as RequestHeader
+        HttpServletRequest request
 	) {
-        String jwtToken = authorizationHeader.substring("Bearer ".length()).trim();
-
-        GetUserResponseDto getUserResponseDto = userService.getUserEmail(jwtToken);
-        return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
-            .message("success")
-            .data(getUserResponseDto)
-            .build());
+        String jwtToken = jwtUtil.getJwtFromHeader(request);
+        if (Objects.requireNonNull(jwtToken) == null) {
+            // JWT 토큰이 존재하지 않는 경우 처리
+            return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
+                .message("jwtToken is not available")
+                .build());
+        }else{
+            GetUserResponseDto getUserResponseDto = userService.getUserEmail(jwtToken);
+            return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
+                .message("success")
+                .data(getUserResponseDto)
+                .build());
+        }
     }
 
     @GetMapping("/v1/users/nickname/exist")
@@ -86,18 +93,29 @@ public class UserController {
     @PatchMapping("/v1/users/{userId}")
     @Operation(summary = "설문조사 결과 저장")
     public ResponseEntity<Response<Void>> saveSurveyResult(
-        @PathVariable Long userId,
+        HttpServletRequest request,
         @RequestBody @Valid PatchUserSurveyRequestDto patchUserSurveyRequestDto
     ) {
-        userService.saveSurveyResult(userId, patchUserSurveyRequestDto);
+        String jwtToken = jwtUtil.getJwtFromHeader(request);
+        if (Objects.requireNonNull(jwtToken) == null) {
+            // JWT 토큰이 존재하지 않는 경우 처리
+            return ResponseEntity.ok()
+                .body(Response.<Void>builder()
+                    .message("jwtToken is not available")
+                    .build());
+        }else{
+            userService.saveSurveyResult(jwtToken, patchUserSurveyRequestDto);
 
-        return ResponseEntity.created(createUri(userId))
-            .body(Response.<Void>builder()
-                .message("success")
-                .build());
+            String userId = userService.getUserById(jwtToken);
+
+            return ResponseEntity.created(createUri(userId))
+                .body(Response.<Void>builder()
+                    .message("success")
+                    .build());
+        }
     }
 
-    private URI createUri(Long todoId) {
+    private URI createUri(String todoId) {
         return ServletUriComponentsBuilder.fromCurrentRequest()
             .path("/{id}")
             .buildAndExpand(todoId)
