@@ -21,7 +21,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-            .group("v1")
+            .group("Unauthenticated Access")
             .pathsToMatch("/v1/**")
             .pathsToExclude("/v1/users/login/**", "/v1/users/nickname/exist")
             .build();

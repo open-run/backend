@@ -12,7 +12,7 @@ public class SwaggerAuthConfig {
     @Bean
     public GroupedOpenApi userApi() {
         return GroupedOpenApi.builder()
-            .group("user")
+            .group("Authorization Access")
             .pathsToMatch("/v1/users/login/**", "/v1/users/nickname/exist")
             .addOpenApiCustomizer(buildSecurityOpenApi())
             .build();
