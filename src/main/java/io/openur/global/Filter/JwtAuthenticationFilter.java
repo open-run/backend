@@ -61,8 +61,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private Claims parseToken(String jwtToken) {
         byte[] bytes = Base64.getDecoder().decode(SECRET_KEY);
         key = Keys.hmacShaKeyFor(bytes);
-        return Jwts.parser()
+        return Jwts.parserBuilder()
             .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
+            .build()
             .parseClaimsJws(jwtToken)
             .getBody();
     }
