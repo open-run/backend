@@ -56,7 +56,7 @@ public class UserController {
 		}
     }
 
-    @GetMapping("/v1/users/{userId}")
+    @GetMapping("/v1/users")
     @Operation(summary = "유저 정보 가져오기")
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -81,7 +81,7 @@ public class UserController {
             .build());
     }
 
-    @PatchMapping("/v1/users/{userId}")
+    @PatchMapping("/v1/users")
     @Operation(summary = "설문조사 결과 저장")
     public ResponseEntity<Response<Void>> saveSurveyResult(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
