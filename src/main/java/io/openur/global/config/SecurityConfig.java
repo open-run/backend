@@ -47,7 +47,8 @@ public class SecurityConfig {
                     "/v1/users/login/**",
                     "/v1/users/nickname/exist",
                     "/swagger-ui/**",
-                    "/v3/api-docs/**"
+                    "/v3/api-docs/**",
+                    "/health"
                 ).permitAll() // unauthenticated group에 포함된 endpoint에 한해서만 접근 허가
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
