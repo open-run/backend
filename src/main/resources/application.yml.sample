@@ -14,10 +14,6 @@ spring:
                         client-id: ${{ NAVER_CLIENT_ID }}
                         client-secret: ${{ NAVER_CLIENT_SECRET }}
 
-server:
-    ssl:
-        key-store-password: ${{ PASSWORD }}
-
 jwt:
     secret:
         key: ${{ JWT_SECRET_KEY }}
