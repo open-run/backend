@@ -13,8 +13,10 @@ public class LogInterceptor implements HandlerInterceptor {
         HttpServletRequest request, HttpServletResponse response, Object handler)
         throws Exception {
         String requestURI = request.getRequestURI();
+        if (requestURI.equals("/health") && response.getStatus() == 200) {
+            return true;
+        }
         log.info("[API REQUEST] " + requestURI);
-
         return true;
     }
 
@@ -23,8 +25,10 @@ public class LogInterceptor implements HandlerInterceptor {
         ModelAndView modelAndView) throws Exception {
         String requestURI = request.getRequestURI();
         int status = response.getStatus();
+        if (requestURI.equals("/health") && status == 200) {
+            return;
+        }
         log.info("[API RESPONSE] " + requestURI + ": " + status);
-
     }
 }
 
