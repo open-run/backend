@@ -23,7 +23,7 @@ public class UserService {
     }
 
     public boolean existNickname(String nickname) {
-        return !userRepository.existsByNickname(nickname);
+        return userRepository.existsByNickname(nickname);
     }
 
     public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails){
