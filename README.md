@@ -41,4 +41,5 @@ $ ./gradlew bootRun
 http://localhost:8080/swagger-ui/index.html
 
 ## About
-Credit to @open-run/backend : @jryouda, @sonjh919 and @yjkellyjoo
+
+Credit to @open-run/backend : @jryouda, @sonjh919, @yjkellyjoo and @DonHK-97
