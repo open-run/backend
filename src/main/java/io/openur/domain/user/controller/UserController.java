@@ -23,18 +23,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 @RestController
+@RequestMapping("/v1/users")
 @RequiredArgsConstructor
 public class UserController {
     private final LoginServiceFactory loginServiceFactory;
     private final UserService userService;
 
-    @GetMapping("/v1/users/login/{authServer}")
+	@GetMapping("/login/{authServer}")
     @Operation(summary = "유저 로그인 성공 시 정보 반환")
     public ResponseEntity<Response<GetUsersLoginDto>> getUser(
         @PathVariable Provider authServer,
@@ -57,7 +59,7 @@ public class UserController {
 		}
     }
 
-    @GetMapping("/v1/users")
+	@GetMapping()
     @Operation(summary = "유저 정보 가져오기")
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -69,7 +71,7 @@ public class UserController {
                 .build());
     }
 
-    @GetMapping("/v1/users/nickname/exist")
+	@GetMapping("/nickname/exist")
     @Operation(summary = "닉네임 중복 체크")
     public ResponseEntity<Response<Boolean>> existNickname(
 		@RequestParam
@@ -85,7 +87,7 @@ public class UserController {
             .build());
     }
 
-    @PatchMapping("/v1/users")
+	@PatchMapping()
     @Operation(summary = "설문조사 결과 저장")
     public ResponseEntity<Response<Void>> saveSurveyResult(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
