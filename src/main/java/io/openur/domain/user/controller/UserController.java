@@ -1,20 +1,21 @@
 package io.openur.domain.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.openur.domain.user.dto.ExistNicknameRequestDto;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
-import io.openur.global.security.UserDetailsImpl;
-import io.openur.global.security.UserDetailsServiceImpl;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
 import io.openur.domain.user.service.oauth.LoginServiceFactory;
 import io.openur.global.common.Response;
+import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -71,13 +72,16 @@ public class UserController {
     @GetMapping("/v1/users/nickname/exist")
     @Operation(summary = "닉네임 중복 체크")
     public ResponseEntity<Response<Boolean>> existNickname(
-		@RequestBody @Valid ExistNicknameRequestDto existNicknameRequestDto
+		@RequestParam
+		@NotBlank(message = "닉네임을 입력해주세요.")
+		@Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하이여야 합니다.")
+		@Pattern(regexp = "^[가-힣a-zA-Z0-9]*$", message = "허용하지 않는 문자가 포함되어 있습니다.")
+		String nickname
 	) {
-        boolean existNickname = userService.existNickname(
-            existNicknameRequestDto.getNickname());
+		boolean isExist = userService.existNickname(nickname);
         return ResponseEntity.ok().body(Response.<Boolean>builder()
             .message("success")
-            .data(existNickname)
+			.data(isExist)
             .build());
     }
 
