@@ -29,6 +29,7 @@ public class SwaggerConfig {
                 .scheme("bearer"));
     }
 
+    // Authenticated and Unauthenticated need to be Varied : Since the grouping
     public OpenApiCustomizer buildUnauthenticatedOpenApi() {
         Server unauthenticated = new Server();
         unauthenticated.url("/").setDescription("Swagger for Unauthenticated");
