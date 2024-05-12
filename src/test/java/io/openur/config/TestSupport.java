@@ -39,6 +39,7 @@ public class TestSupport {
             .build();
     }
 
+    // Testing token for now, Can be added or fixed
     public String getTestUserToken() {
         String email = "test1@test.com";
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -49,6 +50,7 @@ public class TestSupport {
         return jwtUtil.createToken(email);
     }
 
+    // Implementation of DTO
     protected String jsonify(Object req) throws JsonProcessingException {
         return new ObjectMapper().writeValueAsString(req);
     }
