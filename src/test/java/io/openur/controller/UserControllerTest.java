@@ -14,14 +14,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTest extends TestSupport {
     private static final String PREFIX = "/v1/users";
 
-    void getUserInfo() throws Exception {
-        mockMvc.perform(
-            get(PREFIX + "/{userId}", "1")
-                .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isOk());
-    }
-
     @Test
     @DisplayName("User : 닉네임 중복확인 테스트")
     void getExistNicknameTest() throws Exception {
@@ -48,6 +40,7 @@ public class UserControllerTest extends TestSupport {
     }
 
     @Test
+    @DisplayName("User : 페이스 기록 입력 저장")
     void saveSurveyResultTest() throws Exception {
         String token = getTestUserToken();
         var surveyResult = new HashMap<>();
