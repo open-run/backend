@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
-    // Swagger uses http "OPTION" method before sending actual request
+    // Swagger uses http "OPTIONS" method before sending actual request
     // We call this as pre-flight : Swagger CORS issue
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
