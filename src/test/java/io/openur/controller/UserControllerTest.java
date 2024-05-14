@@ -1,15 +1,14 @@
 package io.openur.controller;
 
-import io.openur.config.TestSupport;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-
-import java.util.HashMap;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.openur.config.TestSupport;
+import java.util.HashMap;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 public class UserControllerTest extends TestSupport {
     private static final String PREFIX = "/v1/users";
@@ -45,14 +44,22 @@ public class UserControllerTest extends TestSupport {
         String token = getTestUserToken();
         var surveyResult = new HashMap<>();
         surveyResult.put("nickname", "나도모른거");
-        surveyResult.put("runningPace", "5'55\"");
+        surveyResult.put("runningPace", "5'55\"");  // 형식에 맞지 않음. 5'55" -> 05'55"
         surveyResult.put("runningFrequency", "2");
-
         mockMvc.perform(
             patch(PREFIX)
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonify(surveyResult))
+            )
+            .andExpect(status().isBadRequest());
+
+        surveyResult.put("runningPace", "05'55\"");
+        mockMvc.perform(
+                patch(PREFIX)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(surveyResult))
             )
             .andExpect(status().isCreated());
     }
