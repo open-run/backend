@@ -1,6 +1,6 @@
 package io.openur.global.config;
 
-import io.openur.global.Filter.JwtAuthenticationFilter;
+import io.openur.global.filter.JwtAuthenticationFilter;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
