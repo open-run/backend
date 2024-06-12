@@ -33,6 +33,12 @@ public class UserService {
     }
 
     @Transactional
+    public void deleteUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = User.from(userRepository.findByEmail(userDetails.getUser().getEmail()));
+        userRepository.deleteUserInfo(user);
+    }
+
+    @Transactional
     public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         String email = userDetails.getUser().getEmail();
         User user = User.from(userRepository.findByEmail(email));

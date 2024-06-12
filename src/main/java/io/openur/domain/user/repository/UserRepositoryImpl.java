@@ -35,4 +35,9 @@ public class UserRepositoryImpl implements UserRepository {
     public void update(User user) {
         userJpaRepository.save(user.toEntity());
     }
+
+    @Override
+    public void deleteUserInfo(User user) {
+        userJpaRepository.delete(user.toEntity());
+    }
 }
