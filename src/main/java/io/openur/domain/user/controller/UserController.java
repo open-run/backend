@@ -19,13 +19,7 @@ import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
@@ -101,6 +95,16 @@ public class UserController {
             .body(Response.<Void>builder()
                 .message("success")
                 .build());
+    }
+
+    @DeleteMapping()
+    @Operation(summary = "유저 정보 삭제(탈퇴)")
+    public ResponseEntity<Response<Void>> deleteUserInfo(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        userService.deleteUserInfo(userDetails);
+        return ResponseEntity.accepted()
+            .body(Response.<Void>builder().message("success").build());
     }
 
     private URI createUri(String todoId) {

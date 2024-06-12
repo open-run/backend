@@ -18,4 +18,6 @@ public interface UserRepository {
     boolean existsByNickname(String nickname);
 
     void update(User user);
+
+    void deleteUserInfo(User user);
 }
