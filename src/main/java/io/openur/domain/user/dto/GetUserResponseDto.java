@@ -10,7 +10,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GetUserResponseDto {
     private String userId;
-    private Boolean withdraw;
     private final String nickname;
     private final String email;
     private Boolean identityAuthenticated;
@@ -24,7 +23,6 @@ public class GetUserResponseDto {
 
     public GetUserResponseDto(UserEntity userEntity) {
         this.userId = userEntity.getUserId();
-        this.withdraw = userEntity.getWithdraw();
         this.nickname = userEntity.getNickname();
         this.email = userEntity.getEmail();
         this.identityAuthenticated = userEntity.getIdentityAuthenticated();

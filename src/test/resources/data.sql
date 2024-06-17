@@ -6,11 +6,6 @@ VALUES
 ('3', FALSE, 'test3', 'test3@test.com', FALSE, 'naver', FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0x', NULL, NULL)
 ;
 
-INSERT INTO tb_withdraws (user_id, deferment_period, created_date)
-VALUES
-    ( '1', '15', CURRENT_TIMESTAMP )
-;
-
 INSERT INTO tb_bung (bung_id, location, datetime, bung_name, start_time, end_time, distance, pace, participant_number, has_after_run, note)
 VALUES
     ('1', 'seoul', CURRENT_TIMESTAMP, 'temp', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5', 2, false, 'lalalala')

@@ -28,7 +28,6 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String userId;
-    private Boolean withdraw;
     private String nickname;
     private String email;
     private Boolean identityAuthenticated;
