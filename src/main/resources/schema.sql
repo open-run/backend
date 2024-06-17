@@ -15,14 +15,6 @@ CREATE TABLE IF NOT EXISTS tb_users (
 
 );
 
--- tb_withdraws 테이블 생성 (존재하지 않을 경우에만)
-CREATE TABLE IF NOT EXISTS tb_withdraws (
-                                            user_id VARCHAR(36) PRIMARY KEY NOT NULL,
-                                            deferment_period ENUM('15', '30', '60') NOT NULL DEFAULT '15',
-                                            created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                            FOREIGN KEY (user_id) REFERENCES tb_users(user_id)
-);
-
 -- tb_bung 테이블 생성 (존재하지 않을 경우에만)
 CREATE TABLE IF NOT EXISTS tb_bung (
                                        bung_id VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,

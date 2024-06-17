@@ -15,7 +15,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class User {
     private String userId;
-    private Boolean withdraw;
     @Getter
     private String nickname;
     @Getter
@@ -34,7 +33,6 @@ public class User {
         Provider provider
     ) {
         this.userId = UUID.randomUUID().toString();
-        this.withdraw = false;
         this.nickname = null;
         this.email = email;
         this.identityAuthenticated = false;
@@ -50,7 +48,6 @@ public class User {
     public static User from(final UserEntity userEntity){
         return new User(
             userEntity.getUserId(),
-            userEntity.getWithdraw(),
             userEntity.getNickname(),
             userEntity.getEmail(),
             userEntity.getIdentityAuthenticated(),
@@ -67,7 +64,6 @@ public class User {
     public UserEntity toEntity(){
         return new UserEntity(
             userId,
-            withdraw,
             nickname,
             email,
             identityAuthenticated,
