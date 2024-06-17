@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS tb_withdraws (
 );
 
 -- tb_bung 테이블 생성 (존재하지 않을 경우에만)
-CREATE TABLE IF NOT EXISTS tb_bung (
+CREATE TABLE IF NOT EXISTS tb_bungs (
                                        bung_id VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
                                        location VARCHAR(128) NOT NULL DEFAULT '',
                                        datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -39,10 +39,10 @@ CREATE TABLE IF NOT EXISTS tb_bung (
 );
 
 -- tb_users_bung 테이블 생성 (존재하지 않을 경우에만)
-CREATE TABLE IF NOT EXISTS tb_users_bung (
+CREATE TABLE IF NOT EXISTS tb_users_bungs (
                                              user_bung_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
                                              bung_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
                                              user_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
-                                             FOREIGN KEY (bung_id) REFERENCES tb_bung(bung_id),
+                                             FOREIGN KEY (bung_id) REFERENCES tb_bungs(bung_id),
                                              FOREIGN KEY (user_id) REFERENCES tb_users(user_id)
 );
