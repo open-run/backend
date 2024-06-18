@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS tb_withdraws (
 CREATE TABLE IF NOT EXISTS tb_bungs (
                                        bung_id VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
                                        name VARCHAR(192) NOT NULL DEFAULT '',
-                                       description VARCHAR(255) Not NULL,
+                                       description VARCHAR(255),
                                        location VARCHAR(128) NOT NULL DEFAULT '',
                                        start_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                                        end_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS tb_bungs (
                                        pace VARCHAR(8) NOT NULL,
                                        member_number SMALLINT NOT NULL,
                                        has_after_run BOOLEAN DEFAULT FALSE,
-                                       after_run_description VARCHAR(4096) Not NULL
+                                       after_run_description VARCHAR(4096)
 );
 
 -- tb_users_bung 테이블 생성 (존재하지 않을 경우에만)
