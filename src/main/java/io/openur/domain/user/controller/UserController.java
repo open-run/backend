@@ -19,7 +19,14 @@ import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
@@ -27,61 +34,64 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
 public class UserController {
+
     private final LoginServiceFactory loginServiceFactory;
     private final UserService userService;
 
-	@GetMapping("/login/{authServer}")
+    @GetMapping("/login/{authServer}")
     @Operation(summary = "유저 로그인 성공 시 정보 반환")
     public ResponseEntity<Response<GetUsersLoginDto>> getUser(
         @PathVariable Provider authServer,
         @RequestParam String code,
         @RequestParam(required = false) String state
-    ){
+    ) {
         // TODO: different method using Spring Security
         //  oAuth2AuthorizedClientService.loadAuthorizedClient(authServer.name().toLowerCase(), "test");
 
-        LoginService loginService = loginServiceFactory.getLoginService(authServer);
-		try {
-			return ResponseEntity.ok()
-				.body(Response.<GetUsersLoginDto>builder()
-					.message("success")
-					.data(loginService.login(code, state))
-					.build()
-				);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+        LoginService loginService = loginServiceFactory.getLoginService(
+            authServer);
+        try {
+            return ResponseEntity.ok()
+                .body(Response.<GetUsersLoginDto>builder()
+                    .message("success")
+                    .data(loginService.login(code, state))
+                    .build()
+                );
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-	@GetMapping()
+    @GetMapping()
     @Operation(summary = "유저 정보 가져오기")
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
-	) {
-            GetUserResponseDto getUserResponseDto = userService.getUserEmail(userDetails);
-            return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
-                .message("success")
-                .data(getUserResponseDto)
-                .build());
-    }
-
-	@GetMapping("/nickname/exist")
-    @Operation(summary = "닉네임 중복 체크")
-    public ResponseEntity<Response<Boolean>> existNickname(
-		@RequestParam(name = "nickname")
-		@NotBlank(message = "닉네임을 입력해주세요.")
-		@Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하이여야 합니다.")
-		@Pattern(regexp = "^[가-힣a-zA-Z0-9]*$", message = "허용하지 않는 문자가 포함되어 있습니다.")
-		String nickname
-	) {
-		boolean isExist = userService.existNickname(nickname);
-        return ResponseEntity.ok().body(Response.<Boolean>builder()
+    ) {
+        GetUserResponseDto getUserResponseDto = userService.getUserEmail(
+            userDetails);
+        return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
             .message("success")
-			.data(isExist)
+            .data(getUserResponseDto)
             .build());
     }
 
-	@PatchMapping()
+    @GetMapping("/nickname/exist")
+    @Operation(summary = "닉네임 중복 체크")
+    public ResponseEntity<Response<Boolean>> existNickname(
+        @RequestParam(name = "nickname")
+        @NotBlank(message = "닉네임을 입력해주세요.")
+        @Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하이여야 합니다.")
+        @Pattern(regexp = "^[가-힣a-zA-Z0-9]*$", message = "허용하지 않는 문자가 포함되어 있습니다.")
+        String nickname
+    ) {
+        boolean isExist = userService.existNickname(nickname);
+        return ResponseEntity.ok().body(Response.<Boolean>builder()
+            .message("success")
+            .data(isExist)
+            .build());
+    }
+
+    @PatchMapping()
     @Operation(summary = "설문조사 결과 저장")
     public ResponseEntity<Response<Void>> saveSurveyResult(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
