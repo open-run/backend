@@ -1,7 +1,6 @@
 -- tb_users 테이블 생성 (존재하지 않을 경우에만)
 CREATE TABLE IF NOT EXISTS tb_users (
                                         user_id VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
-                                        withdraw BOOLEAN DEFAULT FALSE,
                                         nickname VARCHAR(16) DEFAULT NULL,
                                         email VARCHAR(255) NOT NULL,
                                         identity_authenticated BOOLEAN DEFAULT FALSE,
@@ -13,14 +12,6 @@ CREATE TABLE IF NOT EXISTS tb_users (
                                         running_pace VARCHAR(8) DEFAULT NULL,
                                         running_frequency SMALLINT(4) DEFAULT NULL
 
-);
-
--- tb_withdraws 테이블 생성 (존재하지 않을 경우에만)
-CREATE TABLE IF NOT EXISTS tb_withdraws (
-                                            user_id VARCHAR(36) PRIMARY KEY NOT NULL,
-                                            deferment_period ENUM('15', '30', '60') NOT NULL DEFAULT '15',
-                                            created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                            FOREIGN KEY (user_id) REFERENCES tb_users(user_id)
 );
 
 -- tb_bung 테이블 생성 (존재하지 않을 경우에만)
