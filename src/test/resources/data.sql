@@ -10,12 +10,12 @@ VALUES ('1', 'test', 'test1@test.com', FALSE, 'naver', FALSE, CURRENT_TIMESTAMP,
         '0x', NULL, NULL)
 ;
 
-INSERT INTO tb_bung (bung_id, location, datetime, bung_name, start_time, end_time, distance, pace, participant_number, has_after_run, note)
+INSERT INTO tb_bungs (bung_id, location, datetime, bung_name, start_time, end_time, distance, pace, participant_number, has_after_run, note)
 VALUES
     ('1', 'seoul', CURRENT_TIMESTAMP, 'temp', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5', 2, false, 'lalalala')
 ;
 
-INSERT INTO tb_users_bung (user_bung_id, bung_id, user_id)
+INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id)
 VALUES
     ( 1, '1', '1' )
 ;
