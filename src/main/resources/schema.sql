@@ -1,7 +1,6 @@
 -- tb_users 테이블 생성 (존재하지 않을 경우에만)
 CREATE TABLE IF NOT EXISTS tb_users (
                                         user_id VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
-                                        withdraw BOOLEAN DEFAULT FALSE,
                                         nickname VARCHAR(16) DEFAULT NULL,
                                         email VARCHAR(255) NOT NULL,
                                         identity_authenticated BOOLEAN DEFAULT FALSE,
