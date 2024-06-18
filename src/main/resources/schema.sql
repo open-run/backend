@@ -17,16 +17,16 @@ CREATE TABLE IF NOT EXISTS tb_users (
 -- tb_bung 테이블 생성 (존재하지 않을 경우에만)
 CREATE TABLE IF NOT EXISTS tb_bungs (
                                        bung_id VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
+                                       name VARCHAR(192) NOT NULL DEFAULT '',
+                                       description VARCHAR(255) Not NULL,
                                        location VARCHAR(128) NOT NULL DEFAULT '',
-                                       datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                       bung_name VARCHAR(192) NOT NULL DEFAULT '',
-                                       start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                       end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                       start_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                       end_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                                        distance SMALLINT NOT NULL DEFAULT 0,
                                        pace VARCHAR(8) NOT NULL,
-                                       participant_number SMALLINT NOT NULL,
+                                       member_number SMALLINT NOT NULL,
                                        has_after_run BOOLEAN DEFAULT FALSE,
-                                       note VARCHAR(4096) DEFAULT NULL
+                                       after_run_description VARCHAR(4096) Not NULL
 );
 
 -- tb_users_bung 테이블 생성 (존재하지 않을 경우에만)
