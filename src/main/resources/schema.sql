@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS tb_bungs (
                                        pace VARCHAR(8) NOT NULL,
                                        member_number SMALLINT NOT NULL,
                                        has_after_run BOOLEAN DEFAULT FALSE,
-                                       after_run_description VARCHAR(4096)
+                                       after_run_description VARCHAR(4096) DEFAULT NULL
 );
 
 -- tb_users_bungs 테이블 생성 (존재하지 않을 경우에만)
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS tb_users_bungs (
                                              user_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
                                              FOREIGN KEY (bung_id) REFERENCES tb_bungs(bung_id),
                                              FOREIGN KEY (user_id) REFERENCES tb_users(user_id),
-                                             participation_Status BOOLEAN NOT NULL,
+                                             participation_status BOOLEAN NOT NULL,
                                              modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
