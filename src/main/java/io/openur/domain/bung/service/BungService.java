@@ -29,4 +29,10 @@ public class BungService {
 
         return new GetBungDetailDto(bung);
     }
+
+    public GetBungDetailDto getBungDetail(UserDetailsImpl userDetails,
+        String bungId) {
+
+        return new GetBungDetailDto(Bung.from(bungRepository.findByBungId(bungId)));
+    }
 }
