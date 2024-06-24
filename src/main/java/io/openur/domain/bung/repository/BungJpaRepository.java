@@ -1,5 +1,9 @@
 package io.openur.domain.bung.repository;
 
-public interface BungJpaRepository {
+import io.openur.domain.bung.entity.BungEntity;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
+public interface BungJpaRepository extends JpaRepository<BungEntity, Long> {
+    Optional<BungEntity> findByBungId(String bungId);
 }

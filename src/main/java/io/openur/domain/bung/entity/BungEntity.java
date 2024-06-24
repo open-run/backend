@@ -1,5 +1,31 @@
 package io.openur.domain.bung.entity;
 
-public class BungEntity {
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity @Getter
+@Table(name = "tb_bungs")
+@NoArgsConstructor
+@AllArgsConstructor
+public class BungEntity  {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String bungId;
+    private String name;
+    private String description;
+    private String location;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
+    private Float distance;
+    private String pace;
+    private Integer memberNumber;
+    private Boolean hasAfterRun;
+    private String afterRunDescription;
 }
