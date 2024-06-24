@@ -29,7 +29,7 @@ public class BungService {
         UserEntity userEntity = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         Bung bung = new Bung(dto);
-        bungRepository.save(bung.toEntity());
+        bung = Bung.from(bungRepository.save(bung.toEntity()));
 
         UserBung userBung = new UserBung(User.from(userEntity), bung);
         userBungRepository.save(userBung.toEntity());

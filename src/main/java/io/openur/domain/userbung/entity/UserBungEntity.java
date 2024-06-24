@@ -26,7 +26,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @AllArgsConstructor
 public class UserBungEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userBungId;
 
     @ManyToOne(targetEntity = BungEntity.class, fetch = FetchType.LAZY)
