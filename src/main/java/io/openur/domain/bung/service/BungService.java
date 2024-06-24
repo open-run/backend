@@ -2,11 +2,13 @@ package io.openur.domain.bung.service;
 
 import io.openur.domain.bung.dto.GetBungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
-import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.userbung.model.UserBung;
+import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,13 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class BungService {
     private final BungRepositoryImpl bungRepository;
     private final UserRepositoryImpl userRepository;
+    private final UserBungRepositoryImpl userBungRepository;
 
+    @Transactional
     public GetBungDetailDto createBungEntity(@AuthenticationPrincipal UserDetailsImpl userDetails,
         PostBungEntityDto dto) {
         UserEntity userEntity = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         Bung bung = new Bung(dto);
         bungRepository.save(bung.toEntity());
+
+        UserBung userBung = new UserBung(User.from(userEntity), bung);
+        userBungRepository.save(userBung.toEntity());
 
         return new GetBungDetailDto(bung);
     }
