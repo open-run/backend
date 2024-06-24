@@ -22,8 +22,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public UserEntity findById(Long userId) {
-        return userJpaRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+    public UserEntity findById(String userId) {
+        return userJpaRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
     @Override

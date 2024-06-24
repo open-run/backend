@@ -13,7 +13,7 @@ public interface UserRepository {
 
     UserEntity findByEmail(String email);
 
-    UserEntity findById(Long userId);
+    UserEntity findById(String userId);
 
     boolean existsByNickname(String nickname);
 
