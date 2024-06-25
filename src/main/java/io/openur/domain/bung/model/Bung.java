@@ -22,6 +22,20 @@ public class Bung {
     private Boolean hasAfterRun;
     private String afterRunDescription;
 
+    public Bung(PostBungEntityDto dto) {
+        this.bungId = UUID.randomUUID().toString();
+        this.name = dto.getName();
+        this.description = dto.getDescription();
+        this.location = dto.getLocation();
+        this.startDateTime = dto.getStartDateTime();
+        this.endDateTime = dto.getEndDateTime();
+        this.distance = dto.getDistance();
+        this.pace = dto.getPace();
+        this.memberNumber = dto.getMemberNumber();
+        this.hasAfterRun = dto.getHasAfterRun();
+        this.afterRunDescription = dto.getAfterRunDescription();
+    }
+
     public static Bung from(final BungEntity bungEntity) {
         return new Bung(
             bungEntity.getBungId(),
@@ -52,19 +66,5 @@ public class Bung {
             hasAfterRun,
             afterRunDescription
         );
-    }
-
-    public Bung(PostBungEntityDto dto) {
-        this.bungId = UUID.randomUUID().toString();
-        this.name = dto.getName();
-        this.description = dto.getDescription();
-        this.location = dto.getLocation();
-        this.startDateTime = dto.getStartDateTime();
-        this.endDateTime = dto.getEndDateTime();
-        this.distance = dto.getDistance();
-        this.pace = dto.getPace();
-        this.memberNumber = dto.getMemberNumber();
-        this.hasAfterRun = dto.getHasAfterRun();
-        this.afterRunDescription = dto.getAfterRunDescription();
     }
 }
