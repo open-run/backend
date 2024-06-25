@@ -9,13 +9,13 @@ import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
 import io.openur.domain.user.service.oauth.LoginServiceFactory;
 import io.openur.global.common.Response;
+import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 @RestController
@@ -101,7 +100,7 @@ public class UserController {
 
         String userId = userService.getUserById(userDetails);
 
-        return ResponseEntity.created(createUri(userId))
+        return ResponseEntity.created(UtilController.createUri(userId))
             .body(Response.<Void>builder()
                 .message("success")
                 .build());
@@ -116,12 +115,4 @@ public class UserController {
         return ResponseEntity.accepted()
             .body(Response.<Void>builder().message("success").build());
     }
-
-    private URI createUri(String todoId) {
-        return ServletUriComponentsBuilder.fromCurrentRequest()
-            .path("/{id}")
-            .buildAndExpand(todoId)
-            .toUri();
-    }
-
 }

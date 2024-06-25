@@ -1,9 +1,10 @@
 package io.openur.domain.bung.controller;
 
-import io.openur.domain.bung.dto.GetBungDetailDto;
+import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.Response;
+import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -29,15 +30,14 @@ public class BungController {
 
     @PostMapping()
     @Operation(summary = "벙을 생성하는 경우")
-    public ResponseEntity<Response> createBung(
+    public ResponseEntity<Response<Void>> createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody PostBungEntityDto requestDto
     ) {
-        GetBungDetailDto createBung = bungService.createBungEntity(userDetails,
-            requestDto);
-        return ResponseEntity.ok().body(Response.<GetBungDetailDto>builder()
+        BungDetailDto bung = bungService.createBungEntity(userDetails, requestDto);
+        return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
+            .body(Response.<Void>builder()
             .message("success")
-            .data(createBung)
             .build());
     }
 
@@ -53,12 +53,13 @@ public class BungController {
 
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")
-    public ResponseEntity<Response<GetBungDetailDto>> getBungDetail(
+    public ResponseEntity<Response<BungDetailDto>> getBungDetail(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
     ) {
-        GetBungDetailDto getBung = bungService.getBungDetail(userDetails, bungId);
-        return ResponseEntity.ok().body(Response.<GetBungDetailDto>builder()
+        // TODO: 벙 참가자도 같이 받고 싶을지도?
+        BungDetailDto getBung = bungService.getBungDetail(userDetails, bungId);
+        return ResponseEntity.ok().body(Response.<BungDetailDto>builder()
             .message("success")
             .data(getBung)
             .build());

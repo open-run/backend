@@ -3,8 +3,12 @@ package io.openur.domain.bung.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.openur.domain.bung.model.Bung;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public class GetBungDetailDto {
+@Getter
+@AllArgsConstructor
+public class BungDetailDto {
     private String bungId;
     private String name;
     private String description;
@@ -19,7 +23,7 @@ public class GetBungDetailDto {
     private Boolean hasAfterRun;
     private String afterRunDescription;
 
-    public GetBungDetailDto(Bung bung) {
+    public BungDetailDto(Bung bung) {
         this.bungId = bung.getBungId();
         this.name = bung.getName();
         this.description = bung.getDescription();
