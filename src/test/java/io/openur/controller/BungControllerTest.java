@@ -35,6 +35,6 @@ public class BungControllerTest extends TestSupport {
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonify(submittedBung))
-        ).andExpect(status().isOk());
+        ).andExpect(status().isCreated());
     }
 }
