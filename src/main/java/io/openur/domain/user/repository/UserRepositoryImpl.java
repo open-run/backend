@@ -12,18 +12,25 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public UserEntity save(UserEntity userEntity) {
-        return userJpaRepository.save(userEntity);
+    public User save(User user) {
+        return User.from(userJpaRepository.save(user.toEntity()));
     }
 
     @Override
-    public UserEntity findByEmail(String email) {
-        return userJpaRepository.findByEmail(email).orElse(null);
+    public User findByEmail(String email) {
+        UserEntity userEntity = userJpaRepository.findByEmail(email).orElse(null);
+        if (userEntity == null) {
+            return null;
+        } else {
+            return User.from(userEntity);
+        }
     }
 
     @Override
-    public UserEntity findById(String userId) {
-        return userJpaRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+    public User findById(String userId) {
+        UserEntity userEntity = userJpaRepository.findByUserId(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found"));
+        return User.from(userEntity);
     }
 
     @Override

@@ -12,12 +12,11 @@ import lombok.Getter;
 // QUESTION: What is the purpose of this class? Separate setter from UserEntity?
 // Answer: Service에서 UserEntity 객체의 getter/setter를 직접적으로 사용하지 않기 위해
 // Service와 Entity 사이의 모델 레이어를 추가함.
+@Getter
 @AllArgsConstructor
 public class User {
     private String userId;
-    @Getter
     private String nickname;
-    @Getter
     private String email;
     private Boolean identityAuthenticated;
     private Provider provider;

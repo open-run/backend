@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.OauthUserInfoDto;
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import java.net.URI;
@@ -67,15 +66,15 @@ public abstract class LoginService {
     protected User registerUserIfNew(OauthUserInfoDto oauthUserInfoDto) {
         // DB 에 중복된 이메일의 유저가 있는지 확인
         String email = oauthUserInfoDto.getEmail();
-        UserEntity userEntity = userRepository.findByEmail(email);
-        if (userEntity == null) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
             // 없으면 회원가입
-            User user = new User(email, oauthUserInfoDto.getProvider());
-            userRepository.save(user.toEntity());
-            return user;
+            User newUser = new User(email, oauthUserInfoDto.getProvider());
+            userRepository.save(newUser);
+            return newUser;
         }
         else {
-            return User.from(userEntity);
+            return user;
         }
     }
 

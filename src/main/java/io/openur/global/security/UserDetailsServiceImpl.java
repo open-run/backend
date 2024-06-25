@@ -1,6 +1,6 @@
 package io.openur.global.security;
 
-import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +16,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByEmail(userEmail);
+        User user = userRepository.findByEmail(userEmail);
         if(user == null){
             throw new UsernameNotFoundException("Not Found " + userEmail);
         }

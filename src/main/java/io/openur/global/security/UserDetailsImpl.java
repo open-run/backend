@@ -1,9 +1,7 @@
 package io.openur.global.security;
 
-import java.util.Collection;
-
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
+import java.util.Collection;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,9 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 public class UserDetailsImpl implements UserDetails {
 
-    private final UserEntity user;
+    private final User user;
 
-    public UserDetailsImpl(UserEntity user) {
+    public UserDetailsImpl(User user) {
         this.user = user;
     }
 
