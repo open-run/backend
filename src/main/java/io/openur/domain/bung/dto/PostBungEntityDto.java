@@ -1,6 +1,6 @@
 package io.openur.domain.bung.dto;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -8,10 +8,11 @@ import lombok.ToString;
 
 @Getter @ToString
 public class PostBungEntityDto {
-    @NotEmpty
+
+    @NotBlank
     private String name;
     private String description;
-    @NotEmpty
+    @NotBlank
     private String location;
     @NotNull
     private LocalDateTime startDateTime;
@@ -19,7 +20,7 @@ public class PostBungEntityDto {
     private LocalDateTime endDateTime;
     @NotNull
     private Float distance;
-    @NotEmpty
+    @NotBlank
     private String pace;
     @NotNull
     private Integer memberNumber;
