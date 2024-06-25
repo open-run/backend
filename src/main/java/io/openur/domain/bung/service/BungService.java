@@ -4,7 +4,6 @@ import io.openur.domain.bung.dto.GetBungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
@@ -26,12 +25,12 @@ public class BungService {
     @Transactional
     public GetBungDetailDto createBungEntity(@AuthenticationPrincipal UserDetailsImpl userDetails,
         PostBungEntityDto dto) {
-        UserEntity userEntity = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         Bung bung = new Bung(dto);
         bung = Bung.from(bungRepository.save(bung.toEntity()));
 
-        UserBung userBung = new UserBung(User.from(userEntity), bung);
+        UserBung userBung = new UserBung(user, bung);
         userBungRepository.save(userBung.toEntity());
 
         return new GetBungDetailDto(bung);

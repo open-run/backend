@@ -1,6 +1,5 @@
 package io.openur.domain.user.dto;
 
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

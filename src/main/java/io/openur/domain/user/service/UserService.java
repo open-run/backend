@@ -1,7 +1,6 @@
 package io.openur.domain.user.service;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
@@ -18,8 +17,8 @@ public class UserService {
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         String email = userDetails.getUser().getEmail();
-        UserEntity userEntity = userRepository.findByEmail(email);
-        return userEntity.getUserId();
+        User user = userRepository.findByEmail(email);
+        return user.getUserId();
     }
 
     public boolean existNickname(String nickname) {
@@ -28,20 +27,20 @@ public class UserService {
 
     public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails){
         String email = userDetails.getUser().getEmail();
-        UserEntity userEntity = userRepository.findByEmail(email);
-        return new GetUserResponseDto(userEntity);
+        User user = userRepository.findByEmail(email);
+        return new GetUserResponseDto(user);
     }
 
     @Transactional
     public void deleteUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = User.from(userRepository.findByEmail(userDetails.getUser().getEmail()));
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
         userRepository.deleteUserInfo(user);
     }
 
     @Transactional
     public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         String email = userDetails.getUser().getEmail();
-        User user = User.from(userRepository.findByEmail(email));
+        User user = userRepository.findByEmail(email);
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
     }

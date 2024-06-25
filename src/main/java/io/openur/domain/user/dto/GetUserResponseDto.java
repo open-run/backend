@@ -1,8 +1,8 @@
 package io.openur.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.Provider;
+import io.openur.domain.user.model.User;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,17 +25,17 @@ public class GetUserResponseDto {
     private String runningPace;
     private Integer runningFrequency;
 
-    public GetUserResponseDto(UserEntity userEntity) {
-        this.userId = userEntity.getUserId();
-        this.nickname = userEntity.getNickname();
-        this.email = userEntity.getEmail();
-        this.identityAuthenticated = userEntity.getIdentityAuthenticated();
-        this.provider = userEntity.getProvider();
-        this.blackListed = userEntity.getBlacklisted();
-        this.createdDate = userEntity.getCreatedDate();
-        this.lastLoginDate = userEntity.getLastLoginDate();
-        this.blockchainAddress = userEntity.getBlockchainAddress();
-        this.runningPace = userEntity.getRunningPace();
-        this.runningFrequency = userEntity.getRunningFrequency();
+    public GetUserResponseDto(User user) {
+        this.userId = user.getUserId();
+        this.nickname = user.getNickname();
+        this.email = user.getEmail();
+        this.identityAuthenticated = user.getIdentityAuthenticated();
+        this.provider = user.getProvider();
+        this.blackListed = user.getBlacklisted();
+        this.createdDate = user.getCreatedDate();
+        this.lastLoginDate = user.getLastLoginDate();
+        this.blockchainAddress = user.getBlockchainAddress();
+        this.runningPace = user.getRunningPace();
+        this.runningFrequency = user.getRunningFrequency();
     }
 }
