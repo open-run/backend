@@ -30,7 +30,7 @@ public class BungService {
         Bung bung = new Bung(dto);
         bung = Bung.from(bungRepository.save(bung.toEntity()));
 
-        UserBung userBung = new UserBung(user, bung);
+        UserBung userBung = UserBung.isOwnerBung(user, bung);
         userBungRepository.save(userBung.toEntity());
 
         return new BungDetailDto(bung);

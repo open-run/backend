@@ -43,4 +43,6 @@ public class UserBungEntity {
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime modifiedAt;
+
+    private boolean isOwner;
 }

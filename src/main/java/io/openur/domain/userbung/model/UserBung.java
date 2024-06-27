@@ -13,12 +13,20 @@ public class UserBung {
     private Bung bung;
     private boolean participationStatus;
     private LocalDateTime modifiedAt;
+    private boolean isOwner;
 
     public UserBung(User user, Bung bung) {
         this.user = user;
         this.bung = bung;
         this.participationStatus = true;
         this.modifiedAt = LocalDateTime.now();
+        this.isOwner = false;
+    }
+
+    public static UserBung isOwnerBung(User user, Bung bung) {
+        UserBung userBung = new UserBung(user, bung);
+        userBung.isOwner = true;
+        return userBung;
     }
 
     public static UserBung from(UserBungEntity userBungEntity) {
@@ -27,7 +35,8 @@ public class UserBung {
             User.from(userBungEntity.getUserEntity()),
             Bung.from(userBungEntity.getBungEntity()),
             userBungEntity.isParticipationStatus(),
-            userBungEntity.getModifiedAt()
+            userBungEntity.getModifiedAt(),
+            userBungEntity.isOwner()
         );
     }
 
@@ -37,7 +46,8 @@ public class UserBung {
             this.bung.toEntity(),
             this.user.toEntity(),
             this.participationStatus,
-            this.modifiedAt
+            this.modifiedAt,
+            this.isOwner
         );
     }
 }
