@@ -41,4 +41,11 @@ public class BungService {
 
         return new BungDetailDto(bungRepository.findByBungId(bungId));
     }
+
+    public boolean isOwnerOfBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        String bungId) {
+        UserBung userBung = userBungRepository.findByUserIdAndBungId(
+            userDetails.getUser().getUserId(), bungId);
+        return userBung.isOwner();
+    }
 }
