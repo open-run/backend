@@ -1,10 +1,10 @@
 package io.openur.domain.bung.repository;
 
-import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.model.Bung;
 
 public interface BungRepository {
 
-    BungEntity save(BungEntity bungEntity);
+    Bung save(Bung bung);
 
-    BungEntity findByBungId(String bungId);
+    Bung findByBungId(String bungId);
 }

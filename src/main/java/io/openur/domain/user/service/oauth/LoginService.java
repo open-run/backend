@@ -70,8 +70,7 @@ public abstract class LoginService {
         if (user == null) {
             // 없으면 회원가입
             User newUser = new User(email, oauthUserInfoDto.getProvider());
-            userRepository.save(newUser);
-            return newUser;
+            return userRepository.save(newUser);
         }
         else {
             return user;

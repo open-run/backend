@@ -28,10 +28,10 @@ public class BungService {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         Bung bung = new Bung(dto);
-        bung = Bung.from(bungRepository.save(bung.toEntity()));
+        bung = bungRepository.save(bung);
 
         UserBung userBung = UserBung.isOwnerBung(user, bung);
-        userBungRepository.save(userBung.toEntity());
+        userBungRepository.save(userBung);
 
         return new BungDetailDto(bung);
     }
@@ -39,6 +39,6 @@ public class BungService {
     public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
         String bungId) {
 
-        return new BungDetailDto(Bung.from(bungRepository.findByBungId(bungId)));
+        return new BungDetailDto(bungRepository.findByBungId(bungId));
     }
 }
