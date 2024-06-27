@@ -7,4 +7,6 @@ public interface BungRepository {
     Bung save(Bung bung);
 
     Bung findByBungId(String bungId);
+
+    void deleteByBungId(String bungId);
 }

@@ -40,7 +40,7 @@ public class BungController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody PostBungEntityDto requestDto
     ) {
-        BungDetailDto bung = bungService.createBungEntity(userDetails, requestDto);
+        BungDetailDto bung = bungService.createBung(userDetails, requestDto);
         return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
             .body(Response.<Void>builder()
             .message("success")
@@ -69,6 +69,19 @@ public class BungController {
         return ResponseEntity.ok().body(Response.<BungDetailDto>builder()
             .message("success")
             .data(getBung)
+            .build());
+    }
+
+    @DeleteMapping("/{bungId}")
+    @Operation(summary = "벙 삭제하기")
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    public ResponseEntity<Response<Void>> deleteBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId
+    ) {
+        bungService.deleteBung(bungId);
+        return ResponseEntity.accepted().body(Response.<Void>builder()
+            .message("success")
             .build());
     }
 
