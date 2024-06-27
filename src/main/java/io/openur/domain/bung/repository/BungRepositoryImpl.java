@@ -22,4 +22,9 @@ public class BungRepositoryImpl implements BungRepository {
             .orElseThrow(() -> new NoSuchElementException("Bung not found"));
         return Bung.from(bungEntity);
     }
+
+    @Override
+    public void deleteByBungId(String bungId) {
+        bungJpaRepository.deleteByBungId(bungId);
+    }
 }
