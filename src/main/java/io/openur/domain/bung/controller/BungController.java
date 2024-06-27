@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +37,7 @@ public class BungController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody PostBungEntityDto requestDto
     ) {
-        BungDetailDto bung = bungService.createBungEntity(userDetails, requestDto);
+        BungDetailDto bung = bungService.createBung(userDetails, requestDto);
         return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
             .body(Response.<Void>builder()
             .message("success")
@@ -64,6 +66,19 @@ public class BungController {
         return ResponseEntity.ok().body(Response.<BungDetailDto>builder()
             .message("success")
             .data(getBung)
+            .build());
+    }
+
+    @DeleteMapping("/{bungId}")
+    @Operation(summary = "벙 삭제하기")
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    public ResponseEntity<Response<Void>> deleteBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId
+    ) {
+        bungService.deleteBung(bungId);
+        return ResponseEntity.accepted().body(Response.<Void>builder()
+            .message("success")
             .build());
     }
 }

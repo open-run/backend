@@ -23,7 +23,7 @@ public class BungService {
     private final UserBungRepositoryImpl userBungRepository;
 
     @Transactional
-    public BungDetailDto createBungEntity(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public BungDetailDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
         PostBungEntityDto dto) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
@@ -47,5 +47,9 @@ public class BungService {
         UserBung userBung = userBungRepository.findByUserIdAndBungId(
             userDetails.getUser().getUserId(), bungId);
         return userBung.isOwner();
+    }
+
+    public void deleteBung(String bungId) {
+        bungRepository.deleteByBungId(bungId);
     }
 }
