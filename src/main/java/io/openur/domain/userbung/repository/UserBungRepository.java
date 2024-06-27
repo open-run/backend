@@ -1,7 +1,8 @@
 package io.openur.domain.userbung.repository;
 
-import io.openur.domain.userbung.entity.UserBungEntity;
+import io.openur.domain.userbung.model.UserBung;
 
 public interface UserBungRepository {
-    UserBungEntity save(UserBungEntity userBungEntity);
+
+    UserBung save(UserBung userBung);
 }
