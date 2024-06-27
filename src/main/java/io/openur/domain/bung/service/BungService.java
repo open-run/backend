@@ -36,7 +36,7 @@ public class BungService {
         return new BungDetailDto(bung);
     }
 
-    public BungDetailDto getBungDetail(UserDetailsImpl userDetails,
+    public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
         String bungId) {
 
         return new BungDetailDto(Bung.from(bungRepository.findByBungId(bungId)));
