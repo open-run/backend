@@ -7,6 +7,7 @@ import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -45,7 +46,8 @@ public class BungController {
     @Operation(summary = "벙 목록을 보는 경우 || 전체보기 || 참여한 ||")
     public ResponseEntity<Response> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam(required = false, defaultValue = "false") boolean isOwned,
+        @Parameter(description = "참여한 벙 목록만 보는 경우 true 로 설정")
+        @RequestParam(required = false, defaultValue = "false") boolean isParticipating,
         @PageableDefault Pageable pageable
     ) {
         return null;

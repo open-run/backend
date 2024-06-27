@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS tb_users_bungs (
                                              FOREIGN KEY (bung_id) REFERENCES tb_bungs(bung_id),
                                              FOREIGN KEY (user_id) REFERENCES tb_users(user_id),
                                              participation_status BOOLEAN NOT NULL,
-                                             modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                                             modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                             is_owner    BOOLEAN   DEFAULT FALSE NOT NULL
 );
 
 -- tb_hashtags 테이블 생성 (존재하지 않을 경우에만)
