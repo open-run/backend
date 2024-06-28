@@ -30,4 +30,11 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             );
         return UserBung.from(userBungEntity);
     }
+
+    @Override
+    public UserBung findCurrentHost(String bungId) {
+        return userBungJpaRepository.findCurrentHost_Query(bungId);
+    }
+
+
 }

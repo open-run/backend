@@ -48,4 +48,20 @@ public class BungService {
             userDetails.getUser().getUserId(), bungId);
         return userBung.isOwner();
     }
+
+    @Transactional
+    public void changeOwnerEntity(String bungId, String newOwnerUserId) {
+        UserBungEntity currentOwner = userBungRepository.findcurrentOwner(bungId)
+            .orElseThrow(() -> new NoSuchElementException("Current host not found"));
+
+        currentOwner.disableOwnerBung();
+        userBungRepository.save(currentOwner.toEntity());
+
+        UserBungEntity newOwner = userBungRepository.findByUserEntity_UserIdAndBungEntity_BungId(newOwnerUserId, bungId)
+            .orElseThrow(() -> new NoSuchElementException(
+                String.format("UserBung not found by given userId(%s) and bungId(%s)", newOwnerUserId, bungId))
+            );
+        newOwner = UserBung.isOwnerBung(newOwner.getUser(), newOwner.getBung());
+        userBungRepository.save(newOwner.toEntity());
+    }
 }
