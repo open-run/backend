@@ -66,4 +66,19 @@ public class BungController {
             .data(getBung)
             .build());
     }
+
+    @PatchMapping("/{bungId}/change-owner")
+    @Operation(summary = "벙주 변경")
+    public ResponseEntity<Response<Void>> changeOwner(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @RequestParam String newOwnerUserId
+    ) {
+        bungService.changeOwnerEntity(bungId, newOwnerUserId);
+        return ResponseEntity.ok().body(Response.<Void>builder()
+            .message("Owner changed successfully")
+            .build());
+    }
+
+
 }
