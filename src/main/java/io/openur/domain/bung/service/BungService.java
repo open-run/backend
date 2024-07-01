@@ -49,10 +49,10 @@ public class BungService {
         return userBung.isOwner();
     }
 
+    @PreAuthorize("@bungService.isOwnerOfBung(principal.user.userId, #bungId)")
     @Transactional
     public void changeOwnerEntity(String bungId, String newOwnerUserId) {
-        UserBungEntity currentOwner = userBungRepository.findcurrentOwner(bungId)
-            .orElseThrow(() -> new NoSuchElementException("Current host not found"));
+        UserBungEntity currentOwner = userBungRepository.findcurrentOwner(bungId);
 
         currentOwner.disableOwnerBung();
         userBungRepository.save(currentOwner.toEntity());

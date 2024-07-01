@@ -69,6 +69,7 @@ public class BungController {
 
     @PatchMapping("/{bungId}/change-owner")
     @Operation(summary = "벙주 변경")
+    @PreAuthorize("@bungService.isOwnerOfBung(principal.user.userId, #bungId)")
     public ResponseEntity<Response<Void>> changeOwner(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId,
