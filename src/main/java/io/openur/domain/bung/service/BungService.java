@@ -49,7 +49,6 @@ public class BungService {
         return userBung.isOwner();
     }
 
-    @PreAuthorize("@bungService.isOwnerOfBung(principal.user.userId, #bungId)")
     @Transactional
     public void changeOwnerEntity(String bungId, String newOwnerUserId) {
         UserBungEntity currentOwner = userBungRepository.findcurrentOwner(bungId);

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/bungs")
 @RequiredArgsConstructor
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class BungController {
 
 
