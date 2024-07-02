@@ -8,5 +8,5 @@ public interface UserBungRepository {
 
     UserBung findByUserIdAndBungId(String userId, String bungId);
 
-    UserBung findCurrentHost(String bungId);
+    UserBung findCurrentOwner(String bungId);
 }

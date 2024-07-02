@@ -35,6 +35,10 @@ public class UserBung {
         this.isOwner = false;
     }
 
+    public void enableOwnerBung() {
+        this.isOwner = true;
+    }
+
     public static UserBung from(UserBungEntity userBungEntity) {
         return new UserBung(
             userBungEntity.getUserBungId(),
