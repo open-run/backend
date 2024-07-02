@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS tb_users_bungs (
                                              user_bung_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
                                              bung_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
                                              user_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
-                                             FOREIGN KEY (bung_id) REFERENCES tb_bungs(bung_id),
+                                             FOREIGN KEY (bung_id) REFERENCES tb_bungs (bung_id), -- TODO: CASCADE 설정
                                              FOREIGN KEY (user_id) REFERENCES tb_users(user_id),
                                              participation_status BOOLEAN NOT NULL,
                                              modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
