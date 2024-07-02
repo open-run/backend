@@ -47,6 +47,36 @@ public class BungApiTest extends TestSupport {
     }
 
     @Nested
+    class deleteBungTest {
+
+        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+        @Test
+        @DisplayName("Bung: 벙 삭제 401 실패")
+        @Transactional
+        void deleteBung_isUnauthorized() throws Exception {
+            // TODO: authentication 에러 확인
+            //  Request processing failed: java.lang.NullPointerException: Cannot invoke "io.openur.global.security.UserDetailsImpl.getUser()" because "userDetails" is null
+            mockMvc.perform(
+                    delete(PREFIX + "/" + bungId)
+                )
+                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("Bung: 벙 삭제 202 성공")
+        @Transactional
+        void deleteBung_isAccepted() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+            mockMvc.perform(
+                    delete(PREFIX + "/" + bungId)
+                        .header(AUTH_HEADER, token))
+                .andExpect(status().isAccepted());
+        }
+
+    }
+
+    @Nested
     class changeOwnerTest {
         @Test
         @DisplayName("Bung : 벙주 변경 테스트")
