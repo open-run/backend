@@ -3,12 +3,17 @@ package io.openur.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.config.TestSupport;
+import io.openur.global.common.Response;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class BungControllerTest extends TestSupport {
     private static final String PREFIX = "/v1/bungs";
@@ -30,11 +35,24 @@ public class BungControllerTest extends TestSupport {
         submittedBung.put("hasAfterRun", false);
         submittedBung.put("afterRunDescription", "");
 
-        mockMvc.perform(
+        MvcResult result = mockMvc.perform(
             post(PREFIX)
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonify(submittedBung))
-        ).andExpect(status().isCreated());
+                .content(jsonify(submittedBung)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        String returnedUri = Objects.requireNonNull(result.getResponse().getHeaderValue("Location"))
+            .toString();
+        Response<String> response = new ObjectMapper().readValue(
+            result.getResponse().getContentAsString(),
+            Response.class);
+
+        String uri = ServletUriComponentsBuilder.fromCurrentRequest()
+            .path(PREFIX + "/{bungId}")
+            .buildAndExpand(response.getData())
+            .toUriString();
+        assert returnedUri.equals(uri);
     }
 }
