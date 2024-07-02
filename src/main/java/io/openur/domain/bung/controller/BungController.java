@@ -36,14 +36,15 @@ public class BungController {
 
     @PostMapping()
     @Operation(summary = "벙을 생성하는 경우")
-    public ResponseEntity<Response<Void>> createBung(
+    public ResponseEntity<Response<String>> createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody PostBungEntityDto requestDto
     ) {
         BungDetailDto bung = bungService.createBung(userDetails, requestDto);
         return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
-            .body(Response.<Void>builder()
+            .body(Response.<String>builder()
             .message("success")
+                .data(bung.getBungId())
             .build());
     }
 

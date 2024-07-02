@@ -6,16 +6,22 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.config.TestSupport;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
+
+import io.openur.global.common.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Transactional
 public class BungApiTest extends TestSupport {
@@ -38,12 +44,25 @@ public class BungApiTest extends TestSupport {
         submittedBung.put("hasAfterRun", false);
         submittedBung.put("afterRunDescription", "");
 
-        mockMvc.perform(
-            post(PREFIX)
-                .header(AUTH_HEADER, token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonify(submittedBung))
-        ).andExpect(status().isCreated());
+        MvcResult result = mockMvc.perform(
+                post(PREFIX)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(submittedBung)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        String returnedUri = Objects.requireNonNull(result.getResponse().getHeaderValue("Location"))
+            .toString();
+        Response<String> response = new ObjectMapper().readValue(
+            result.getResponse().getContentAsString(),
+            Response.class);
+
+        String uri = ServletUriComponentsBuilder.fromCurrentRequest()
+            .path(PREFIX + "/{bungId}")
+            .buildAndExpand(response.getData())
+            .toUriString();
+        assert returnedUri.equals(uri);
     }
 
     @Nested
