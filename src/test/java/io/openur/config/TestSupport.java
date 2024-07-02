@@ -40,7 +40,7 @@ public class TestSupport {
     }
 
     // Testing token for now, Can be added or fixed
-    public String getTestUserToken() {
+    public String getBungOwnerToken() {
         String email = "test1@test.com";
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         UsernamePasswordAuthenticationToken authenticatedToken

@@ -30,7 +30,7 @@ public class UserControllerTest extends TestSupport {
     @Test
     @DisplayName("User : 유저 정보 테스트")
     void getUserInfoTest() throws Exception {
-        String token = getTestUserToken();
+        String token = getBungOwnerToken();
 
         mockMvc.perform(
                 get(PREFIX)
@@ -46,7 +46,7 @@ public class UserControllerTest extends TestSupport {
         @Test
         @DisplayName("User : 페이스 기록 입력 저장 400 실패")
         void saveSurveyResult_isBadRequest() throws Exception {
-            String token = getTestUserToken();
+            String token = getBungOwnerToken();
             var surveyResult = new HashMap<>();
             surveyResult.put("nickname", "나도모른거");
             surveyResult.put("runningPace", "5'55\"");  // 형식에 맞지 않음. 5'55" -> 05'55"
@@ -63,7 +63,7 @@ public class UserControllerTest extends TestSupport {
         @Test
         @DisplayName("User : 페이스 기록 입력 저장 201 성공")
         void saveSurveyResult_isOk() throws Exception {
-            String token = getTestUserToken();
+            String token = getBungOwnerToken();
             var surveyResult = new HashMap<>();
             surveyResult.put("nickname", "나도모른거");
             surveyResult.put("runningPace", "05'55\"");
