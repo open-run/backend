@@ -2,6 +2,8 @@ package io.openur.domain.userbung.repository;
 
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
+import java.awt.HeadlessException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -32,9 +34,23 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
-    public UserBung findCurrentHost(String bungId) {
-        return userBungJpaRepository.findCurrentHost_Query(bungId);
+    public UserBung findCurrentOwner(String bungId) {
+        List<UserBungEntity> userBungEntities = userBungJpaRepository.findByBungEntity_BungId(
+            bungId);
+        if (userBungEntities.isEmpty()) {
+            throw new NoSuchElementException(
+                String.format("UserBung not found by given bungId(%s)", bungId)
+            );
+        }
+
+        return UserBung.from(userBungEntities.stream()
+            .filter(UserBungEntity::isOwner)
+            .findFirst()
+            .orElseThrow(() ->
+                new HeadlessException(
+                    String.format("Owner not found by given bungId(%s)", bungId)
+                )
+            )
+        );
     }
-
-
 }

@@ -12,8 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/bungs")
 @RequiredArgsConstructor
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+@EnableMethodSecurity
 public class BungController {
 
 
@@ -70,13 +73,13 @@ public class BungController {
 
     @PatchMapping("/{bungId}/change-owner")
     @Operation(summary = "벙주 변경")
-    @PreAuthorize("@bungService.isOwnerOfBung(principal.user.userId, #bungId)")
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
     public ResponseEntity<Response<Void>> changeOwner(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId,
         @RequestParam String newOwnerUserId
     ) {
-        bungService.changeOwnerEntity(bungId, newOwnerUserId);
+        bungService.changeOwner(bungId, newOwnerUserId);
         return ResponseEntity.ok().body(Response.<Void>builder()
             .message("Owner changed successfully")
             .build());

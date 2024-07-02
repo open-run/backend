@@ -50,17 +50,14 @@ public class BungService {
     }
 
     @Transactional
-    public void changeOwnerEntity(String bungId, String newOwnerUserId) {
-        UserBungEntity currentOwner = userBungRepository.findcurrentOwner(bungId);
+    public void changeOwner(String bungId, String newOwnerUserId) {
+        UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
 
         currentOwner.disableOwnerBung();
-        userBungRepository.save(currentOwner.toEntity());
+        userBungRepository.save(currentOwner);
 
-        UserBungEntity newOwner = userBungRepository.findByUserEntity_UserIdAndBungEntity_BungId(newOwnerUserId, bungId)
-            .orElseThrow(() -> new NoSuchElementException(
-                String.format("UserBung not found by given userId(%s) and bungId(%s)", newOwnerUserId, bungId))
-            );
-        newOwner = UserBung.isOwnerBung(newOwner.getUser(), newOwner.getBung());
-        userBungRepository.save(newOwner.toEntity());
+        UserBung newOwner = userBungRepository.findByUserIdAndBungId(newOwnerUserId, bungId);
+        newOwner.enableOwnerBung();
+        userBungRepository.save(newOwner);
     }
 }
