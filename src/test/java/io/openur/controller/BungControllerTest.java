@@ -2,6 +2,7 @@ package io.openur.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 import io.openur.config.TestSupport;
 import java.time.LocalDateTime;
@@ -36,5 +37,20 @@ public class BungControllerTest extends TestSupport {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonify(submittedBung))
         ).andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Bung : 벙주 변경 테스트")
+    void changeOwnerTest() throws Exception {
+        String token = getTestUserToken();
+
+        String bungId = "벙Id";
+        String newOwnerUserId = "뉴네오딮벙주";
+
+        mockMvc.perform(
+            patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
+                .header(AUTH_HEADER, token)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 }
