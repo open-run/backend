@@ -40,9 +40,9 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi userApi() {
         return GroupedOpenApi.builder()
-            .group("authorizaton")
-            .pathsToMatch("/v1/users/**")
+            .group("authorization")
             .pathsToExclude("/v1/users/login/**", "/v1/users/nickname/exist")
+            .pathsToMatch("/v1/users/**", "/v1/bungs/**")
             .addOpenApiCustomizer(buildSecurityOpenApi())
             .build();
     }
