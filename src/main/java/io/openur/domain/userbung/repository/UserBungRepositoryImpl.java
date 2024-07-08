@@ -53,4 +53,20 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             )
         );
     }
+
+    @Override
+    public void removeUserFromBung(String userId, String bungId) {
+        UserBungEntity userBungEntity = userBungJpaRepository
+            .findByUserEntity_UserIdAndBungEntity_BungId(userId, bungId)
+            .orElseThrow(() ->
+                new NoSuchElementException(
+                    String.format(
+                        "UserBung not found by given userId(%s) and bungId(%s)",
+                        userId, bungId
+                    )
+                )
+            );
+        userBungJpaRepository.delete(userBungEntity);
+    }
+
 }

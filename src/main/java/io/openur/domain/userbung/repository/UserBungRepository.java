@@ -9,4 +9,6 @@ public interface UserBungRepository {
     UserBung findByUserIdAndBungId(String userId, String bungId);
 
     UserBung findCurrentOwner(String bungId);
+
+    void removeUserFromBung(String userId, String bungId);
 }
