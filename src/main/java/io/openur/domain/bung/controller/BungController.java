@@ -3,6 +3,7 @@ package io.openur.domain.bung.controller;
 import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
 import io.openur.domain.bung.service.BungService;
+import io.openur.domain.userbung.service.UserBungService;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
@@ -32,6 +33,7 @@ public class BungController {
 
 
     private final BungService bungService;
+    private final UserBugnService userBugnService
 
     @PostMapping()
     @Operation(summary = "벙을 생성하는 경우")
@@ -72,7 +74,7 @@ public class BungController {
     }
 
     @PatchMapping("/{bungId}/change-owner")
-    @Operation(summary = "벙주 변경")
+    @Operation(summary = "벙주 변경(벙주만 가능)")
     @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
     public ResponseEntity<Response<Void>> changeOwner(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -82,6 +84,20 @@ public class BungController {
         bungService.changeOwner(bungId, newOwnerUserId);
         return ResponseEntity.ok().body(Response.<Void>builder()
             .message("Owner changed successfully")
+            .build());
+    }
+
+    @DeleteMapping("/{bung-id}/member/{user-id}")
+    @Operation(summary = "멤버 삭제하기(벙주만 가능)")
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    public ResponseEntity<Response<Void>> kickMember(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @PathVariable String userIdToRemove
+    ) {
+        userbungService.removeUserFromBung(bungId, userIdToRemove);
+        return ResponseEntity.accepted().body(Response.<Void>builder()
+            .message("success")
             .build());
     }
 
