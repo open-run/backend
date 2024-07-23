@@ -2,7 +2,9 @@ package io.openur.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.jwt.JwtUtil;
+import io.openur.global.security.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -24,7 +25,9 @@ public class TestSupport {
     @Autowired
     protected JwtUtil jwtUtil;
     @Autowired
-    private UserDetailsService userDetailsService;
+    protected UserBungJpaRepository userBungJpaRepository;
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
     protected final static String AUTH_HEADER = "Authorization";
 
@@ -39,9 +42,7 @@ public class TestSupport {
             .build();
     }
 
-    // Testing token for now, Can be added or fixed
-    public String getTestUserToken() {
-        String email = "test1@test.com";
+    public String getTestUserToken(String email) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         UsernamePasswordAuthenticationToken authenticatedToken
             = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
