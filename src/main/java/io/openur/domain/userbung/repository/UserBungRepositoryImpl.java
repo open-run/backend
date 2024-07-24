@@ -5,8 +5,10 @@ import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -55,7 +57,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
-    public void removeUserFromBung(String userId, String bungId) {
+    @Transactional
+    public UserBung removeUserFromBung(String userId, String bungId) {
         UserBungEntity userBungEntity = userBungJpaRepository
             .findByUserEntity_UserIdAndBungEntity_BungId(userId, bungId)
             .orElseThrow(() ->
@@ -66,7 +69,9 @@ public class UserBungRepositoryImpl implements UserBungRepository {
                     )
                 )
             );
+
         userBungJpaRepository.delete(userBungEntity);
+        return UserBung.from(userBungEntity);
     }
 
 }

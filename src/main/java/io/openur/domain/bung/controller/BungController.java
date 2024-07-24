@@ -3,7 +3,6 @@ package io.openur.domain.bung.controller;
 import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
 import io.openur.domain.bung.service.BungService;
-import io.openur.domain.userbung.service.UserBungService;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
@@ -16,14 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/bungs")
@@ -33,7 +25,6 @@ public class BungController {
 
 
     private final BungService bungService;
-    private final UserBugnService userBugnService
 
     @PostMapping()
     @Operation(summary = "벙을 생성하는 경우")
@@ -95,7 +86,7 @@ public class BungController {
         @PathVariable String bungId,
         @PathVariable String userIdToRemove
     ) {
-        userbungService.removeUserFromBung(bungId, userIdToRemove);
+        bungService.removeUserFromBung(bungId, userIdToRemove);
         return ResponseEntity.accepted().body(Response.<Void>builder()
             .message("success")
             .build());
