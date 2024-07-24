@@ -12,5 +12,4 @@ public interface UserBungJpaRepository extends JpaRepository<UserBungEntity, Lon
 
 	List<UserBungEntity> findByBungEntity_BungId(String bungId);
 
-    void  findByUserEntity_UserIdAndBungEntity_BungId(String userId, String bungId);
 }
