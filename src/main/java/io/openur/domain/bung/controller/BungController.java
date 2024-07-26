@@ -89,6 +89,21 @@ public class BungController {
             .build());
     }
 
+
+    @GetMapping("/my-bungs")
+    @Operation(summary = "내가 소유한 벙 ID 목록과 벙 정보 가져오기")
+    public ResponseEntity<Response<List<BungDetailDto>>> getOwnedBungDetails(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        List<BungDetailDto> ownedBungDetails = bungService.getOwnedBungDetails(userDetails);
+        return ResponseEntity.ok().body(Response.<List<BungDetailDto>>builder()
+            .message("success")
+            .data(ownedBungDetails)
+            .build());
+    }
+
+
+
     @PostMapping("/{bungId}/invitation")
     @Operation(summary = "멤버 초대하기 ")
     public ResponseEntity<Response<Void>> inviteMembers(
