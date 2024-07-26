@@ -1,8 +1,7 @@
 package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
@@ -98,5 +97,23 @@ public class BungApiTest extends TestSupport {
 //                    .contentType(MediaType.APPLICATION_JSON)
 //            ).andExpect(status().isUnauthorized());
 //        }
+    }
+
+    @Test
+    @DisplayName("Bung : 회원 제거 성공")
+    void kickMember_successTest() throws Exception {
+        String token = getTestUserToken("test1@test.com");
+        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+        String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        mockMvc.perform(
+            delete(PREFIX + "/{bungId}/member/{userIdToKick}", bungId, userIdToKick)
+                .header(AUTH_HEADER, token)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        Optional<UserBungEntity> kickedUserBung = userBungJpaRepository
+            .findByUserEntity_UserIdAndBungEntity_BungId(userIdToKick, bungId);
+        assertThat(kickedUserBung).isEmpty();
     }
 }
