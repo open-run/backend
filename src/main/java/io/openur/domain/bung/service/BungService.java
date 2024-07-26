@@ -11,7 +11,9 @@ import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.enums.BungStatus;
 import io.openur.global.security.UserDetailsImpl;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -69,5 +71,13 @@ public class BungService {
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
         bungRepository.deleteByBungId(bungId);
+    }
+
+    public List<BungDetailDto> getOwnedBungDetails(UserDetailsImpl userDetails) {
+        List<Bung> ownedBungs = userBungRepository.findByOwnerId(userDetails.getUser().getUserId());
+        return ownedBungs.stream()
+            .sorted(Comparator.comparing(Bung::getStartDateTime))
+            .map(BungDetailDto::new)
+            .collect(Collectors.toList());
     }
 }
