@@ -14,6 +14,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -69,5 +73,13 @@ public class BungService {
     public void removeUserFromBung(String bungId, String userIdToRemove) {
         UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
         userBungRepository.removeUserFromBung(userBung);
+    }
+
+    public List<BungDetailDto> getOwnedBungDetails(UserDetailsImpl userDetails) {
+        List<Bung> ownedBungs = userBungRepository.findByOwnerId(userDetails.getUser().getUserId());
+        return ownedBungs.stream()
+            .sorted(Comparator.comparing(Bung::getStartDateTime))
+            .map(BungDetailDto::new)
+            .collect(Collectors.toList());
     }
 }

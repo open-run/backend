@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/v1/bungs")
 @RequiredArgsConstructor
@@ -112,6 +114,19 @@ public class BungController {
         // TODO: Delete endpoint들의 response status accepted -> ok로 변경하기
         return ResponseEntity.accepted().body(Response.<Void>builder()
             .message("success")
+            .build());
+    }
+
+
+    @GetMapping("/my-bungs")
+    @Operation(summary = "내가 소유한 벙 ID 목록과 벙 정보 가져오기")
+    public ResponseEntity<Response<List<BungDetailDto>>> getOwnedBungDetails(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        List<BungDetailDto> ownedBungDetails = bungService.getOwnedBungDetails(userDetails);
+        return ResponseEntity.ok().body(Response.<List<BungDetailDto>>builder()
+            .message("success")
+            .data(ownedBungDetails)
             .build());
     }
 

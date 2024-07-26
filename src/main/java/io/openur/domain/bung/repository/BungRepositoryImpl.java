@@ -2,7 +2,11 @@ package io.openur.domain.bung.repository;
 
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
+
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -27,4 +31,5 @@ public class BungRepositoryImpl implements BungRepository {
     public void deleteByBungId(String bungId) {
         bungJpaRepository.deleteByBungId(bungId);
     }
+
 }

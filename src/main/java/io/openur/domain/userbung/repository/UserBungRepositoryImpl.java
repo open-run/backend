@@ -1,10 +1,13 @@
 package io.openur.domain.userbung.repository;
 
+import io.openur.domain.bung.model.Bung;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -59,4 +62,13 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         userBungJpaRepository.delete(userBung.toEntity());
     }
 
+
+    @Override
+    public List<Bung> findByOwnerId(String userId) {
+        List<UserBungEntity> userBungEntities = userBungJpaRepository.findByUserEntity_UserIdAndOwnerTrue(userId);
+        return userBungEntities.stream()
+            .map(UserBungEntity::getBungEntity)
+            .map(Bung::from)
+            .collect(Collectors.toList());
+    }
 }
