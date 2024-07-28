@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+    db:
+        image: mysql:8.0.35
+        container_name: openuR-mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: rootpassword
+            MYSQL_DATABASE: openuR_db
+            MYSQL_USER: openuR_user
+            MYSQL_PASSWORD: openuR_password
+        ports:
+            - "3306:3306"
+        volumes:
+            - db_data:/var/lib/mysql
+            - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+    db_data:
