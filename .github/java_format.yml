@@ -1,0 +1,13 @@
+name: Format Java Code with google-java-format
+
+on: [push, pull_request]
+
+jobs:
+
+    formatting:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: axel-op/googlejavaformat-action@v3
+              with:
+                  args: "--set-exit-if-changed"
