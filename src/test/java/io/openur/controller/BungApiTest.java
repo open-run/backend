@@ -1,7 +1,9 @@
 package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public class BungApiTest extends TestSupport {
     private static final String PREFIX = "/v1/bungs";
 
@@ -110,7 +114,7 @@ public class BungApiTest extends TestSupport {
             delete(PREFIX + "/{bungId}/member/{userIdToKick}", bungId, userIdToKick)
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isAccepted());
 
         Optional<UserBungEntity> kickedUserBung = userBungJpaRepository
             .findByUserEntity_UserIdAndBungEntity_BungId(userIdToKick, bungId);

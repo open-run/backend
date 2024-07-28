@@ -15,7 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1/bungs")
@@ -64,6 +72,7 @@ public class BungController {
             .build());
     }
 
+    // TODO: move @PreAuthorize to Service class
     @PatchMapping("/{bungId}/change-owner")
     @Operation(summary = "벙주 변경(벙주만 가능)")
     @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
@@ -78,7 +87,7 @@ public class BungController {
             .build());
     }
 
-    @DeleteMapping("/{bung-id}/member/{user-id}")
+    @DeleteMapping("/{bungId}/member/{userIdToRemove}")
     @Operation(summary = "멤버 삭제하기(벙주만 가능)")
     @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
     public ResponseEntity<Response<Void>> kickMember(
@@ -87,6 +96,7 @@ public class BungController {
         @PathVariable String userIdToRemove
     ) {
         bungService.removeUserFromBung(bungId, userIdToRemove);
+        // TODO: Delete endpoint들의 response status accepted -> ok로 변경하기
         return ResponseEntity.accepted().body(Response.<Void>builder()
             .message("success")
             .build());
