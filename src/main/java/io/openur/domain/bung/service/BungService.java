@@ -61,10 +61,9 @@ public class BungService {
         userBungRepository.save(newOwner);
     }
 
+    @Transactional
     public void removeUserFromBung(String bungId, String userIdToRemove) {
         UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
-
-        userBungRepository.removeUserFromBung(userIdToRemove, bungId);
-        userBungRepository.save(userBung);
+        userBungRepository.removeUserFromBung(userBung);
     }
 }
