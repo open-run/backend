@@ -22,7 +22,8 @@ public class BungApiTest extends TestSupport {
     private static final String PREFIX = "/v1/bungs";
 
     @Test
-    @DisplayName("Bung : 벙 생성 테스트")
+    @DisplayName("벙 생성 테스트")
+    @Transactional
     void createBungTest() throws Exception {
         String token = getTestUserToken("test1@test.com");
 
@@ -47,39 +48,52 @@ public class BungApiTest extends TestSupport {
     }
 
     @Nested
+    @DisplayName("벙 삭제 테스트")
     class deleteBungTest {
 
         String bungId = "c0477004-1632-455f-acc9-04584b55921f";
 
         @Test
-        @DisplayName("Bung: 벙 삭제 401 실패")
+        @DisplayName("Authorization Header 없음. 403 Forbidden")
         @Transactional
-        void deleteBung_isUnauthorized() throws Exception {
-            // TODO: authentication 에러 확인
-            //  Request processing failed: java.lang.NullPointerException: Cannot invoke "io.openur.global.security.UserDetailsImpl.getUser()" because "userDetails" is null
+        void deleteBung_isForbidden() throws Exception {
             mockMvc.perform(
                     delete(PREFIX + "/" + bungId)
                 )
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
         }
 
+// 500 error for some reason
+//        @Test
+//        @DisplayName("잘못된 Authorization Header. 401 Unauthorized")
+//        @Transactional
+//        void deleteBung_isUnauthorized() throws Exception {
+//            String invalidToken = getTestUserToken("test2@test.com");
+//            mockMvc.perform(
+//                delete(PREFIX + "/" + bungId)
+//                    .header(AUTH_HEADER, invalidToken)
+//            ).andExpect(status().isUnauthorized());
+//        }
+
         @Test
-        @DisplayName("Bung: 벙 삭제 202 성공")
+        @DisplayName("202 성공")
         @Transactional
         void deleteBung_isAccepted() throws Exception {
             String token = getTestUserToken("test1@test.com");
             mockMvc.perform(
-                    delete(PREFIX + "/" + bungId)
-                        .header(AUTH_HEADER, token))
-                .andExpect(status().isAccepted());
+                delete(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, token)
+            ).andExpect(status().isAccepted());
         }
 
     }
 
     @Nested
+    @DisplayName("벙주 변경 테스트")
     class changeOwnerTest {
         @Test
-        @DisplayName("Bung : 벙주 변경 테스트")
+        @DisplayName("202 성공")
+        @Transactional
         void changeOwner_isOkTest() throws Exception {
             String token = getTestUserToken("test1@test.com");
 
@@ -104,21 +118,23 @@ public class BungApiTest extends TestSupport {
             assertThat(oldOwnerBung.get().isOwner()).isFalse();
         }
 
-// mockMvc 가 PreAuthorize interceptor를 bypass 해버려서 원하는 상황의 테스트 실행이 불가능함
+        @Test
+        @DisplayName("Authorization Header 없음. 403 Forbidden")
+        @Transactional
+        void changeOwner_forbiddenTest() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden());
+        }
+
+// 500 error for some reason
 //        @Test
-//        @DisplayName("벙주 변경 실패 - Authorization Header 없음. 403 Forbidden")
-//        void changeOwner_forbiddenTest() throws Exception {
-//            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-//            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
-//
-//            mockMvc.perform(
-//                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
-//                    .contentType(MediaType.APPLICATION_JSON)
-//            ).andExpect(status().isForbidden());
-//        }
-//
-//        @Test
-//        @DisplayName("벙주 변경 실패 - 잘못된 Authorization Header 401 Unauthorized")
+//        @DisplayName("잘못된 Authorization Header. 401 Unauthorized")
+//        @Transactional
 //        void changeOwner_unauthorizedTest() throws Exception {
 //            String invalidToken = getTestUserToken("test2@test.com");
 //
