@@ -65,7 +65,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
     @Override
     public List<Bung> findByOwnerId(String userId) {
-        List<UserBungEntity> userBungEntities = userBungJpaRepository.findByUserEntity_UserIdAndOwnerTrue(userId);
+        List<UserBungEntity> userBungEntities = userBungJpaRepository.findByUserEntity_UserIdAndIsOwnerTrue(userId);
         return userBungEntities.stream()
             .map(UserBungEntity::getBungEntity)
             .map(Bung::from)
