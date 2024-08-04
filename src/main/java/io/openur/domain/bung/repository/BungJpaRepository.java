@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BungJpaRepository extends JpaRepository<BungEntity, Long> {
     Optional<BungEntity> findByBungId(String bungId);
+
+    void deleteByBungId(String bungId);
 }

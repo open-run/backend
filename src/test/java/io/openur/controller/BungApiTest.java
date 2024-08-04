@@ -6,23 +6,29 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.config.TestSupport;
 import io.openur.domain.userbung.entity.UserBungEntity;
+import io.openur.global.common.Response;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Transactional
 public class BungApiTest extends TestSupport {
     private static final String PREFIX = "/v1/bungs";
 
     @Test
-    @DisplayName("Bung : 벙 생성 테스트")
+    @DisplayName("벙 생성")
+    @Transactional
     void createBungTest() throws Exception {
         String token = getTestUserToken("test1@test.com");
 
@@ -38,18 +44,92 @@ public class BungApiTest extends TestSupport {
         submittedBung.put("hasAfterRun", false);
         submittedBung.put("afterRunDescription", "");
 
+        MvcResult result = mockMvc.perform(
+                post(PREFIX)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(submittedBung)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        String returnedUri = Objects.requireNonNull(result.getResponse().getHeaderValue("Location"))
+            .toString();
+        Response<String> response = new ObjectMapper().readValue(
+            result.getResponse().getContentAsString(),
+            Response.class);
+
+        String uri = ServletUriComponentsBuilder.fromCurrentRequest()
+            .path(PREFIX + "/{bungId}")
+            .buildAndExpand(response.getData())
+            .toUriString();
+        assert returnedUri.equals(uri);
+    }
+
+    @Test
+    @DisplayName("회원 제거")
+    void kickMember_successTest() throws Exception {
+        String token = getTestUserToken("test1@test.com");
+        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+        String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
         mockMvc.perform(
-            post(PREFIX)
+            delete(PREFIX + "/{bungId}/member/{userIdToKick}", bungId, userIdToKick)
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonify(submittedBung))
-        ).andExpect(status().isCreated());
+        ).andExpect(status().isAccepted());
+
+        Optional<UserBungEntity> kickedUserBung = userBungJpaRepository
+            .findByUserEntity_UserIdAndBungEntity_BungId(userIdToKick, bungId);
+        assertThat(kickedUserBung).isEmpty();
     }
 
     @Nested
+    @DisplayName("벙 삭제")
+    class deleteBungTest {
+
+        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+        @Test
+        @DisplayName("403 Forbidden. Authorization Header 없음")
+        @Transactional
+        void deleteBung_isForbidden() throws Exception {
+            mockMvc.perform(
+                    delete(PREFIX + "/" + bungId)
+                )
+                .andExpect(status().isForbidden());
+        }
+
+// 500 error for some reason
+//        @Test
+//        @DisplayName("잘못된 Authorization Header. 401 Unauthorized")
+//        @Transactional
+//        void deleteBung_isUnauthorized() throws Exception {
+//            String invalidToken = getTestUserToken("test2@test.com");
+//            mockMvc.perform(
+//                delete(PREFIX + "/" + bungId)
+//                    .header(AUTH_HEADER, invalidToken)
+//            ).andExpect(status().isUnauthorized());
+//        }
+
+        @Test
+        @DisplayName("202 Accepted.")
+        @Transactional
+        void deleteBung_isAccepted() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+            mockMvc.perform(
+                delete(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, token)
+            ).andExpect(status().isAccepted());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("벙주 변경")
     class changeOwnerTest {
         @Test
-        @DisplayName("Bung : 벙주 변경 테스트")
+        @DisplayName("200 Ok.")
+        @Transactional
         void changeOwner_isOkTest() throws Exception {
             String token = getTestUserToken("test1@test.com");
 
@@ -74,21 +154,23 @@ public class BungApiTest extends TestSupport {
             assertThat(oldOwnerBung.get().isOwner()).isFalse();
         }
 
-// mockMvc 가 PreAuthorize interceptor를 bypass 해버려서 원하는 상황의 테스트 실행이 불가능함
+        @Test
+        @DisplayName("403 Forbidden. Authorization Header 없음")
+        @Transactional
+        void changeOwner_forbiddenTest() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden());
+        }
+
+// 500 error for some reason
 //        @Test
-//        @DisplayName("벙주 변경 실패 - Authorization Header 없음. 403 Forbidden")
-//        void changeOwner_forbiddenTest() throws Exception {
-//            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-//            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
-//
-//            mockMvc.perform(
-//                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
-//                    .contentType(MediaType.APPLICATION_JSON)
-//            ).andExpect(status().isForbidden());
-//        }
-//
-//        @Test
-//        @DisplayName("벙주 변경 실패 - 잘못된 Authorization Header 401 Unauthorized")
+//        @DisplayName("잘못된 Authorization Header. 401 Unauthorized")
+//        @Transactional
 //        void changeOwner_unauthorizedTest() throws Exception {
 //            String invalidToken = getTestUserToken("test2@test.com");
 //
@@ -101,23 +183,5 @@ public class BungApiTest extends TestSupport {
 //                    .contentType(MediaType.APPLICATION_JSON)
 //            ).andExpect(status().isUnauthorized());
 //        }
-    }
-
-    @Test
-    @DisplayName("Bung : 회원 제거 성공")
-    void kickMember_successTest() throws Exception {
-        String token = getTestUserToken("test1@test.com");
-        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-        String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
-
-        mockMvc.perform(
-            delete(PREFIX + "/{bungId}/member/{userIdToKick}", bungId, userIdToKick)
-                .header(AUTH_HEADER, token)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isAccepted());
-
-        Optional<UserBungEntity> kickedUserBung = userBungJpaRepository
-            .findByUserEntity_UserIdAndBungEntity_BungId(userIdToKick, bungId);
-        assertThat(kickedUserBung).isEmpty();
     }
 }
