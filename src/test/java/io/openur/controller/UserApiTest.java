@@ -16,7 +16,7 @@ public class UserApiTest extends TestSupport {
     private static final String PREFIX = "/v1/users";
 
     @Test
-    @DisplayName("User : 닉네임 중복확인 테스트")
+    @DisplayName("닉네임 중복확인")
     void getExistNicknameTest() throws Exception {
         String testName = "zXc9U1i01";
 
@@ -28,7 +28,7 @@ public class UserApiTest extends TestSupport {
     }
 
     @Test
-    @DisplayName("User : 유저 정보 테스트")
+    @DisplayName("유저 정보")
     void getUserInfoTest() throws Exception {
         String token = getTestUserToken("test1@test.com");
 
@@ -41,10 +41,11 @@ public class UserApiTest extends TestSupport {
     }
 
     @Nested
+    @DisplayName("페이스 기록 입력 저장")
     class saveSurveyResultTest {
 
         @Test
-        @DisplayName("User : 페이스 기록 입력 저장 400 실패")
+        @DisplayName("400 Bad Request. 잘못된 형식의 인풋")
         void saveSurveyResult_isBadRequest() throws Exception {
             String token = getTestUserToken("test1@test.com");
             var surveyResult = new HashMap<>();
@@ -61,7 +62,7 @@ public class UserApiTest extends TestSupport {
         }
 
         @Test
-        @DisplayName("User : 페이스 기록 입력 저장 201 성공")
+        @DisplayName("201 Created.")
         void saveSurveyResult_isOk() throws Exception {
             String token = getTestUserToken("test1@test.com");
             var surveyResult = new HashMap<>();
