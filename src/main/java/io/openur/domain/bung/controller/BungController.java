@@ -100,7 +100,7 @@ public class BungController {
             .build());
     }
 
-    @DeleteMapping("/{bungId}/member/{userIdToRemove}")
+    @DeleteMapping("/{bungId}/members/{userIdToRemove}")
     @Operation(summary = "멤버 삭제하기(벙주만 가능)")
     @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
     public ResponseEntity<Response<Void>> kickMember(

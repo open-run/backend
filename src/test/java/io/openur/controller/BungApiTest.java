@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.openur.config.TestSupport;
 import io.openur.domain.userbung.entity.UserBungEntity;
-import io.openur.global.common.Response;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
@@ -56,7 +55,7 @@ public class BungApiTest extends TestSupport {
         String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
         mockMvc.perform(
-            delete(PREFIX + "/{bungId}/member/{userIdToKick}", bungId, userIdToKick)
+            delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isAccepted());
