@@ -10,6 +10,7 @@ import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,12 +54,14 @@ public class BungService {
         return userBung.isOwner();
     }
 
-    public void deleteBung(String bungId) {
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    public void deleteBung(UserDetailsImpl userDetails, String bungId) {
         bungRepository.deleteByBungId(bungId);
     }
 
     @Transactional
-    public void changeOwner(String bungId, String newOwnerUserId) {
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    public void changeOwner(UserDetailsImpl userDetails, String bungId, String newOwnerUserId) {
         UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
 
         currentOwner.disableOwnerBung();
@@ -70,7 +73,9 @@ public class BungService {
     }
 
     @Transactional
-    public void removeUserFromBung(String bungId, String userIdToRemove) {
+    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
+        String userIdToRemove) {
         UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
         userBungRepository.removeUserFromBung(userBung);
     }
