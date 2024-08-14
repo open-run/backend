@@ -1,8 +1,7 @@
 package io.openur.global.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
-import io.openur.global.dto.ExceptionDto;
+import io.openur.global.jwt.InvalidJwtException;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
@@ -12,7 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 
 @RequiredArgsConstructor
@@ -28,7 +29,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    @Qualifier("handlerExceptionResolver")
+    private HandlerExceptionResolver resolver;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -42,18 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (!jwtUtil.validateToken(jwtToken)) {
-            this.handleException(response, "Token is invalid, 유효하지 않은 JWT 토큰입니다.");
-            return;
-        }
-
-        Claims claims = jwtUtil.getUserInfoFromToken(jwtToken);
-        String email = claims.getSubject();
-
         try {
+            Claims claims = jwtUtil.getUserInfoFromToken(jwtToken);
+            String email = claims.getSubject();
             this.setAuthentication(email);
-        } catch (UsernameNotFoundException e) {
-            this.handleException(response, e.getMessage());
+        } catch (InvalidJwtException | UsernameNotFoundException e) {
+            resolver.resolveException(request, response, null, e);
             return;
         }
 
@@ -62,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void setAuthentication(String username) throws UsernameNotFoundException {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(username);
+        Authentication authentication = this.createAuthentication(username);
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
@@ -72,22 +70,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, null,
             userDetails.getAuthorities());
-    }
-
-    private void handleException(HttpServletResponse response, String message) throws IOException {
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
-        log.error(message);
-        response.setStatus(status.value());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-
-        ExceptionDto exceptionDto = ExceptionDto.builder()
-            .statusCode(status.value())
-            .state(status)
-            .message(message)
-            .build();
-
-        String exception = objectMapper.writeValueAsString(exceptionDto);
-        response.getWriter().write(exception);
     }
 }

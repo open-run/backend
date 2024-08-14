@@ -2,6 +2,7 @@ package io.openur.global.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -39,7 +40,6 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    // 토큰 생성
     public String createToken(String email) {
         Date date = new Date();
 
@@ -52,7 +52,6 @@ public class JwtUtil {
                 .compact();
     }
 
-    // header 에서 JWT 가져오기
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
@@ -61,23 +60,23 @@ public class JwtUtil {
         return null;
     }
 
-    // 토큰 유효성 검사
-    public boolean validateToken(String token) {
+    private Jws<Claims> validateToken(String token) throws InvalidJwtException {
+        String msg;
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
         } catch (SecurityException | MalformedJwtException | SignatureException e) {
-            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+            msg = "Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.";
         } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token, 만료된 JWT token 입니다.");
+            msg = "Expired JWT token, 만료된 JWT token 입니다.";
         } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
+            msg = "Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.";
         }
-        return false;
+        log.error(msg);
+        throw new InvalidJwtException(msg);
     }
 
-    // 토큰에서 사용자 정보 가져오기
     public Claims getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        Jws<Claims> jws = this.validateToken(token);
+        return jws.getBody();
     }
 }
