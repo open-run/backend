@@ -32,7 +32,7 @@ public class ExceptionController {
 	}
 
 	@ExceptionHandler({AccessDeniedException.class})
-	public ResponseEntity<ExceptionDto> handleAccessDeniedException(Exception e) {
+	public ResponseEntity<ExceptionDto> handleForbiddenException(Exception e) {
 		return createResponse(HttpStatus.FORBIDDEN, e.getMessage());
 	}
 

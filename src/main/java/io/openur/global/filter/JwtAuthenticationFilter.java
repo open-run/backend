@@ -18,12 +18,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
 @RequiredArgsConstructor
-@Slf4j(topic = "JwtUtil")
+@Slf4j(topic = "JwtAuthenticationFilter")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
@@ -42,22 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (!jwtUtil.validateToken(jwtToken)) {
-            HttpStatus status = HttpStatus.UNAUTHORIZED;
-            String errorMessage = "Token is invalid, 유효하지 않은 JWT 토큰입니다.";
-            log.error(errorMessage);
-
-            response.setStatus(status.value());
-            response.setContentType("application/json");
-            response.setCharacterEncoding("utf-8");
-
-            ExceptionDto exceptionDto = ExceptionDto.builder()
-                .statusCode(status.value())
-                .state(status)
-                .message(errorMessage)
-                .build();
-
-            String exception = objectMapper.writeValueAsString(exceptionDto);
-            response.getWriter().write(exception);
+            this.handleException(response, "Token is invalid, 유효하지 않은 JWT 토큰입니다.");
             return;
         }
 
@@ -66,15 +52,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             this.setAuthentication(email);
-        } catch (Exception e) {
-            log.error(e.getMessage());
+        } catch (UsernameNotFoundException e) {
+            this.handleException(response, e.getMessage());
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    public void setAuthentication(String username) {
+    private void setAuthentication(String username) throws UsernameNotFoundException {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication authentication = createAuthentication(username);
         context.setAuthentication(authentication);
@@ -82,9 +68,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.setContext(context);
     }
 
-    private Authentication createAuthentication(String email) {
+    private Authentication createAuthentication(String email) throws UsernameNotFoundException {
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, null,
             userDetails.getAuthorities());
+    }
+
+    private void handleException(HttpServletResponse response, String message) throws IOException {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        log.error(message);
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+
+        ExceptionDto exceptionDto = ExceptionDto.builder()
+            .statusCode(status.value())
+            .state(status)
+            .message(message)
+            .build();
+
+        String exception = objectMapper.writeValueAsString(exceptionDto);
+        response.getWriter().write(exception);
     }
 }
