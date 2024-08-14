@@ -1,6 +1,7 @@
 package io.openur.global.exception;
 
 import io.openur.global.dto.ExceptionDto;
+import io.openur.global.jwt.InvalidJwtException;
 import java.awt.HeadlessException;
 import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,11 @@ public class ExceptionController {
 	@ExceptionHandler({AccessDeniedException.class})
 	public ResponseEntity<ExceptionDto> handleForbiddenException(Exception e) {
 		return createResponse(HttpStatus.FORBIDDEN, e.getMessage());
+	}
+
+	@ExceptionHandler({InvalidJwtException.class})
+	public ResponseEntity<ExceptionDto> handleInvalidJwtException(Exception e) {
+		return createResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
 	}
 
 	@ExceptionHandler({Exception.class, HeadlessException.class})
