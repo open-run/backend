@@ -92,6 +92,17 @@ public class BungApiTest extends TestSupport {
         }
 
         @Test
+        @DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
+        @Transactional
+        void deleteBung_isForbidden_notOwner() throws Exception {
+            String notOwnerToken = getTestUserToken("test2@test.com");
+            mockMvc.perform(
+                delete(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, notOwnerToken)
+            ).andExpect(status().isForbidden());
+        }
+
+        @Test
         @DisplayName("401 Unauthorized. invalid Authorization Header")
         @Transactional
         void deleteBung_isUnauthorized() throws Exception {
@@ -148,12 +159,29 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("403 Forbidden. Authorization Header 없음")
         @Transactional
-        void changeOwner_forbiddenTest() throws Exception {
+        void changeOwner_isForbidden() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
             mockMvc.perform(
                 patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
+        @Transactional
+        void changeOwner_isForbidden_notOwner() throws Exception {
+            String notOwnerToken = getTestUserToken("test2@test.com");
+
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, notOwnerToken)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isForbidden());
         }
