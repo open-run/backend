@@ -35,37 +35,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwtToken = jwtUtil.getJwtFromHeader(request);
 
-        if (StringUtils.hasText(jwtToken)) {
+        // Authorization header 가 주어지지 않은 경우 존재 필요성 검사를 다른 필터에서 진행하기 때문에 본 필터를 건너띈다.
+        if (!StringUtils.hasText(jwtToken)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            if (!jwtUtil.validateToken(jwtToken)) {
-                HttpStatus status = HttpStatus.UNAUTHORIZED;
-                String errorMessage = "Token is invalid, 검증되지 않은 JWT 토큰입니다.";
-                log.error(errorMessage);
+        if (!jwtUtil.validateToken(jwtToken)) {
+            HttpStatus status = HttpStatus.UNAUTHORIZED;
+            String errorMessage = "Token is invalid, 유효하지 않은 JWT 토큰입니다.";
+            log.error(errorMessage);
 
-                response.setStatus(status.value());
-                response.setContentType("application/json");
-                response.setCharacterEncoding("utf-8");
+            response.setStatus(status.value());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
 
-                ExceptionDto exceptionDto = ExceptionDto.builder()
-                    .statusCode(status.value())
-                    .state(status)
-                    .message(errorMessage)
-                    .build();
+            ExceptionDto exceptionDto = ExceptionDto.builder()
+                .statusCode(status.value())
+                .state(status)
+                .message(errorMessage)
+                .build();
 
-                String exception = objectMapper.writeValueAsString(exceptionDto);
-                response.getWriter().write(exception);
-                return;
-            }
+            String exception = objectMapper.writeValueAsString(exceptionDto);
+            response.getWriter().write(exception);
+            return;
+        }
 
-            Claims claims = jwtUtil.getUserInfoFromToken(jwtToken);
-            String email = claims.getSubject();
+        Claims claims = jwtUtil.getUserInfoFromToken(jwtToken);
+        String email = claims.getSubject();
 
-            try {
-                this.setAuthentication(email);
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                return;
-            }
+        try {
+            this.setAuthentication(email);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return;
         }
 
         filterChain.doFilter(request, response);
