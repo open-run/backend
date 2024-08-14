@@ -104,6 +104,17 @@ public class BungApiTest extends TestSupport {
         }
 
         @Test
+        @DisplayName("401 Unauthorized. Unknown user token")
+        @Transactional
+        void deleteBung_isUnauthorized_unknownUser() throws Exception {
+            String unknownUserToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5ZWppbmtlbGx5am9vQGdtYWlsLmNvbSIsImV4cCI6MTcyMzYyNDgxMCwiaWF0IjoxNzIzNjIxMjEwfQ.wH-eJCvEBgFg_QjWr7CdxBpMqlQzGt45DLmrsWju-HU";
+            mockMvc.perform(
+                delete(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, unknownUserToken)
+            ).andExpect(status().isUnauthorized());
+        }
+
+        @Test
         @DisplayName("202 Accepted.")
         @Transactional
         void deleteBung_isAccepted() throws Exception {
@@ -189,6 +200,23 @@ public class BungApiTest extends TestSupport {
                 patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
                     newOwnerUserId)
                     .header(AUTH_HEADER, invalidToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("401 Unauthorized. Unknown user token")
+        @Transactional
+        void deleteBung_isUnauthorized_unknownUser() throws Exception {
+            String unknownUserToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5ZWppbmtlbGx5am9vQGdtYWlsLmNvbSIsImV4cCI6MTcyMzYyNDgxMCwiaWF0IjoxNzIzNjIxMjEwfQ.wH-eJCvEBgFg_QjWr7CdxBpMqlQzGt45DLmrsWju-HU";
+
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, unknownUserToken)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isUnauthorized());
         }
