@@ -81,17 +81,16 @@ public class BungApiTest extends TestSupport {
                 .andExpect(status().isForbidden());
         }
 
-// 500 error for some reason
-//        @Test
-//        @DisplayName("잘못된 Authorization Header. 401 Unauthorized")
-//        @Transactional
-//        void deleteBung_isUnauthorized() throws Exception {
-//            String invalidToken = getTestUserToken("test2@test.com");
-//            mockMvc.perform(
-//                delete(PREFIX + "/" + bungId)
-//                    .header(AUTH_HEADER, invalidToken)
-//            ).andExpect(status().isUnauthorized());
-//        }
+        @Test
+        @DisplayName("401 Unauthorized. invalid Authorization Header")
+        @Transactional
+        void deleteBung_isUnauthorized() throws Exception {
+            String invalidToken = "Bearer invalidToken";
+            mockMvc.perform(
+                delete(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, invalidToken)
+            ).andExpect(status().isUnauthorized());
+        }
 
         @Test
         @DisplayName("202 Accepted.")
@@ -149,21 +148,21 @@ public class BungApiTest extends TestSupport {
             ).andExpect(status().isForbidden());
         }
 
-// 500 error for some reason
-//        @Test
-//        @DisplayName("잘못된 Authorization Header. 401 Unauthorized")
-//        @Transactional
-//        void changeOwner_unauthorizedTest() throws Exception {
-//            String invalidToken = getTestUserToken("test2@test.com");
-//
-//            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-//            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
-//
-//            mockMvc.perform(
-//                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId, newOwnerUserId)
-//                    .header(AUTH_HEADER, invalidToken)
-//                    .contentType(MediaType.APPLICATION_JSON)
-//            ).andExpect(status().isUnauthorized());
-//        }
+        @Test
+        @DisplayName("401 Unauthorized. invalid Authorization Header")
+        @Transactional
+        void changeOwner_isUnauthorized() throws Exception {
+            String invalidToken = "Bearer invalidToken";
+
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, invalidToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isUnauthorized());
+        }
     }
 }
