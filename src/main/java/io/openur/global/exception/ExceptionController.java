@@ -5,6 +5,7 @@ import java.awt.HeadlessException;
 import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +29,11 @@ public class ExceptionController {
 	) {
 		return createResponse(HttpStatus.BAD_REQUEST,
 			e.getBindingResult().getFieldError().getDefaultMessage());
+	}
+
+	@ExceptionHandler({AccessDeniedException.class})
+	public ResponseEntity<ExceptionDto> handleAccessDeniedException(Exception e) {
+		return createResponse(HttpStatus.FORBIDDEN, e.getMessage());
 	}
 
 	@ExceptionHandler({Exception.class, HeadlessException.class})
