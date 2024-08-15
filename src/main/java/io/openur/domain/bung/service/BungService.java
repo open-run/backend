@@ -47,21 +47,13 @@ public class BungService {
         return new BungDetailDto(bungRepository.findByBungId(bungId));
     }
 
-    // TODO: separate authentication logic
-    public boolean isOwnerOfBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        String bungId) {
-        UserBung userBung = userBungRepository.findByUserIdAndBungId(
-            userDetails.getUser().getUserId(), bungId);
-        return userBung.isOwner();
-    }
-
-    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
         bungRepository.deleteByBungId(bungId);
     }
 
     @Transactional
-    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void changeOwner(UserDetailsImpl userDetails, String bungId, String newOwnerUserId) {
         UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
 
@@ -74,7 +66,7 @@ public class BungService {
     }
 
     @Transactional
-    @PreAuthorize("@bungService.isOwnerOfBung(#userDetails, #bungId)")
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
         String userIdToRemove) {
         UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
