@@ -1,8 +1,6 @@
 package io.openur.global.config;
 
 import io.openur.global.filter.JwtAuthenticationFilter;
-import io.openur.global.jwt.JwtUtil;
-import io.openur.global.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,13 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtUtil jwtUtil;
-    private final UserDetailsServiceImpl userDetailsService;
 
-    @Bean
-    public JwtAuthenticationFilter JwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
-    }
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,7 +34,8 @@ public class SecurityConfig {
             sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
 
-        http.addFilterBefore(JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class); // UsernamePasswordAuthenticationFilter 이전에 필터 추가
+        http.addFilterBefore(jwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class); // UsernamePasswordAuthenticationFilter 이전에 필터 추가
 
         http.authorizeHttpRequests((authorizeHttpRequests) ->
             authorizeHttpRequests
