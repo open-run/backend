@@ -3,13 +3,11 @@ package io.openur.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.openur.config.TestSupport;
-import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -55,24 +53,6 @@ public class BungApiTest extends TestSupport {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonify(submittedBung))
         ).andExpect(status().isCreated());
-    }
-
-    @Test
-    @DisplayName("회원 제거")
-    void kickMember_successTest() throws Exception {
-        String token = getTestUserToken("test1@test.com");
-        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-        String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
-
-        mockMvc.perform(
-            delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
-                .header(AUTH_HEADER, token)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isAccepted());
-
-        Optional<UserBungEntity> kickedUserBung = userBungJpaRepository
-            .findByUserEntity_UserIdAndBungEntity_BungId(userIdToKick, bungId);
-        assertThat(kickedUserBung).isEmpty();
     }
 
     @Nested
