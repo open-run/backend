@@ -47,25 +47,4 @@ public class BungService {
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
         bungRepository.deleteByBungId(bungId);
     }
-
-    @Transactional
-    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-    public void changeOwner(UserDetailsImpl userDetails, String bungId, String newOwnerUserId) {
-        UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
-
-        currentOwner.disableOwnerBung();
-        userBungRepository.save(currentOwner);
-
-        UserBung newOwner = userBungRepository.findByUserIdAndBungId(newOwnerUserId, bungId);
-        newOwner.enableOwnerBung();
-        userBungRepository.save(newOwner);
-    }
-
-    @Transactional
-    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-    public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
-        String userIdToRemove) {
-        UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
-        userBungRepository.removeUserFromBung(userBung);
-    }
 }
