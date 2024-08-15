@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/bungs")
 @RequiredArgsConstructor
 public class BungController {
-
-
     private final BungService bungService;
 
     @PostMapping()
@@ -80,33 +77,4 @@ public class BungController {
             .message("success")
             .build());
     }
-
-    @PatchMapping("/{bungId}/change-owner")
-    @Operation(summary = "벙주 변경(벙주만 가능)")
-    public ResponseEntity<Response<Void>> changeOwner(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable String bungId,
-        @RequestParam String newOwnerUserId
-    ) {
-        bungService.changeOwner(userDetails, bungId, newOwnerUserId);
-        return ResponseEntity.ok().body(Response.<Void>builder()
-            .message("Owner changed successfully")
-            .build());
-    }
-
-    @DeleteMapping("/{bungId}/members/{userIdToRemove}")
-    @Operation(summary = "멤버 삭제하기(벙주만 가능)")
-    public ResponseEntity<Response<Void>> kickMember(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable String bungId,
-        @PathVariable String userIdToRemove
-    ) {
-        bungService.removeUserFromBung(userDetails, bungId, userIdToRemove);
-        // TODO: Delete endpoint들의 response status accepted -> ok로 변경하기
-        return ResponseEntity.accepted().body(Response.<Void>builder()
-            .message("success")
-            .build());
-    }
-
-
 }
