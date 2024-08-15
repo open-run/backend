@@ -47,6 +47,7 @@ public class BungService {
         return new BungDetailDto(bungRepository.findByBungId(bungId));
     }
 
+    // TODO: separate authentication logic
     public boolean isOwnerOfBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
         String bungId) {
         UserBung userBung = userBungRepository.findByUserIdAndBungId(
