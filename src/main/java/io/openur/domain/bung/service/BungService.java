@@ -10,6 +10,8 @@ import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,13 @@ public class BungService {
         userBungRepository.save(userBung);
 
         return new BungDetailDto(bung);
+    }
+
+    public Page<BungDetailDto> getBungLists(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        boolean isParticipating, Pageable pageable) {
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+
+        return bungRepository.findBungs(userDetails.getUser(), isParticipating, pageable);
     }
 
     public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
