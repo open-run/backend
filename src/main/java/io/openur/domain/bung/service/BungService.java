@@ -2,6 +2,7 @@ package io.openur.domain.bung.service;
 
 import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.dto.Req.InviteMembersRequestDto;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.user.model.User;
@@ -9,6 +10,7 @@ import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +54,18 @@ public class BungService {
         return new BungDetailDto(bungRepository.findByBungId(bungId));
     }
 
+    @Transactional
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
+    public void inviteUsers(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId,
+                            InviteMembersRequestDto req) {
+        Bung bung = bungRepository.findByBungId(bungId);
+
+        List<User> users = userRepository.findAllByIdIn(req.getUserIds());
+
+        //TODO : users 와 bung 으로 invitation 개념의 임시 초대 이력 bulk 생성 하고 알림을 전송
+    }
+
+    @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
         bungRepository.deleteByBungId(bungId);
