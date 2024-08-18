@@ -8,9 +8,11 @@ import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,10 +49,20 @@ public class BungController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "참여한 벙 목록만 보는 경우 true 로 설정")
         @RequestParam(required = false, defaultValue = "false") boolean isParticipating,
-        @PageableDefault Pageable pageable
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
     ) {
-        return null;
-    } // TODO: users_bungs 가 생기면, users_bungs type 기준으로 필터 및 join 탐색 시행, boolean 교체
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungDetailDto> contents = bungService.getBungLists(userDetails, isParticipating, pageable);
+
+        return ResponseEntity.ok().body(Response.<List<BungDetailDto>>builder()
+            .message("success")
+            .data(contents.getContent())
+            .first(contents.isFirst())
+            .last(contents.isLast())
+            .empty(contents.isEmpty())
+            .build());
+    }
 
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")
