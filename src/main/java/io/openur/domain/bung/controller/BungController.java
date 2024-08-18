@@ -2,6 +2,7 @@ package io.openur.domain.bung.controller;
 
 import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.dto.Req.InviteMembersRequestDto;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
@@ -87,6 +88,19 @@ public class BungController {
         bungService.deleteBung(userDetails, bungId);
         return ResponseEntity.accepted().body(Response.<Void>builder()
             .message("success")
+            .build());
+    }
+
+    @PostMapping("/{bungId}/invite")
+    @Operation(summary = "멤버 초대하기 ")
+    public ResponseEntity<Response<Void>> inviteMembers(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @RequestBody InviteMembersRequestDto req
+    ) {
+        return ResponseEntity.created(UtilController.createUri(bungId))
+            .body(Response.<Void>builder()
+            .message("Successfully invited")
             .build());
     }
 }
