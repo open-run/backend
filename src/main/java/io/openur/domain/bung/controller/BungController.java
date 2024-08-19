@@ -91,7 +91,7 @@ public class BungController {
             .build());
     }
 
-    @PostMapping("/{bungId}/invite")
+    @PostMapping("/{bungId}/invitation")
     @Operation(summary = "멤버 초대하기 ")
     public ResponseEntity<Response<Void>> inviteMembers(
         @AuthenticationPrincipal UserDetailsImpl userDetails,

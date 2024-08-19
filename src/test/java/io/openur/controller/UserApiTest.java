@@ -40,6 +40,19 @@ public class UserApiTest extends TestSupport {
             .andExpect(status().isOk());
     }
 
+    @Test
+    @DisplayName("자주 뛰었던 사용자 목록 || 뛰었던 횟수로 정렬")
+    void getNeighborsInfoTest() throws Exception {
+        String token = getTestUserToken("test1@test.com");
+
+        mockMvc.perform(
+                get(PREFIX + "/suggestion")
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest());
+    }
+
     @Nested
     @DisplayName("페이스 기록 입력 저장")
     class saveSurveyResultTest {
