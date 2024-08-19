@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class GetUserResponseDto {
+public class GetSelfResponseDto {
     private String userId;
     private final String nickname;
     private final String email;
@@ -25,7 +25,7 @@ public class GetUserResponseDto {
     private String runningPace;
     private Integer runningFrequency;
 
-    public GetUserResponseDto(User user) {
+    public GetSelfResponseDto(User user) {
         this.userId = user.getUserId();
         this.nickname = user.getNickname();
         this.email = user.getEmail();

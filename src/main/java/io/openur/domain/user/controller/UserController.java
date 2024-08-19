@@ -1,8 +1,9 @@
 package io.openur.domain.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.openur.domain.user.dto.GetUserResponseDto;
+import io.openur.domain.user.dto.GetSelfResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
+import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
@@ -17,6 +18,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -63,14 +67,29 @@ public class UserController {
 
     @GetMapping()
     @Operation(summary = "유저 정보 가져오기")
-    public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
+    public ResponseEntity<Response<GetSelfResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        GetUserResponseDto getUserResponseDto = userService.getUserEmail(
+        GetSelfResponseDto getSelfResponseDto = userService.getUserEmail(
             userDetails);
-        return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
+        return ResponseEntity.ok().body(Response.<GetSelfResponseDto>builder()
             .message("success")
-            .data(getUserResponseDto)
+            .data(getSelfResponseDto)
+            .build());
+    }
+
+    @GetMapping("/suggestion")
+    @Operation(summary = "자주 같이 띈 참여자 리스트")
+    public ResponseEntity<Response<Page<GetUsersResponseDto>>> getNeighbors(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+
+        return ResponseEntity.ok().body(Response.<Page<GetUsersResponseDto>>builder()
+            .message("success")
+            .data(userService.getMemberSuggestion(userDetails, pageable))
             .build());
     }
 
