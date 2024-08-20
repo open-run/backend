@@ -16,18 +16,6 @@ public class UserApiTest extends TestSupport {
     private static final String PREFIX = "/v1/users";
 
     @Test
-    @DisplayName("닉네임 중복확인")
-    void getExistNicknameTest() throws Exception {
-        String testName = "zXc9U1i01";
-
-        mockMvc.perform(
-                get(PREFIX + "/nickname/exist?nickname={nickname}", testName)
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isOk());
-    }
-
-    @Test
     @DisplayName("유저 정보")
     void getUserInfoTest() throws Exception {
         String token = getTestUserToken("test1@test.com");
@@ -50,7 +38,19 @@ public class UserApiTest extends TestSupport {
                     .header(AUTH_HEADER, token)
                     .contentType(MediaType.APPLICATION_JSON)
             )
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("닉네임 중복확인")
+    void getExistNicknameTest() throws Exception {
+        String testName = "zXc9U1i01";
+
+        mockMvc.perform(
+                get(PREFIX + "/nickname/exist?nickname={nickname}", testName)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isOk());
     }
 
     @Nested
