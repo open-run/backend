@@ -1,6 +1,7 @@
 package io.openur.controller;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,6 +42,44 @@ public class BungApiTest extends TestSupport {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonify(submittedBung))
         ).andExpect(status().isCreated());
+    }
+
+    @Nested
+    @DisplayName("벙 목록")
+    class getBungList {
+        String token = getTestUserToken("test2@test.com");
+        String getUri = PREFIX + "?isParticipating={isParticipating}";
+
+        @Test
+        @DisplayName("전체 보기")
+        void getBungListAll() throws Exception {
+            mockMvc.perform(
+                get(getUri, false)
+                    .header(AUTH_HEADER, token)
+            ).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("참여한 벙 보기")
+        void getBungListJoined() throws Exception {
+            mockMvc.perform(
+                get(getUri, true)
+                    .header(AUTH_HEADER, token)
+            ).andExpect(status().isOk());
+        }
+    }
+
+    @Test
+    @DisplayName("벙 상세 정보")
+    void getBungDetail() throws Exception {
+        String token = getTestUserToken("test1@test.com");
+        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+        mockMvc.perform(
+            get(PREFIX + "/{bungId}", bungId)
+                .header(AUTH_HEADER, token)
+            )
+            .andExpect(status().isOk());
     }
 
     @Nested

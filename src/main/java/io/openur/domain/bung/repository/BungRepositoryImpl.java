@@ -49,8 +49,8 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
         Pageable pageable) {
 
         List<BungDetailDto> contents = queryFactory
-            .selectDistinct(bungEntity)
-            .from(bungEntity, userBungEntity)
+            .selectDistinct(userBungEntity.bungEntity)
+            .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 attendFilter(user, isParticipating)
@@ -60,8 +60,8 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
             .fetch().stream().map(entity -> new BungDetailDto(Bung.from(entity))).toList();
 
         JPAQuery<Long> count = queryFactory
-            .selectDistinct(bungEntity.count())
-            .from(bungEntity, userBungEntity)
+            .selectDistinct(userBungEntity.bungEntity.count())
+            .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 attendFilter(user, isParticipating)
