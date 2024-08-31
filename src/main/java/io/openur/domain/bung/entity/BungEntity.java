@@ -31,4 +31,5 @@ public class BungEntity  {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
+    // 종료 플래그
 }

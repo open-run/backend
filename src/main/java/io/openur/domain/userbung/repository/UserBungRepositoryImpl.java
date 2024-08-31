@@ -9,7 +9,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.user.dto.GetUsersResponseDto;
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
@@ -75,14 +74,14 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
                 userBungEntity.userEntity.ne(currentUser.toEntity()),
                 userBungEntity.bungEntity.in(bungEntities)
             )
-            .groupBy(userEntity)
+            .groupBy(userBungEntity.userEntity)
             .orderBy(userBungEntity.countDistinct().desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch().stream().map(GetUsersResponseDto::new).toList();
 
         JPAQuery<Long> count = queryFactory
-            .select(userEntity.countDistinct())
+            .select(userBungEntity.userEntity.countDistinct())
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .join(userBungEntity.userEntity, userEntity)
@@ -90,7 +89,7 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
                 userBungEntity.userEntity.ne(currentUser.toEntity()),
                 userBungEntity.bungEntity.in(bungEntities)
             )
-            .groupBy(userEntity);
+            .groupBy(userBungEntity.userEntity);
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
