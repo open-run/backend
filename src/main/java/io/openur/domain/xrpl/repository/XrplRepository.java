@@ -4,6 +4,7 @@ import static org.xrpl.xrpl4j.model.immutables.FluentCompareTo.is;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import io.openur.domain.xrpl.dto.NftDataDto;
 import io.openur.domain.xrpl.environment.ReportingTestnetEnvironment;
 import org.springframework.beans.factory.annotation.Value;
@@ -111,9 +112,20 @@ public class XrplRepository {
             .get(0).nfTokenId().toString();
         System.out.println("Account nfTokenId: " + nfTokenId);
 
-        UnsignedInteger taxon = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
-            .accountNfts().get(0).taxon();
-        System.out.println("Account taxon: " + taxon);
+        UnsignedInteger taxon_value = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress()).accountNfts().get(0).taxon();
+        System.out.println("Account taxon: " + taxon_value);
+
+        UnsignedLong unsignedTaxonValue = UnsignedLong.valueOf(taxon_value.longValue());
+
+        // taxon 값에 해당하는 enum 이름을 찾음
+        String categoryName = Taxon.getCategoryNameByValue(unsignedTaxonValue);
+
+        if (categoryName != null) {
+            System.out.println("Category Name: " + categoryName);
+        } else {
+            System.out.println("No matching category found for taxon value: " + taxon_value);
+        }
+
 
         String nftSerial = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
             .accountNfts()
@@ -153,7 +165,7 @@ public class XrplRepository {
             System.out.println("Decoded Memo Data: " + decodedData);
 
         }
-        return new NftDataDto(nfTokenId, taxon, nftSerial, decodeduri, decodedData);
+        return new NftDataDto(nfTokenId, categoryName, nftSerial, decodeduri, decodedData);
     }
 
     public SubmitResult<NfTokenMint> mintFromOtherMinterAccount(KeyPair issuerKeyPair,
