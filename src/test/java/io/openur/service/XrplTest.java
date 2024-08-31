@@ -43,8 +43,9 @@ public class XrplTest {
 		KeyPair minterKeyPair = xrplRepository.createAccount();
         String memoContent = "Unique";
         taxon category = taxon.HAIR_ACCESSORY;
+        String nft_uri = "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi";
 
-        SubmitResult<NfTokenMint> mintSubmitResult = xrplRepository.mintFromOtherMinterAccount(keyPair, minterKeyPair,category,memoContent);
+        SubmitResult<NfTokenMint> mintSubmitResult = xrplRepository.mintFromOtherMinterAccount(keyPair, minterKeyPair,nft_uri,category,memoContent);
 
         //xrplRepository.accountNftsData(minterKeyPair,mintSubmitResult);
 
