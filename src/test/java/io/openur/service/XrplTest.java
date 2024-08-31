@@ -1,6 +1,7 @@
 package io.openur.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.openur.domain.xrpl.dto.NftDataDto;
 import io.openur.domain.xrpl.repository.XrplRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 
 @SpringBootTest(properties = {"spring.config.location=classpath:application-test.properties"})
 public class XrplTest {
 
 	@Autowired
 	XrplRepository xrplRepository;
+
 
 	@Test
 	void testCreateAccounts() throws InterruptedException, JsonRpcClientErrorException {
@@ -37,7 +41,19 @@ public class XrplTest {
 		KeyPair keyPair = xrplRepository.createAccount();
 		KeyPair minterKeyPair = xrplRepository.createAccount();
 
-		xrplRepository.mintFromOtherMinterAccount(keyPair, minterKeyPair);
+        SubmitResult<NfTokenMint> mintSubmitResult = xrplRepository.mintFromOtherMinterAccount(keyPair, minterKeyPair);
+
+        //xrplRepository.accountNftsData(minterKeyPair,mintSubmitResult);
+
+        NftDataDto nftDataDto = xrplRepository.accountNftsData(minterKeyPair, mintSubmitResult);
+
+        // DTO의 내용을 출력
+        System.out.println("NFT Data:");
+        System.out.println("Token ID: " + nftDataDto.getNfTokenId());
+        System.out.println("Taxon: " + nftDataDto.getTaxon());
+        System.out.println("NFT Serial: " + nftDataDto.getNftSerial());
+        System.out.println("Decoded URI: " + nftDataDto.getDecodedUri());
+        System.out.println("Decoded Memo Data: " + nftDataDto.getDecodedMemoData());
 
 	}
 
