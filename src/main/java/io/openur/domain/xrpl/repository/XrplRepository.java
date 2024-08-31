@@ -54,7 +54,7 @@ public class XrplRepository {
         KeyPair keyPair = createAccount(userId);
         KeyPair minterKeyPair = createAccount(minter);
         SubmitResult<NfTokenMint> mintSubmitResult = mintFromOtherMinterAccount(minterKeyPair, keyPair, NftUri.GREEN_SHOE.getUri(), Taxon.SHOES, "common");
-        return accountNftsData(minterKeyPair, mintSubmitResult);
+        return accountNftsData(keyPair, mintSubmitResult);
     }
 
     public KeyPair createAccount(String userId) throws InterruptedException {
