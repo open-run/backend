@@ -4,8 +4,10 @@ import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.user.dto.GetUsersResponseDto;
@@ -13,7 +15,9 @@ import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.dao.UserBungDAO;
+import io.openur.global.enums.BungStatus;
 import java.awt.HeadlessException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -59,6 +63,44 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .where(
                 userBungEntity.userEntity.eq(user.toEntity())
             ).fetch().stream().map(entity -> Bung.from(entity.getBungEntity())).toList();
+    }
+
+    @Override
+    public Page<BungDetailDto> findBungs(String userId, BungStatus status, Pageable pageable) {
+        List<BungEntity> filter = new ArrayList<>();
+        if(BungStatus.isAvailable(status)) {
+            filter = queryFactory
+            .selectDistinct(userBungEntity.bungEntity)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId)
+            ).fetch();
+        }
+
+        List<BungDetailDto> contents = queryFactory
+            .selectDistinct(userBungEntity)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                withFilters(filter)
+            )
+            .orderBy(bungEntity.startDateTime.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch().stream().map(entity -> new BungDetailDto(UserBung.from(entity))).toList();
+
+        JPAQuery<Long> count = queryFactory
+            .select(userBungEntity.countDistinct())
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                withFilters(filter)
+            );
+
+        return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
 
     @Override
@@ -119,5 +161,10 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     @Override
     public void removeUserFromBung(UserBung userBung) {
         userBungJpaRepository.delete(userBung.toEntity());
+    }
+
+    private BooleanExpression withFilters(List<BungEntity> filterEntity) {
+        if(filterEntity.isEmpty()) return null;
+        return bungEntity.notIn(filterEntity);
     }
 }

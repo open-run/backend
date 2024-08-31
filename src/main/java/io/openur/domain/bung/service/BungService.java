@@ -45,7 +45,10 @@ public class BungService {
     public Page<BungDetailDto> getBungLists(@AuthenticationPrincipal UserDetailsImpl userDetails, BungStatus status, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
-        return bungRepository.findBungs(user.getUserId(), status, pageable);
+        if(BungStatus.notUserFiltered(status))
+            return bungRepository.findBungs(status, pageable);
+        else
+            return userBungRepository.findBungs(user.getUserId(), status, pageable);
     }
 
     public Page<BungDetailDto> getOwnedBungLists(@AuthenticationPrincipal UserDetailsImpl userDetails,
