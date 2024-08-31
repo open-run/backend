@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import io.openur.domain.xrpl.dto.NftDataDto;
 import io.openur.domain.xrpl.environment.ReportingTestnetEnvironment;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +24,15 @@ import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.nft.NftInfoResult;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.transactions.AccountSet;
 import org.xrpl.xrpl4j.model.transactions.Memo;
 import org.xrpl.xrpl4j.model.transactions.MemoWrapper;
+import org.xrpl.xrpl4j.model.transactions.NfTokenId;
 import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.Payment;
@@ -53,8 +58,33 @@ public class XrplRepository {
     public NftDataDto mintNft(String userId) throws InterruptedException, JsonRpcClientErrorException, JsonProcessingException {
         KeyPair keyPair = createAccount(userId);
         KeyPair minterKeyPair = createAccount(minter);
-        SubmitResult<NfTokenMint> mintSubmitResult = mintFromOtherMinterAccount(minterKeyPair, keyPair, NftUri.GREEN_SHOE.getUri(), Taxon.SHOES, "common");
-        return accountNftsData(keyPair, mintSubmitResult);
+        SubmitResult<NfTokenMint> mintSubmitResult = mintFromOtherMinterAccount(minterKeyPair,
+            keyPair, NftUri.OUTER_SET.getUri(), Taxon.TOP, "common");
+        return accountNftData(keyPair, mintSubmitResult);
+    }
+
+    public List<NftDataDto> getNftDataList(List<String> nftIndexList)
+        throws JsonRpcClientErrorException {
+        List<NftDataDto> nftDataDtoList = new ArrayList<>();
+        for (String nftIndex : nftIndexList) {
+            NftInfoRequestParams params = NftInfoRequestParams.builder()
+                .nfTokenId(NfTokenId.of(nftIndex))
+                .ledgerSpecifier(LedgerSpecifier.VALIDATED)
+                .build();
+            NftInfoResult nftInfo = xrplClient.nftInfo(
+                params
+            );
+
+            NftDataDto nftDataDto = new NftDataDto(
+                nftInfo.nftId().toString(),
+                UnsignedInteger.valueOf(nftInfo.nftTaxon().toString()),
+                nftInfo.nftSerial().toString(),
+                nftInfo.uri().toString(),
+                "common"
+            );
+            nftDataDtoList.add(nftDataDto);
+        }
+        return nftDataDtoList;
     }
 
     public KeyPair createAccount(String userId) throws InterruptedException {
@@ -103,27 +133,36 @@ public class XrplRepository {
         return data;
     }
 
-    public NftDataDto accountNftsData(KeyPair ownerKeyPair,
-        SubmitResult<NfTokenMint> mintSubmitResult)
-        throws JsonRpcClientErrorException, JsonProcessingException {
+    private String getMemo(String memoData) {
+        String decodedData = null;
+        if (memoData == null) {
+            System.out.println("No memos found in this transaction.");
+        } else {
+            // Optional[] 안에 있는 실제 값을 추출
+            String hexData = memoData.replace("Optional[", "").replace("]", "");
+
+            // Hex 문자열을 디코딩
+            decodedData = new String(hexStringToByteArray(hexData));
+        }
+        return decodedData;
+    }
+
+    public NftDataDto accountNftData(KeyPair ownerKeyPair,
+        SubmitResult<NfTokenMint> mintSubmitResult) throws JsonRpcClientErrorException {
         String nfTokenId = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
             .accountNfts()
             .get(0).nfTokenId().toString();
-        System.out.println("Account nfTokenId: " + nfTokenId);
 
         UnsignedInteger taxon = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
             .accountNfts().get(0).taxon();
-        System.out.println("Account taxon: " + taxon);
 
         String nftSerial = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
             .accountNfts()
             .get(0).nftSerial().toString();
-        System.out.println("Account nftSerial: " + nftSerial);
 
         String tokenUri = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
             .accountNfts()
             .get(0).uri().toString();
-        System.out.println("Account tokenUri: " + tokenUri);
 
         // Optional[NfTokenUri( ... )] 안에 있는 실제 Hex 데이터를 추출
         String hexuri = tokenUri.replace("Optional[NfTokenUri(", "").replace(")]", "");
@@ -131,28 +170,19 @@ public class XrplRepository {
         // Hex 문자열을 디코딩
         String decodeduri = new String(hexStringToByteArray(hexuri));
 
-        // 디코딩된 값 출력
-        System.out.println("Decoded TokenUri: " + decodeduri);
-
         String decodedData = null;
         if (mintSubmitResult.transactionResult().transaction().memos().isEmpty()) {
             System.out.println("No memos found in this transaction.");
 
         } else {
             String memoData = mintSubmitResult.transactionResult().transaction().memos().get(0).memo().memoData().toString();
-            // 메모 데이터 접근
-            System.out.println("Memo Data: " + memoData);
-
             // Optional[] 안에 있는 실제 값을 추출
             String hexData = memoData.replace("Optional[", "").replace("]", "");
 
             // Hex 문자열을 디코딩
             decodedData = new String(hexStringToByteArray(hexData));
-
-            // 디코딩된 값 출력
-            System.out.println("Decoded Memo Data: " + decodedData);
-
         }
+        // 추출/디코딩한 정보들을 NftDataDto 객체로 생성하여 반환
         return new NftDataDto(nfTokenId, taxon, nftSerial, decodeduri, decodedData);
     }
 

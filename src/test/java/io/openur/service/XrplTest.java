@@ -1,8 +1,8 @@
 package io.openur.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.xrpl.dto.NftDataDto;
-import io.openur.domain.xrpl.repository.Taxon;
 import io.openur.domain.xrpl.repository.XrplRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,14 +10,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
-import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
-import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
 
 @SpringBootTest(properties = {"spring.config.location=classpath:application-test.properties"})
 public class XrplTest {
 
 	@Autowired
 	XrplRepository xrplRepository;
+
+	@Autowired
+	UserRepositoryImpl userRepository;
 
 
 	@Test
@@ -36,18 +37,9 @@ public class XrplTest {
 		System.out.println("account: " + result.accountData().account());
 		System.out.println();
 	}
-
 	@Test
 	void testMint() throws InterruptedException, JsonRpcClientErrorException, JsonProcessingException {
-		KeyPair issuerKeyPair = xrplRepository.createAccount("5d22bd65-f1ed-4e7b-bc7b-0a59580d3176");
-		KeyPair ownerKeyPair = xrplRepository.createAccount("5d22bd65-f1ed-4e7b-bc7b-0a59580d3177");
-        String memoContent = "Unique";
-		Taxon category = Taxon.HAIR_ACCESSORY;
-        String nft_uri = "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi";
-
-		SubmitResult<NfTokenMint> mintSubmitResult = xrplRepository.mintFromOtherMinterAccount(
-			issuerKeyPair, ownerKeyPair, nft_uri, category, memoContent);
-		NftDataDto nftDataDto = xrplRepository.accountNftsData(ownerKeyPair, mintSubmitResult);
+		NftDataDto nftDataDto = xrplRepository.mintNft("334c38eb-4a82-4986-b572-d411a5d8c928");
 
         // DTO의 내용을 출력
         System.out.println("NFT Data:");
