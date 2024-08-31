@@ -1,5 +1,6 @@
 package io.openur.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.openur.domain.xrpl.repository.XrplRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class XrplTest {
 	}
 
 	@Test
-	void testMint() throws InterruptedException, JsonRpcClientErrorException {
+	void testMint() throws InterruptedException, JsonRpcClientErrorException, JsonProcessingException {
 		KeyPair keyPair = xrplRepository.createAccount();
 		KeyPair minterKeyPair = xrplRepository.createAccount();
 
