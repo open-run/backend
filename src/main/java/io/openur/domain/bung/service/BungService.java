@@ -9,6 +9,7 @@ import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.global.enums.BungStatus;
 import io.openur.global.security.UserDetailsImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +42,10 @@ public class BungService {
         return new BungDetailDto(bung);
     }
 
-    public Page<BungDetailDto> getBungLists(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        boolean isParticipating, Pageable pageable) {
+    public Page<BungDetailDto> getBungLists(@AuthenticationPrincipal UserDetailsImpl userDetails, BungStatus status, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
-        return bungRepository.findBungs(userDetails.getUser(), isParticipating, pageable);
+        return bungRepository.findBungs(userDetails.getUser(), status, pageable);
     }
 
     public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,

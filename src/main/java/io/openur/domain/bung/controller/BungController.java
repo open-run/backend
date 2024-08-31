@@ -7,6 +7,7 @@ import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
+import io.openur.global.enums.BungStatus;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,16 +47,16 @@ public class BungController {
     }
 
     @GetMapping()
-    @Operation(summary = "벙 목록을 보는 경우 || 전체보기 || 참여한 ||")
+    @Operation(summary = "벙 목록 || 전체보기 || 합류한 || 출석한 ")
     public ResponseEntity<PagedResponse<BungDetailDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "참여한 벙 목록만 보는 경우 true 로 설정")
-        @RequestParam(required = false, defaultValue = "false") boolean isParticipating,
+        @RequestParam(required = false, defaultValue = "ALL") BungStatus status,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungDetailDto> contents = bungService.getBungLists(userDetails, isParticipating, pageable);
+        Page<BungDetailDto> contents = bungService.getBungLists(userDetails, status, pageable);
 
         return ResponseEntity.ok().body(PagedResponse.build(
             "success", contents)

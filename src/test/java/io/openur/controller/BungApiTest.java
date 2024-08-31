@@ -48,13 +48,12 @@ public class BungApiTest extends TestSupport {
     @DisplayName("벙 목록")
     class getBungList {
         String token = getTestUserToken("test2@test.com");
-        String getUri = PREFIX + "?isParticipating={isParticipating}";
 
         @Test
         @DisplayName("전체 보기")
         void getBungListAll() throws Exception {
             mockMvc.perform(
-                get(getUri, false)
+                get(PREFIX)
                     .header(AUTH_HEADER, token)
             ).andExpect(status().isOk());
         }
@@ -63,7 +62,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("참여한 벙 보기")
         void getBungListJoined() throws Exception {
             mockMvc.perform(
-                get(getUri, true)
+                get(PREFIX)
                     .header(AUTH_HEADER, token)
             ).andExpect(status().isOk());
         }
