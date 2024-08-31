@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import io.openur.domain.xrpl.dto.NftDataDto;
 import io.openur.domain.xrpl.environment.ReportingTestnetEnvironment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -35,10 +36,13 @@ import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 @Repository
 @Transactional(readOnly = true)
 public class XrplRepository {
+
+    @Value("${minter}")
+    private String minter;
+
     public XrplClient xrplClient;
     protected ReportingTestnetEnvironment reportingTestnetEnvironment;
     protected BcSignatureService signatureService;
-    public static String ID = "5d22bd65-f1ed-4e7b-bc7b-0a59580d3176";
 
     XrplRepository() {
         this.reportingTestnetEnvironment = new ReportingTestnetEnvironment();
@@ -46,9 +50,15 @@ public class XrplRepository {
         this.signatureService = new BcSignatureService();
     }
 
-    public KeyPair createAccount() throws InterruptedException {
-        Seed s = Seed.secp256k1SeedFromPassphrase(Passphrase.of(ID));
-        KeyPair walletKeyPair = Seed.ed25519Seed().deriveKeyPair();
+    public NftDataDto mintNft(String userId) throws InterruptedException, JsonRpcClientErrorException, JsonProcessingException {
+        KeyPair keyPair = createAccount(userId);
+        KeyPair minterKeyPair = createAccount(minter);
+        SubmitResult<NfTokenMint> mintSubmitResult = mintFromOtherMinterAccount(minterKeyPair, keyPair, NftUri.GREEN_SHOE.getUri(), Taxon.SHOES, "common");
+        return accountNftsData(minterKeyPair, mintSubmitResult);
+    }
+
+    public KeyPair createAccount(String userId) throws InterruptedException {
+        KeyPair walletKeyPair = Seed.secp256k1SeedFromPassphrase(Passphrase.of(userId)).deriveKeyPair();
         reportingTestnetEnvironment.fundAccount(walletKeyPair.publicKey().deriveAddress());
 
         boolean accountsFunded = false;

@@ -23,3 +23,5 @@ openur:
         redirect-uri: ${{ FRONTEND_KAKAO_REDIRECT_URI }}
     naver:
         redirect-uri: ${{ FRONTEND_NAVER_REDIRECT_URI }}
+
+minter: ${{ MINTER_ID }}
