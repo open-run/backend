@@ -15,5 +15,7 @@ public interface UserBungDAO {
     Page<GetUsersResponseDto> findAllFrequentUsers(List<Bung> bungs,
         User currentUser, Pageable pageable);
 
+    Page<BungDetailDto> findAvailableBungs(String userId, Pageable pageable);
+
     Page<BungDetailDto> findBungs(String userId, BungStatus status, Pageable pageable);
 }

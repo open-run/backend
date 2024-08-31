@@ -18,7 +18,6 @@ import io.openur.domain.userbung.repository.dao.UserBungDAO;
 import io.openur.global.enums.BungStatus;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -67,25 +66,47 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     }
 
     @Override
-    public Page<BungDetailDto> findBungs(String userId, BungStatus status, Pageable pageable) {
-        List<BungEntity> filter = new ArrayList<>();
-        if(BungStatus.isAvailable(status)) {
-            filter = queryFactory
+    public Page<BungDetailDto> findAvailableBungs(String userId, Pageable pageable) {
+        List<BungEntity> filter = queryFactory
             .selectDistinct(userBungEntity.bungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.userId.eq(userId)
             ).fetch();
-        }
 
+        List<BungDetailDto> contents = queryFactory
+            .selectDistinct(bungEntity)
+            .from(bungEntity)
+            .where(
+                bungEntity.startDateTime.goe(LocalDateTime.now()),
+                bungEntity.notIn(filter)
+            )
+            .orderBy(bungEntity.startDateTime.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch().stream().map(entity -> new BungDetailDto(Bung.from(entity))).toList();
+
+        JPAQuery<Long> count = queryFactory
+            .select(bungEntity.countDistinct())
+            .from(bungEntity)
+            .where(
+                bungEntity.startDateTime.goe(LocalDateTime.now()),
+                bungEntity.notIn(filter)
+            );
+
+        return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
+    }
+
+    @Override
+    public Page<BungDetailDto> findBungs(String userId, BungStatus status, Pageable pageable) {
         List<BungDetailDto> contents = queryFactory
             .selectDistinct(userBungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.userId.eq(userId),
-                withStatusFilter(status, filter)
+                withStatusFilter(status)
             )
             .orderBy(bungEntity.startDateTime.desc())
             .offset(pageable.getOffset())
@@ -98,7 +119,7 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.userId.eq(userId),
-                withStatusFilter(status, filter)
+                withStatusFilter(status)
             );
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
@@ -164,10 +185,8 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
         userBungJpaRepository.delete(userBung.toEntity());
     }
 
-    private BooleanExpression withStatusFilter(BungStatus status, List<BungEntity> filterEntity) {
-        if(BungStatus.isAvailable(status)) return bungEntity.notIn(filterEntity);
-
+    private BooleanExpression withStatusFilter(BungStatus status) {
         if(BungStatus.isPending(status)) return bungEntity.startDateTime.goe(LocalDateTime.now());
-        return bungEntity.endDateTime.loe(LocalDateTime.now());
+        return bungEntity.startDateTime.lt(LocalDateTime.now());
     }
 }
