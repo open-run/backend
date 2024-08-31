@@ -17,6 +17,7 @@ import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.dao.UserBungDAO;
 import io.openur.global.enums.BungStatus;
 import java.awt.HeadlessException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -84,7 +85,7 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.userId.eq(userId),
-                withFilters(filter)
+                withStatusFilter(status, filter)
             )
             .orderBy(bungEntity.startDateTime.desc())
             .offset(pageable.getOffset())
@@ -97,7 +98,7 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.userId.eq(userId),
-                withFilters(filter)
+                withStatusFilter(status, filter)
             );
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
@@ -163,8 +164,10 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
         userBungJpaRepository.delete(userBung.toEntity());
     }
 
-    private BooleanExpression withFilters(List<BungEntity> filterEntity) {
-        if(filterEntity.isEmpty()) return null;
-        return bungEntity.notIn(filterEntity);
+    private BooleanExpression withStatusFilter(BungStatus status, List<BungEntity> filterEntity) {
+        if(BungStatus.isAvailable(status)) return bungEntity.notIn(filterEntity);
+
+        if(BungStatus.isPending(status)) return bungEntity.startDateTime.goe(LocalDateTime.now());
+        return bungEntity.endDateTime.loe(LocalDateTime.now());
     }
 }
