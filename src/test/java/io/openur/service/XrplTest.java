@@ -3,6 +3,7 @@ package io.openur.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.openur.domain.xrpl.dto.NftDataDto;
 import io.openur.domain.xrpl.repository.XrplRepository;
+import io.openur.domain.xrpl.repository.taxon;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,8 +41,10 @@ public class XrplTest {
 	void testMint() throws InterruptedException, JsonRpcClientErrorException, JsonProcessingException {
 		KeyPair keyPair = xrplRepository.createAccount();
 		KeyPair minterKeyPair = xrplRepository.createAccount();
+        String memoContent = "Unique";
+        taxon category = taxon.HAIR_ACCESSORY;
 
-        SubmitResult<NfTokenMint> mintSubmitResult = xrplRepository.mintFromOtherMinterAccount(keyPair, minterKeyPair);
+        SubmitResult<NfTokenMint> mintSubmitResult = xrplRepository.mintFromOtherMinterAccount(keyPair, minterKeyPair,category,memoContent);
 
         //xrplRepository.accountNftsData(minterKeyPair,mintSubmitResult);
 
