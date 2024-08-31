@@ -54,3 +54,13 @@ CREATE TABLE IF NOT EXISTS tb_bungs_hashtags (
                                               FOREIGN KEY (bung_id) REFERENCES tb_bungs(bung_id),
                                               FOREIGN KEY (hashtag_id) REFERENCES tb_hashtags(hashtag_id)
 );
+
+-- tb_nft_indexer 테이블 생성 (존재하지 않을 경우에만)
+CREATE TABLE IF NOT EXISTS tb_nft_index
+(
+    nft_index VARCHAR(64) PRIMARY KEY      NOT NULL,
+    user_id   VARCHAR(36) DEFAULT (UUID()) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
+    is_new    BOOLEAN     DEFAULT FALSE    NOT NULL,
+    is_active BOOLEAN     DEFAULT FALSE    NOT NULL
+);
