@@ -178,8 +178,9 @@ public class BungApiTest extends TestSupport {
                 .collect(Collectors.toList());
 
             List<String> expectedBungIds = List.of(
-                "c0477004-1632-455f-acc9-04584b55921f"//,
-                //"c1422356-1332-465c-abc9-04574c99921c"
+                "c0477004-1632-455f-acc9-04584b55921f",
+                "c0477004-1632-455f-acc9-04584b67123f",
+                "c1422356-1332-465c-abc9-04574c99921c"
             );
 
             assertThat(bungIds).containsExactlyInAnyOrderElementsOf(expectedBungIds);
@@ -192,7 +193,7 @@ public class BungApiTest extends TestSupport {
             mockMvc.perform(
                 get(PREFIX + "/my-bungs")
                     .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isUnauthorized());
+            ).andExpect(status().isForbidden());
         }
     }
 }
