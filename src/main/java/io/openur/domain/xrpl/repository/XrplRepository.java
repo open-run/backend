@@ -11,6 +11,7 @@ import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
+import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
 import org.xrpl.xrpl4j.model.client.fees.FeeResult;
@@ -33,6 +34,12 @@ public class XrplRepository {
         // Get the current network fee
         FeeResult feeResult = xrplClient.fee();
 
+        // 필요한 수수료 정보 출력
+        System.out.println("Base Fee: " + feeResult.drops().baseFee());
+        System.out.println("Median Fee: " + feeResult.drops().medianFee());
+        System.out.println("Minimum Fee: " + feeResult.drops().minimumFee());
+        System.out.println("Open Ledger Fee: " + feeResult.drops().openLedgerFee());
+
         // Create cold and hot KeyPairs -----------------------
         this.coldWalletKeyPair = Seed.ed25519Seed().deriveKeyPair();
         this.hotWalletKeyPair = Seed.ed25519Seed().deriveKeyPair();
@@ -41,6 +48,7 @@ public class XrplRepository {
         reportingTestnetEnvironment.fundAccount(coldWalletKeyPair.publicKey().deriveAddress());
         reportingTestnetEnvironment.fundAccount(hotWalletKeyPair.publicKey().deriveAddress());
 
+        this.xrplClient = reportingTestnetEnvironment.getXrplClient();
 
         // If you go too soon, the funding transaction might slip back a ledger and
         // then your starting Sequence number will be off. This is mostly relevant
@@ -66,7 +74,8 @@ public class XrplRepository {
                 accountsFunded = true;
             } catch (JsonRpcClientErrorException e) {
                 if (!e.getMessage().equals("Account not found.")) {
-                    throw e;
+                    System.out.println("Account not found: " + e.getMessage());
+//                    throw e;
                 }
                 Thread.sleep(1000);
             }
@@ -74,6 +83,27 @@ public class XrplRepository {
 
         System.out.println("Cold wallet address: " + coldWalletKeyPair.publicKey().deriveAddress());
         System.out.println("Hot wallet address: " + hotWalletKeyPair.publicKey().deriveAddress());
+
+        ///
+        // AccountInfoRequestParams 객체를 생성하여 조회할 계정과 원장을 지정합니다.
+        AccountInfoRequestParams params = AccountInfoRequestParams.builder()
+            .account(coldWalletKeyPair.publicKey().deriveAddress())  // 조회할 계정의 주소
+            .ledgerSpecifier(LedgerSpecifier.VALIDATED)  // 검증된 원장에서 데이터를 조회
+            .build();
+
+        try {
+            // accountInfo 메서드를 사용하여 계정 정보를 조회합니다.
+            AccountInfoResult result = xrplClient.accountInfo(params);
+
+            // 조회된 계정 정보 출력
+            System.out.println("Account Balance: " + result.accountData().balance());
+            System.out.println("Sequence: " + result.accountData().sequence());
+            System.out.println("Owner Count: " + result.accountData().ownerCount());
+            System.out.println("account: " + result.accountData().account());
+        } catch (JsonRpcClientErrorException e) {
+            // JSON-RPC 오류 처리
+            System.err.println("Failed to retrieve account info: " + e.getMessage());
+        }
 
     }
 
