@@ -22,7 +22,7 @@ public class XrplTest {
 
 	@Test
 	void testCreateAccounts() throws InterruptedException, JsonRpcClientErrorException {
-		KeyPair account = xrplRepository.createAccount();
+		KeyPair account = xrplRepository.createAccount("5d22bd65-f1ed-4e7b-bc7b-0a59580d3176");
 
 		System.out.println("wallet address: " + account.publicKey().deriveAddress());
 
@@ -39,8 +39,8 @@ public class XrplTest {
 
 	@Test
 	void testMint() throws InterruptedException, JsonRpcClientErrorException, JsonProcessingException {
-		KeyPair issuerKeyPair = xrplRepository.createAccount();
-		KeyPair ownerKeyPair = xrplRepository.createAccount();
+		KeyPair issuerKeyPair = xrplRepository.createAccount("5d22bd65-f1ed-4e7b-bc7b-0a59580d3176");
+		KeyPair ownerKeyPair = xrplRepository.createAccount("5d22bd65-f1ed-4e7b-bc7b-0a59580d3177");
         String memoContent = "Unique";
 		Taxon category = Taxon.HAIR_ACCESSORY;
         String nft_uri = "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf4dfuylqabf3oclgtqy55fbzdi";
