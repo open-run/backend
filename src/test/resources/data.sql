@@ -19,7 +19,9 @@ VALUES ('9e1bfc60-f76a-47dc-9147-803653707192', 'test', 'test1@test.com', FALSE,
 INSERT INTO tb_bungs (bung_id, name, location, description, start_datetime, end_datetime, distance, pace, member_number, has_after_run, after_run_description)
 VALUES
     ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'seoul', 'temp_description', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5"55', 2, false, 'lalalala'),
-    ('c0477004-1632-455f-acc9-04584b67123f', 'test2_bung', 'seoul', 'temp_description', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5"55', 2, false, 'lalalala')
+    ('c0477004-1632-455f-acc9-04584b67123f', 'test2_bung', 'seoul', 'temp_description', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5"55', 2, false, 'lalalala'),
+    ('c1422356-1332-465c-abc9-04574c99921c', 'test3_bung', 'seoul', 'temp_description', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5"55', 2, false, 'lalalala'),
+    ('c2458656-1248-485c-acd5-04668b65221c', 'test4_bung', 'seoul', 'temp_description', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, '5"55', 2, false, 'lalalala')
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at, is_owner)
@@ -39,8 +41,8 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-8036
         CURRENT_TIMESTAMP(), true),
        (8, 'c0477004-1632-455f-acc9-04584b67123f', '5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', true,
         CURRENT_TIMESTAMP(), false)
-#(3, 'c1422356-1332-465c-abc9-04574c99921c', '9e1bfc60-f76a-47dc-9147-803653707192', true,
-#    CURRENT_TIMESTAMP(), true),
-#(4, 'c2458656-1248-485c-acd5-04668b65221c', '9e1bfc60-f76a-47dc-9147-803653707192', true,
-#    CURRENT_TIMESTAMP(), false)
+,(9, 'c1422356-1332-465c-abc9-04574c99921c', '9e1bfc60-f76a-47dc-9147-803653707192', true,
+    CURRENT_TIMESTAMP(), true)
+,(10, 'c2458656-1248-485c-acd5-04668b65221c', '9e1bfc60-f76a-47dc-9147-803653707192', true,
+    CURRENT_TIMESTAMP(), false)
 ;

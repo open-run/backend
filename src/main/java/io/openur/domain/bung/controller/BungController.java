@@ -11,7 +11,6 @@ import io.openur.global.enums.BungStatus;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,6 +62,19 @@ public class BungController {
         );
     }
 
+    @GetMapping("/my-bungs")
+    @Operation(summary = "내가 소유한 벙 ID 목록과 벙 정보 가져오기")
+    public ResponseEntity<PagedResponse<BungDetailDto>> getOwnedBungDetails(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungDetailDto> ownedBungDetails = bungService.getOwnedBungLists(userDetails, pageable);
+
+        return ResponseEntity.ok().body(PagedResponse.build("success", ownedBungDetails));
+    }
+
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")
     public ResponseEntity<Response<BungDetailDto>> getBungDetail(
@@ -88,21 +100,6 @@ public class BungController {
             .message("success")
             .build());
     }
-
-
-    @GetMapping("/my-bungs")
-    @Operation(summary = "내가 소유한 벙 ID 목록과 벙 정보 가져오기")
-    public ResponseEntity<Response<List<BungDetailDto>>> getOwnedBungDetails(
-        @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
-        List<BungDetailDto> ownedBungDetails = bungService.getOwnedBungDetails(userDetails);
-        return ResponseEntity.ok().body(Response.<List<BungDetailDto>>builder()
-            .message("success")
-            .data(ownedBungDetails)
-            .build());
-    }
-
-
 
     @PostMapping("/{bungId}/invitation")
     @Operation(summary = "멤버 초대하기 ")
