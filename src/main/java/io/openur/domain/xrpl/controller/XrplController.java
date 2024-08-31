@@ -20,7 +20,7 @@ import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 public class XrplController {
     private final XrplService xrplService;
 
-    @PostMapping()
+    @PostMapping("/mint")
     @Operation(summary = "NFT minting")
     public ResponseEntity<Response<NftDataDto>> MintNft(
         @AuthenticationPrincipal UserDetailsImpl userDetails
