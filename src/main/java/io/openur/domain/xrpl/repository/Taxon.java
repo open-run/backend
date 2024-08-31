@@ -1,8 +1,10 @@
 package io.openur.domain.xrpl.repository;
 
 import com.google.common.primitives.UnsignedLong;
+import lombok.Getter;
 
-public enum taxon {
+@Getter
+public enum Taxon {
     FACE_COLOR(UnsignedLong.valueOf(1)),
     HAIR(UnsignedLong.valueOf(2)),
     FACE(UnsignedLong.valueOf(3)),
@@ -15,16 +17,12 @@ public enum taxon {
 
     private final UnsignedLong value;
 
-    taxon(UnsignedLong value) {
+    Taxon(UnsignedLong value) {
         this.value = value;
     }
 
-    public UnsignedLong getValue() {
-        return value;
-    }
-
-    public static taxon fromValue(UnsignedLong value) {
-        for (taxon category : taxon.values()) {
+    public static Taxon fromValue(UnsignedLong value) {
+        for (Taxon category : Taxon.values()) {
             if (category.value.equals(value)) {
                 return category;
             }

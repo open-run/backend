@@ -1,5 +1,7 @@
 package io.openur.domain.xrpl.repository;
 
+import static org.xrpl.xrpl4j.model.immutables.FluentCompareTo.is;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import io.openur.domain.xrpl.dto.NftDataDto;
@@ -9,9 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
 import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
-import org.xrpl.xrpl4j.crypto.keys.PrivateKey;
+import org.xrpl.xrpl4j.crypto.keys.Passphrase;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
-import org.xrpl.xrpl4j.crypto.signing.SignatureService;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
 import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
@@ -23,31 +24,26 @@ import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
-import org.xrpl.xrpl4j.model.transactions.*;
-import org.xrpl.xrpl4j.crypto.keys.Passphrase;
-
-
-import static org.xrpl.xrpl4j.model.immutables.FluentCompareTo.is;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.Memo;
+import org.xrpl.xrpl4j.model.transactions.MemoWrapper;
+import org.xrpl.xrpl4j.model.transactions.NfTokenMint;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
+import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.XrpCurrencyAmount;
 
 @Repository
 @Transactional(readOnly = true)
 public class XrplRepository {
     public XrplClient xrplClient;
     protected ReportingTestnetEnvironment reportingTestnetEnvironment;
-    //protected BcSignatureService signatureService;
-    protected SignatureService<PrivateKey> signatureService;
+    protected BcSignatureService signatureService;
     public static String ID = "5d22bd65-f1ed-4e7b-bc7b-0a59580d3176";
-
-    //public static final Duration POLL_INTERVAL = Durations.ONE_HUNDRED_MILLISECONDS;
 
     XrplRepository() {
         this.reportingTestnetEnvironment = new ReportingTestnetEnvironment();
         this.xrplClient = reportingTestnetEnvironment.getXrplClient();
-        this.signatureService = this.constructSignatureService();
-    }
-
-    protected SignatureService<PrivateKey> constructSignatureService() {
-        return new BcSignatureService();
+        this.signatureService = new BcSignatureService();
     }
 
     public KeyPair createAccount() throws InterruptedException {
@@ -77,84 +73,46 @@ public class XrplRepository {
         return walletKeyPair;
     }
 
-    public SubmitResult<NfTokenMint> mintFromOtherMinterAccount(KeyPair keyPair, KeyPair minterKeyPair,String nft_uri,taxon category,String memoContent) throws JsonRpcClientErrorException, JsonProcessingException {
-        // accountInfo 메서드를 사용하여 계정 정보를 조회합니다.
-        AccountInfoResult result = accountInfo(keyPair);
+    public void printAccountInfo(KeyPair keyPair) throws JsonRpcClientErrorException {
+        AccountInfoResult accountInfo = this.accountInfo(keyPair);
 
-        // 조회된 계정 정보 출력
-        System.out.println("Account Balance: " + result.accountData().balance());
-        System.out.println("Sequence: " + result.accountData().sequence());
-        System.out.println("Owner Count: " + result.accountData().ownerCount());
-        System.out.println("account: " + result.accountData().account());
+        System.out.println("Account Balance: " + accountInfo.accountData().balance());
+        System.out.println("Sequence: " + accountInfo.accountData().sequence());
+        System.out.println("Owner Count: " + accountInfo.accountData().ownerCount());
+        System.out.println("account: " + accountInfo.accountData().account());
         System.out.println();
-
-
-        // accountInfo 메서드를 사용하여 계정 정보를 조회합니다.
-        AccountInfoResult minterKeyPair_result = accountInfo(minterKeyPair);
-
-        // 조회된 계정 정보 출력
-        System.out.println("Account Balance: " + minterKeyPair_result.accountData().balance());
-        System.out.println("Sequence: " + minterKeyPair_result.accountData().sequence());
-        System.out.println("Owner Count: " + minterKeyPair_result.accountData().ownerCount());
-        System.out.println("account: " + minterKeyPair_result.accountData().account());
-        System.out.println();
-
-
-
-        AccountSet accountSet = AccountSet.builder()
-            .account(keyPair.publicKey().deriveAddress())
-            .sequence(accountInfo(keyPair).accountData().sequence())
-            .fee(FeeUtils.computeNetworkFees(xrplClient.fee()).recommendedFee())
-            .mintAccount(minterKeyPair.publicKey().deriveAddress())
-            .setFlag(AccountSet.AccountSetFlag.AUTHORIZED_MINTER)
-            .signingPublicKey(keyPair.publicKey())
-            .build();
-
-
-        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(keyPair.privateKey(), accountSet);
-        //TODO Planned to change to submitAndWaitForValidation
-        SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
-
-        NfTokenUri uri = NfTokenUri.ofPlainText(nft_uri);
-
-        //Nft mint transaction
-        NfTokenMint nfTokenMint = NfTokenMint.builder()
-            .tokenTaxon(category.getValue())
-            .account(minterKeyPair.publicKey().deriveAddress())
-            .fee(XrpCurrencyAmount.ofDrops(50))
-            .addMemos(MemoWrapper.builder()
-                .memo(Memo.withPlaintext(memoContent).build())
-                .build())
-            .signingPublicKey(minterKeyPair.publicKey())
-            .sequence(accountInfo(minterKeyPair).accountData().sequence())
-            .issuer(keyPair.publicKey().deriveAddress())
-            .uri(uri)
-            .build();
-
-        SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(minterKeyPair.privateKey(), nfTokenMint);
-        //TODO Planned to change to submitAndWaitForValidation
-        SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
-
-        AccountInfoResult sourceAccountInfoAfterMint = xrplClient.accountInfo(
-            AccountInfoRequestParams.of(keyPair.publicKey().deriveAddress())
-        );
-
-        System.out.println("NFT was minted successfully.");
-
-        return mintSubmitResult;
     }
 
-    public NftDataDto accountNftsData(KeyPair minterKeyPair, SubmitResult<NfTokenMint> mintSubmitResult) throws JsonRpcClientErrorException, JsonProcessingException {
-        String nfTokenId = xrplClient.accountNfts(minterKeyPair.publicKey().deriveAddress()).accountNfts().get(0).nfTokenId().toString();
+    private static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+
+    public NftDataDto accountNftsData(KeyPair ownerKeyPair,
+        SubmitResult<NfTokenMint> mintSubmitResult)
+        throws JsonRpcClientErrorException, JsonProcessingException {
+        String nfTokenId = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
+            .accountNfts()
+            .get(0).nfTokenId().toString();
         System.out.println("Account nfTokenId: " + nfTokenId);
 
-        UnsignedInteger taxon = xrplClient.accountNfts(minterKeyPair.publicKey().deriveAddress()).accountNfts().get(0).taxon();
+        UnsignedInteger taxon = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
+            .accountNfts().get(0).taxon();
         System.out.println("Account taxon: " + taxon);
 
-        String nftSerial = xrplClient.accountNfts(minterKeyPair.publicKey().deriveAddress()).accountNfts().get(0).nftSerial().toString();
+        String nftSerial = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
+            .accountNfts()
+            .get(0).nftSerial().toString();
         System.out.println("Account nftSerial: " + nftSerial);
 
-        String tokenUri = xrplClient.accountNfts(minterKeyPair.publicKey().deriveAddress()).accountNfts().get(0).uri().toString();
+        String tokenUri = xrplClient.accountNfts(ownerKeyPair.publicKey().deriveAddress())
+            .accountNfts()
+            .get(0).uri().toString();
         System.out.println("Account tokenUri: " + tokenUri);
 
         // Optional[NfTokenUri( ... )] 안에 있는 실제 Hex 데이터를 추출
@@ -188,16 +146,56 @@ public class XrplRepository {
         return new NftDataDto(nfTokenId, taxon, nftSerial, decodeduri, decodedData);
     }
 
-    public static byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                + Character.digit(s.charAt(i+1), 16));
-        }
-        return data;
-    }
+    public SubmitResult<NfTokenMint> mintFromOtherMinterAccount(KeyPair issuerKeyPair,
+        KeyPair ownerKeyPair, String nft_uri,
+        Taxon category, String memoContent)
+        throws JsonRpcClientErrorException, JsonProcessingException {
+        this.printAccountInfo(issuerKeyPair);
+        this.printAccountInfo(ownerKeyPair);
 
+        AccountSet accountSet = AccountSet.builder()
+            .account(issuerKeyPair.publicKey().deriveAddress())
+            .sequence(this.accountInfo(issuerKeyPair).accountData().sequence())
+            .fee(FeeUtils.computeNetworkFees(xrplClient.fee()).recommendedFee())
+            .mintAccount(ownerKeyPair.publicKey().deriveAddress())
+            .setFlag(AccountSet.AccountSetFlag.AUTHORIZED_MINTER)
+            .signingPublicKey(issuerKeyPair.publicKey())
+            .build();
+
+        SingleSignedTransaction<AccountSet> signedAccountSet = signatureService.sign(
+            issuerKeyPair.privateKey(), accountSet);
+        //TODO Planned to change to submitAndWaitForValidation
+        SubmitResult<AccountSet> accountSetSubmitResult = xrplClient.submit(signedAccountSet);
+
+        NfTokenUri uri = NfTokenUri.ofPlainText(nft_uri);
+
+        //Nft mint transaction
+        NfTokenMint nfTokenMint = NfTokenMint.builder()
+            .tokenTaxon(category.getValue())
+            .account(ownerKeyPair.publicKey().deriveAddress())
+            .fee(XrpCurrencyAmount.ofDrops(50))
+            .addMemos(MemoWrapper.builder()
+                .memo(Memo.withPlaintext(memoContent).build())
+                .build())
+            .signingPublicKey(ownerKeyPair.publicKey())
+            .sequence(accountInfo(ownerKeyPair).accountData().sequence())
+            .issuer(issuerKeyPair.publicKey().deriveAddress())
+            .uri(uri)
+            .build();
+
+        SingleSignedTransaction<NfTokenMint> signedMint = signatureService.sign(
+            ownerKeyPair.privateKey(), nfTokenMint);
+        //TODO Planned to change to submitAndWaitForValidation
+        SubmitResult<NfTokenMint> mintSubmitResult = xrplClient.submit(signedMint);
+
+        AccountInfoResult sourceAccountInfoAfterMint = xrplClient.accountInfo(
+            AccountInfoRequestParams.of(issuerKeyPair.publicKey().deriveAddress())
+        );
+
+        System.out.println("NFT was minted successfully.");
+
+        return mintSubmitResult;
+    }
 
     public AccountInfoResult accountInfo(KeyPair keyPair) throws JsonRpcClientErrorException {
         // AccountInfoRequestParams 객체를 생성하여 조회할 계정과 원장을 지정합니다.
@@ -207,23 +205,6 @@ public class XrplRepository {
             .build();
 
         return xrplClient.accountInfo(params);
-    }
-
-    private UnsignedInteger computeLastLedgerSequence()
-        throws JsonRpcClientErrorException {
-        // Get the latest validated ledger index
-        LedgerIndex validatedLedger = xrplClient.ledger(
-                LedgerRequestParams.builder()
-                    .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-                    .build()
-            )
-            .ledgerIndex()
-            .orElseThrow(() -> new RuntimeException("LedgerIndex not available."));
-
-        // Workaround for https://github.com/XRPLF/xrpl4j/issues/84
-        return UnsignedInteger.valueOf(
-            validatedLedger.plus(UnsignedInteger.valueOf(4)).unsignedIntegerValue().intValue()
-        );
     }
 
     private void submitAndWaitForValidation(SingleSignedTransaction<?> signedTransaction)
