@@ -3,7 +3,6 @@ package io.openur.domain.xrpl.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.primitives.UnsignedInteger;
 import io.openur.domain.xrpl.environment.ReportingTestnetEnvironment;
-import java.util.ArrayList;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.xrpl.xrpl4j.client.JsonRpcClientErrorException;
@@ -11,38 +10,40 @@ import org.xrpl.xrpl4j.client.XrplClient;
 import org.xrpl.xrpl4j.crypto.keys.KeyPair;
 import org.xrpl.xrpl4j.crypto.keys.Seed;
 import org.xrpl.xrpl4j.crypto.signing.SingleSignedTransaction;
+import org.xrpl.xrpl4j.crypto.signing.bc.BcSignatureService;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoRequestParams;
 import org.xrpl.xrpl4j.model.client.accounts.AccountInfoResult;
 import org.xrpl.xrpl4j.model.client.common.LedgerIndex;
 import org.xrpl.xrpl4j.model.client.common.LedgerSpecifier;
+import org.xrpl.xrpl4j.model.client.fees.FeeUtils;
 import org.xrpl.xrpl4j.model.client.ledger.LedgerRequestParams;
+import org.xrpl.xrpl4j.model.client.transactions.SubmitResult;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionRequestParams;
 import org.xrpl.xrpl4j.model.client.transactions.TransactionResult;
 import org.xrpl.xrpl4j.model.immutables.FluentCompareTo;
+import org.xrpl.xrpl4j.model.transactions.AccountSet;
+import org.xrpl.xrpl4j.model.transactions.NfTokenUri;
 import org.xrpl.xrpl4j.model.transactions.Payment;
+import org.xrpl.xrpl4j.model.transactions.TransactionResultCodes;
 
 @Repository
 @Transactional(readOnly = true)
 public class XrplRepository {
     protected XrplClient xrplClient;
     protected ReportingTestnetEnvironment reportingTestnetEnvironment;
+    protected BcSignatureService signatureService;
 
     XrplRepository() {
         this.reportingTestnetEnvironment = new ReportingTestnetEnvironment();
         this.xrplClient = reportingTestnetEnvironment.getXrplClient();
     }
 
-    public ArrayList<KeyPair> createAccounts() throws InterruptedException {
-        KeyPair coldWalletKeyPair;
-        KeyPair hotWalletKeyPair;
-
-        // Create cold and hot KeyPairs -----------------------
-        coldWalletKeyPair = Seed.ed25519Seed().deriveKeyPair();
-        hotWalletKeyPair = Seed.ed25519Seed().deriveKeyPair();
+    public KeyPair createAccount() throws InterruptedException {
+        // Create KeyPair -----------------------
+        KeyPair walletKeyPair = Seed.ed25519Seed().deriveKeyPair();
 
         // Fund the account using the testnet Faucet -------------------------------
-        reportingTestnetEnvironment.fundAccount(coldWalletKeyPair.publicKey().deriveAddress());
-        reportingTestnetEnvironment.fundAccount(hotWalletKeyPair.publicKey().deriveAddress());
+        reportingTestnetEnvironment.fundAccount(walletKeyPair.publicKey().deriveAddress());
 
         // If you go too soon, the funding transaction might slip back a ledger and
         // then your starting Sequence number will be off. This is mostly relevant
@@ -54,14 +55,7 @@ public class XrplRepository {
                 xrplClient.accountInfo(
                     AccountInfoRequestParams.builder()
                         .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-                        .account(coldWalletKeyPair.publicKey().deriveAddress())
-                        .build()
-                );
-
-                xrplClient.accountInfo(
-                    AccountInfoRequestParams.builder()
-                        .ledgerSpecifier(LedgerSpecifier.VALIDATED)
-                        .account(hotWalletKeyPair.publicKey().deriveAddress())
+                        .account(walletKeyPair.publicKey().deriveAddress())
                         .build()
                 );
 
@@ -74,10 +68,7 @@ public class XrplRepository {
             }
         }
         System.out.println();
-        return new ArrayList<KeyPair>() {{
-            add(coldWalletKeyPair);
-            add(hotWalletKeyPair);
-        }};
+        return walletKeyPair;
     }
 
     public AccountInfoResult accountInfo(KeyPair keyPair) throws JsonRpcClientErrorException {
