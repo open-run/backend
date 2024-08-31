@@ -21,12 +21,16 @@ public enum Taxon {
         this.value = value;
     }
 
-    public static Taxon fromValue(UnsignedLong value) {
+    public UnsignedLong getValue() {
+        return value;
+    }
+
+    public static String getCategoryNameByValue(UnsignedLong value) {
         for (Taxon category : Taxon.values()) {
-            if (category.value.equals(value)) {
-                return category;
+            if (category.getValue().equals(value)) {
+                return category.name(); // Enum의 이름을 반환
             }
         }
-        throw new IllegalArgumentException("Unknown value: " + value);
+        return null; // 일치하는 값이 없을 경우 null 반환
     }
 }

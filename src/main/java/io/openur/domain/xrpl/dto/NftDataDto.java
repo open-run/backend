@@ -4,13 +4,13 @@ import com.google.common.primitives.UnsignedInteger;
 
 public class NftDataDto {
     private String nfTokenId;
-    private UnsignedInteger taxon;
+    private String taxon;
     private String nftSerial;
     private String decodedUri;
     private String decodedMemoData;
 
     // Constructor
-    public NftDataDto(String nfTokenId, UnsignedInteger taxon, String nftSerial, String decodedUri, String decodedMemoData) {
+    public NftDataDto(String nfTokenId, String taxon, String nftSerial, String decodedUri, String decodedMemoData) {
         this.nfTokenId = nfTokenId;
         this.taxon = taxon;
         this.nftSerial = nftSerial;
@@ -23,7 +23,7 @@ public class NftDataDto {
         return nfTokenId;
     }
 
-    public UnsignedInteger getTaxon() {
+    public String getTaxon() {
         return taxon;
     }
 
