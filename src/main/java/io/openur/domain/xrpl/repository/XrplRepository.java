@@ -84,29 +84,7 @@ public class XrplRepository {
         return walletKeyPair;
     }
 
-    public SubmitResult<NfTokenMint> mintFromOtherMinterAccount(KeyPair keyPair, KeyPair minterKeyPair) throws JsonRpcClientErrorException, JsonProcessingException {
-
-        // accountInfo 메서드를 사용하여 계정 정보를 조회합니다.
-        AccountInfoResult result = accountInfo(keyPair);
-
-        // 조회된 계정 정보 출력
-        System.out.println("Account Balance: " + result.accountData().balance());
-        System.out.println("Sequence: " + result.accountData().sequence());
-        System.out.println("Owner Count: " + result.accountData().ownerCount());
-        System.out.println("account: " + result.accountData().account());
-        System.out.println();
-        System.out.println("wallet address: " + keyPair.publicKey().deriveAddress());
-
-        AccountInfoResult result1 = accountInfo(minterKeyPair);
-
-        // 조회된 계정 정보 출력
-        System.out.println("Account Balance: " + result1.accountData().balance());
-        System.out.println("Sequence: " + result1.accountData().sequence());
-        System.out.println("Owner Count: " + result1.accountData().ownerCount());
-        System.out.println("account: " + result1.accountData().account());
-        System.out.println();
-        System.out.println("wallet address: " + minterKeyPair.publicKey().deriveAddress());
-
+    public SubmitResult<NfTokenMint> mintFromOtherMinterAccount(KeyPair keyPair, KeyPair minterKeyPair,taxon category,String memoContent) throws JsonRpcClientErrorException, JsonProcessingException {
         AccountSet accountSet = AccountSet.builder()
             .account(keyPair.publicKey().deriveAddress())
             .sequence(accountInfo(keyPair).accountData().sequence())
@@ -125,11 +103,11 @@ public class XrplRepository {
 
         //Nft mint transaction
         NfTokenMint nfTokenMint = NfTokenMint.builder()
-            .tokenTaxon(UnsignedLong.ONE)
+            .tokenTaxon(category.getValue())
             .account(minterKeyPair.publicKey().deriveAddress())
             .fee(XrpCurrencyAmount.ofDrops(50))
             .addMemos(MemoWrapper.builder()
-                .memo(Memo.withPlaintext("UNCOMMON").build())
+                .memo(Memo.withPlaintext(memoContent).build())
                 .build())
             .signingPublicKey(minterKeyPair.publicKey())
             .sequence(accountInfo(minterKeyPair).accountData().sequence())
