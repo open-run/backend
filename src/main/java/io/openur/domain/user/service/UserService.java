@@ -1,5 +1,4 @@
 package io.openur.domain.user.service;
-import io.openur.domain.bung.model.Bung;
 import io.openur.domain.user.dto.GetSelfResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
@@ -7,7 +6,6 @@ import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,9 +39,7 @@ public class UserService {
 
     public Page<GetUsersResponseDto> getMemberSuggestion(@AuthenticationPrincipal UserDetailsImpl userDetails,
         Pageable pageable) {
-        List<Bung> bungs = userBungRepositoryImpl.findAllJoinBungsByUser(userDetails.getUser());
-
-        return userBungRepositoryImpl.findAllFrequentUsers(bungs, userDetails.getUser(), pageable);
+        return userBungRepositoryImpl.findAllFrequentUsers(userDetails.getUser(), pageable);
     }
 
     @Transactional

@@ -54,19 +54,9 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     }
 
     @Override
-    public List<Bung> findAllJoinBungsByUser(User user) {
-        return queryFactory
-            .selectDistinct(userBungEntity)
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .join(userBungEntity.userEntity, userEntity)
-            .where(
-                userBungEntity.userEntity.eq(user.toEntity())
-            ).fetch().stream().map(entity -> Bung.from(entity.getBungEntity())).toList();
-    }
-
-    @Override
     public Page<BungDetailDto> findAvailableBungs(String userId, Pageable pageable) {
+        // 참여 가능, 들어가기 가능한 벙
+        // 이미 참가한 벙은 안된다는 의미기 때문에 걸러내는 용도
         List<BungEntity> filter = queryFactory
             .selectDistinct(userBungEntity.bungEntity)
             .from(userBungEntity)
@@ -126,9 +116,15 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     }
 
     @Override
-    public Page<GetUsersResponseDto> findAllFrequentUsers(List<Bung> bungs,
-        User currentUser, Pageable pageable) {
-        List<BungEntity> bungEntities = bungs.stream().map(Bung::toEntity).toList();
+    public Page<GetUsersResponseDto> findAllFrequentUsers(User currentUser, Pageable pageable) {
+        List<BungEntity> participated = queryFactory
+            .selectDistinct(userBungEntity.bungEntity)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .join(userBungEntity.userEntity, userEntity)
+            .where(
+                userBungEntity.userEntity.eq(currentUser.toEntity())
+            ).fetch();
 
         List<GetUsersResponseDto> contents = queryFactory
             .select(userBungEntity.userEntity, userBungEntity.countDistinct())
@@ -137,7 +133,7 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .join(userBungEntity.userEntity, userEntity)
             .where(
                 userBungEntity.userEntity.ne(currentUser.toEntity()),
-                userBungEntity.bungEntity.in(bungEntities)
+                userBungEntity.bungEntity.in(participated)
             )
             .groupBy(userBungEntity.userEntity)
             .orderBy(userBungEntity.countDistinct().desc())
@@ -152,7 +148,7 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .join(userBungEntity.userEntity, userEntity)
             .where(
                 userBungEntity.userEntity.ne(currentUser.toEntity()),
-                userBungEntity.bungEntity.in(bungEntities)
+                userBungEntity.bungEntity.in(participated)
             )
             .groupBy(userBungEntity.userEntity);
 

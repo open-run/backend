@@ -55,10 +55,13 @@ public class BungController {
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungDetailDto> contents = bungService.getBungLists(userDetails, status, pageable);
+        Page<BungDetailDto> pagedResponse = bungService.getBungLists(userDetails, status, pageable);
 
-        return ResponseEntity.ok().body(PagedResponse.build(
-            "success", contents)
+        return ResponseEntity.ok().body(
+            PagedResponse.build(
+                "success",
+                pagedResponse
+            )
         );
     }
 
@@ -70,9 +73,13 @@ public class BungController {
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungDetailDto> ownedBungDetails = bungService.getOwnedBungLists(userDetails, pageable);
 
-        return ResponseEntity.ok().body(PagedResponse.build("success", ownedBungDetails));
+        return ResponseEntity.ok().body(
+            PagedResponse.build(
+                "success",
+                bungService.getOwnedBungLists(userDetails, pageable)
+            )
+        );
     }
 
     @GetMapping("/{bungId}")

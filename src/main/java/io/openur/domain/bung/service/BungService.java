@@ -46,8 +46,11 @@ public class BungService {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         return switch (status) {
-            case ALL -> bungRepository.findBungs(status, pageable);
+            // 필터 없이 검색하는 경우
+            case ALL -> bungRepository.findBungs(pageable);
+            // 참석 가능한 벙만 보는 경우
             case AVAILABLE -> userBungRepository.findAvailableBungs(user.getUserId(), pageable);
+            // 시작하지 않은, 이미 시작한 병을 선택하여 보는 경우
             default -> userBungRepository.findBungs(user.getUserId(), status, pageable);
         };
 
