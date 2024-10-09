@@ -61,6 +61,20 @@ public class BungController {
             PagedResponse.build(contents, "success"));
     }
 
+    @GetMapping("/my-bungs")
+    @Operation(summary = "내가 소유 및 생성한 벙 목록")
+    public ResponseEntity<PagedResponse<BungDetailDto>> getMyBungList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungDetailDto> contents = bungService.getMyBungLists(userDetails, pageable);
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success"));
+    }
+
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")
     public ResponseEntity<Response<BungDetailDto>> getBungDetail(

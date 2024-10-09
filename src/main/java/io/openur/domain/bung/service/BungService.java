@@ -57,7 +57,20 @@ public class BungService {
         BungStatus status, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
-        if(BungStatus.hasJoined(status)) return userBungRepository.findBungsWithStatus(user, status, pageable);
-        return bungRepository.findBungsWithStatus(user, status, pageable);
+        if(BungStatus.hasJoined(status))
+            return userBungRepository
+                .findBungsWithStatus(user, status, pageable)
+                .map(BungDetailDto::new);
+
+        return bungRepository
+            .findBungsWithStatus(user, status, pageable)
+            .map(BungDetailDto::new);
+    }
+
+    public Page<BungDetailDto> getMyBungLists(UserDetailsImpl userDetails,
+        Pageable pageable) {
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+
+        return userBungRepository.findMyBungs(user, pageable).map(BungDetailDto::new);
     }
 }

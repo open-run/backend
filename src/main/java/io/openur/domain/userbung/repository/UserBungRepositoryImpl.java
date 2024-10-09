@@ -29,16 +29,16 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<BungDetailDto> findBungsWithStatus(User user, BungStatus status,
+    public Page<Bung> findBungsWithStatus(User user, BungStatus status,
         Pageable pageable) {
-        List<BungDetailDto> contents = queryFactory
+        List<Bung> contents = queryFactory
             .selectDistinct(userBungEntity.bungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(withStatus(user, status))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .fetch().stream().map(entity -> new BungDetailDto(Bung.from(entity)))
+            .fetch().stream().map(Bung::from)
             .toList();
 
         JPAQuery<Long> count = queryFactory
@@ -48,6 +48,13 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .where(withStatus(user, status));
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
+    }
+
+    @Override
+    public Page<Bung> findMyBungs(User user, Pageable pageable) {
+        return userBungJpaRepository
+            .findAllByUserEntityAndOwnerIsTrueOrderByUserBungIdDesc(user.toEntity(), pageable)
+            .map(userBungEntity -> Bung.from(userBungEntity.getBungEntity()));
     }
 
     @Override

@@ -11,7 +11,6 @@ import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
-import io.openur.domain.userbung.entity.QUserBungEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -29,9 +28,9 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
 
 
     @Override
-    public Page<BungDetailDto> findBungsWithStatus(User user, BungStatus status,
+    public Page<Bung> findBungsWithStatus(User user, BungStatus status,
         Pageable pageable) {
-        List<BungDetailDto> contents = queryFactory
+        List<Bung> contents = queryFactory
             .selectDistinct(bungEntity)
             .from(bungEntity)
             .where(
@@ -40,7 +39,7 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .orderBy(bungEntity.startDateTime.asc())
-            .fetch().stream().map(entity -> new BungDetailDto(Bung.from(entity)))
+            .fetch().stream().map(Bung::from)
             .toList();
 
         JPAQuery<Long> count = queryFactory
