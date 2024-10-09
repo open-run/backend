@@ -2,13 +2,17 @@ package io.openur.domain.bung.controller;
 
 import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
+import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -42,15 +46,20 @@ public class BungController {
     }
 
     @GetMapping()
-    @Operation(summary = "벙 목록을 보는 경우 || 전체보기 || 참여한 ||")
-    public ResponseEntity<Response> getBungList(
+    @Operation(summary = "벙 목록 || 전체보기 || 합류한 || 출석한 ")
+    public ResponseEntity<PagedResponse<BungDetailDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "참여한 벙 목록만 보는 경우 true 로 설정")
-        @RequestParam(required = false, defaultValue = "false") boolean isParticipating,
-        @PageableDefault Pageable pageable
+        @Parameter(description = "null : 전체, AVAILABLE : 참여 가능, PENDING : 참여 | 시작전, ACCOMPLISHED : 참여 | 종료")
+        @RequestParam(required = false, defaultValue = "") BungStatus status,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
     ) {
-        return null;
-    } // TODO: users_bungs 가 생기면, users_bungs type 기준으로 필터 및 join 탐색 시행, boolean 교체
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungDetailDto> contents = bungService.getBungLists(userDetails, status, pageable);
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success"));
+    }
 
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")
