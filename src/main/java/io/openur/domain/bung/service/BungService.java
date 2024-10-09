@@ -3,13 +3,18 @@ package io.openur.domain.bung.service;
 import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.dto.PostBungEntityDto;
 import io.openur.domain.bung.model.Bung;
+import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
@@ -46,5 +51,13 @@ public class BungService {
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
         bungRepository.deleteByBungId(bungId);
+    }
+
+    public Page<BungDetailDto> getBungLists(UserDetailsImpl userDetails,
+        BungStatus status, Pageable pageable) {
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+
+        if(BungStatus.hasJoined(status)) return userBungRepository.findBungsWithStatus(user, status, pageable);
+        return bungRepository.findBungsWithStatus(user, status, pageable);
     }
 }
