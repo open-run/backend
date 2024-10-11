@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter @ToString
-public class PostBungEntityDto {
+public class CreateBungDto {
 
     @NotBlank
     private String name;

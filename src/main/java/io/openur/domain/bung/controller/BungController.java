@@ -1,7 +1,8 @@
 package io.openur.domain.bung.controller;
 
 import io.openur.domain.bung.dto.BungDetailDto;
-import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.dto.BungInfoDto;
+import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,9 +36,9 @@ public class BungController {
     @Operation(summary = "벙을 생성하는 경우")
     public ResponseEntity<Response<Void>> createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestBody PostBungEntityDto requestDto
+        @RequestBody CreateBungDto requestDto
     ) {
-        BungDetailDto bung = bungService.createBung(userDetails, requestDto);
+        BungInfoDto bung = bungService.createBung(userDetails, requestDto);
         return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
             .body(Response.<Void>builder()
             .message("success")
@@ -47,7 +47,7 @@ public class BungController {
 
     @GetMapping()
     @Operation(summary = "벙 목록 || 전체보기 || 합류한 || 출석한 ")
-    public ResponseEntity<PagedResponse<BungDetailDto>> getBungList(
+    public ResponseEntity<PagedResponse<BungInfoDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "null : 전체, AVAILABLE : 참여 가능, PENDING : 참여 | 시작전, ACCOMPLISHED : 참여 | 종료")
         @RequestParam(required = false, defaultValue = "") BungStatus status,
@@ -55,7 +55,7 @@ public class BungController {
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungDetailDto> contents = bungService.getBungLists(userDetails, status, pageable);
+        Page<BungInfoDto> contents = bungService.getBungLists(userDetails, status, pageable);
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
@@ -63,13 +63,13 @@ public class BungController {
 
     @GetMapping("/my-bungs")
     @Operation(summary = "내가 소유 및 생성한 벙 목록")
-    public ResponseEntity<PagedResponse<BungDetailDto>> getMyBungList(
+    public ResponseEntity<PagedResponse<BungInfoDto>> getMyBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungDetailDto> contents = bungService.getMyBungLists(userDetails, pageable);
+        Page<BungInfoDto> contents = bungService.getMyBungLists(userDetails, pageable);
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));

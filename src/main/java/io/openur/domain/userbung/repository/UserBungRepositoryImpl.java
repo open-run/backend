@@ -1,12 +1,16 @@
 package io.openur.domain.userbung.repository;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
+import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungDetailDto;
+import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
@@ -15,12 +19,15 @@ import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -29,7 +36,25 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Bung> findBungsWithStatus(User user, BungStatus status,
+    @Transactional(readOnly = true)
+    public BungDetailDto findJoinedUsersByBungId(String bungId) {
+        Map<BungEntity, List<UserBungEntity>> contents = queryFactory
+            .select(userBungEntity, bungEntity)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .join(userBungEntity.userEntity, userEntity)
+            .where(bungEntity.bungId.eq(bungId))
+            .transform(groupBy(bungEntity).as(list(userBungEntity)));
+
+        for(Entry<BungEntity, List<UserBungEntity>> entry : contents.entrySet()) {
+            return new BungDetailDto(Bung.from(entry.getKey()), entry.getValue().stream().map(UserBung::from).toList());
+        }
+
+        return null;
+    }
+
+    @Override
+    public Page<Bung> findJoinedBungsByUserWithStatus(User user, BungStatus status,
         Pageable pageable) {
         List<Bung> contents = queryFactory
             .selectDistinct(userBungEntity.bungEntity)

@@ -1,7 +1,8 @@
 package io.openur.domain.bung.service;
 
 import io.openur.domain.bung.dto.BungDetailDto;
-import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.dto.BungInfoDto;
+import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
@@ -10,8 +11,6 @@ import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,8 +28,8 @@ public class BungService {
     private final UserBungRepositoryImpl userBungRepository;
 
     @Transactional
-    public BungDetailDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        PostBungEntityDto dto) {
+    public BungInfoDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        CreateBungDto dto) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         Bung bung = new Bung(dto);
@@ -39,13 +38,12 @@ public class BungService {
         UserBung userBung = UserBung.isOwnerBung(user, bung);
         userBungRepository.save(userBung);
 
-        return new BungDetailDto(bung);
+        return new BungInfoDto(bung);
     }
 
-    public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        String bungId) {
-
-        return new BungDetailDto(bungRepository.findByBungId(bungId));
+    public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId) {
+        return userBungRepository.findJoinedUsersByBungId(bungId);
+//        return new BungInfoDto(bungRepository.findByBungId(bungId));
     }
 
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
@@ -53,24 +51,24 @@ public class BungService {
         bungRepository.deleteByBungId(bungId);
     }
 
-    public Page<BungDetailDto> getBungLists(UserDetailsImpl userDetails,
+    public Page<BungInfoDto> getBungLists(UserDetailsImpl userDetails,
         BungStatus status, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         if(BungStatus.hasJoined(status))
             return userBungRepository
-                .findBungsWithStatus(user, status, pageable)
-                .map(BungDetailDto::new);
+                .findJoinedBungsByUserWithStatus(user, status, pageable)
+                .map(BungInfoDto::new);
 
         return bungRepository
             .findBungsWithStatus(user, status, pageable)
-            .map(BungDetailDto::new);
+            .map(BungInfoDto::new);
     }
 
-    public Page<BungDetailDto> getMyBungLists(UserDetailsImpl userDetails,
+    public Page<BungInfoDto> getMyBungLists(UserDetailsImpl userDetails,
         Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
-        return userBungRepository.findMyBungs(user, pageable).map(BungDetailDto::new);
+        return userBungRepository.findMyBungs(user, pageable).map(BungInfoDto::new);
     }
 }
