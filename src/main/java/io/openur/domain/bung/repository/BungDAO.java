@@ -7,5 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BungDAO {
+    Bung findByBungId(String bungId);
     Page<Bung> findBungsWithStatus(User user, BungStatus status, Pageable pageable);
 }

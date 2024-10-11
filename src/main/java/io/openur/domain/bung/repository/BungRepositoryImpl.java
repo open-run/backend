@@ -6,7 +6,6 @@ import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;

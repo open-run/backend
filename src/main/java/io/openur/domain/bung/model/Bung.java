@@ -1,6 +1,6 @@
 package io.openur.domain.bung.model;
 
-import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.entity.BungEntity;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,7 +22,7 @@ public class Bung {
     private Boolean hasAfterRun;
     private String afterRunDescription;
 
-    public Bung(PostBungEntityDto dto) {
+    public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
         this.name = dto.getName();
         this.description = dto.getDescription();
