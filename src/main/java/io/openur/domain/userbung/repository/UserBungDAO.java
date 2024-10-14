@@ -13,6 +13,5 @@ public interface UserBungDAO {
     BungDetailDto findJoinedUsersByBungId(String bungId);
     Page<Bung> findJoinedBungsByUserWithStatus(User user, BungStatus status, Pageable pageable);
     List<String> findJoinedBungsId(User user);
-    Page<Bung> findBungsWithStatus(User user, BungStatus status, Pageable pageable);
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
 }
