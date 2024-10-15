@@ -54,3 +54,31 @@ CREATE TABLE IF NOT EXISTS tb_bungs_hashtags (
                                               FOREIGN KEY (bung_id) REFERENCES tb_bungs(bung_id),
                                               FOREIGN KEY (hashtag_id) REFERENCES tb_hashtags(hashtag_id)
 );
+
+-- tb_challenges 테이블 생성 (존재하지 않을 경우에만)
+CREATE TABLE IF NOT EXISTS tb_challenges (
+                                             challenge_id	BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+                                             challenge_name	VARCHAR(255) NOT NULL,
+                                             challenge_type	ENUM ('tuto','normal','hidden') NOT NULL DEFAULT 'normal',
+                                             description TEXT NULL,
+                                             reward_type ENUM ('head','accessory','face','shoes','top and bottom')	NOT NULL,
+                                             reward_percentage DECIMAL(5,2) NOT NULL DEFAULT 25,
+                                             completed_type	ENUM ('date', 'count', 'place', 'wearing') NOT NULL,
+                                             completed_condition_count BIGINT(20) NULL,
+                                             completed_condition_date	TIMESTAMP NULL,
+                                             completed_condition_place	TEXT NULL,
+                                             completed_condition_wearing BOOLEAN NULL
+);
+
+-- tb_users_challenges 테이블 생성 (존재하지 않을 경우에만)
+CREATE TABLE IF NOT EXISTS tb_users_challenges (
+                                              user_challenge_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+                                              user_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
+                                              challenge_id BIGINT(20) NOT NULL,
+                                              FOREIGN KEY (user_id) REFERENCES tb_users(user_id),
+                                              FOREIGN KEY (challenge_id) REFERENCES tb_challenges(challenge_id),
+                                              completedDate	TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                              nftCompleted	BOOLEAN	DEFAULT FALSE NOT NULL,
+                                              currentCount	BIGINT(20) NULL
+);
+
