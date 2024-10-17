@@ -33,13 +33,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
-public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
+public class UserBungRepositoryImpl implements UserBungRepository {
     private final UserBungJpaRepository userBungJpaRepository;
     private final JPAQueryFactory queryFactory;
 
     @Override
     @Transactional(readOnly = true)
-    public BungDetailDto findJoinedUsersByBungId(String bungId) {
+    public BungDetailDto findBungWithUsersById(String bungId) {
         Map<BungEntity, List<UserBungEntity>> contents = queryFactory
             .select(userBungEntity, bungEntity)
             .from(userBungEntity)

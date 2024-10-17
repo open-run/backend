@@ -18,10 +18,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class BungRepositoryImpl implements BungRepository, BungDAO {
+public class BungRepositoryImpl implements BungRepository {
     private final JPAQueryFactory queryFactory;
     private final BungJpaRepository bungJpaRepository;
-
 
     @Override
     public Page<Bung> findBungsWithStatus(User user, boolean isAvailableOnly,

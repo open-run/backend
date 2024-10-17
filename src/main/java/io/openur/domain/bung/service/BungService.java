@@ -42,7 +42,7 @@ public class BungService {
     }
 
     public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId) {
-        return userBungRepository.findJoinedUsersByBungId(bungId);
+        return userBungRepository.findBungWithUsersById(bungId);
 //        return new BungInfoDto(bungRepository.findByBungId(bungId));
     }
 
