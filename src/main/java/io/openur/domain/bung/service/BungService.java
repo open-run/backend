@@ -52,23 +52,20 @@ public class BungService {
     }
 
     public Page<BungInfoDto> getBungLists(UserDetailsImpl userDetails,
-        BungStatus status, Pageable pageable) {
+        boolean isAvailableOnly, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
-        if(BungStatus.hasJoined(status))
-            return userBungRepository
-                .findJoinedBungsByUserWithStatus(user, status, pageable)
-                .map(BungInfoDto::new);
-
         return bungRepository
-            .findBungsWithStatus(user, status, pageable)
+            .findBungsWithStatus(user, isAvailableOnly, pageable)
             .map(BungInfoDto::new);
     }
 
     public Page<BungInfoDto> getMyBungLists(UserDetailsImpl userDetails,
-        Pageable pageable) {
+        Boolean isOwned, BungStatus status, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
-        return userBungRepository.findMyBungs(user, pageable).map(BungInfoDto::new);
+        return userBungRepository
+            .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
+            .map(BungInfoDto::new);
     }
 }
