@@ -10,12 +10,12 @@ import org.springframework.data.domain.Page;
 @AllArgsConstructor
 public class PagedResponse<T> {
     private String message;
-    private List<T> data = new ArrayList<>();
-    private int totalPages = 0;
-    private long totalElements = 0;
-    private boolean first = true;
-    private boolean last = true;
-    private boolean isEmpty = true;
+    private List<T> data;
+    private int totalPages;
+    private long totalElements;
+    private boolean first;
+    private boolean last;
+    private boolean isEmpty;
 
     public static <T> PagedResponse<T> build(Page<T> data, String message) {
         return new PagedResponse<>(
