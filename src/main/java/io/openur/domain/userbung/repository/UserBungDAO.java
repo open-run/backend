@@ -11,7 +11,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserBungDAO {
     BungDetailDto findJoinedUsersByBungId(String bungId);
-    Page<Bung> findJoinedBungsByUserWithStatus(User user, BungStatus status, Pageable pageable);
+    Page<Bung> findJoinedBungsByUserWithStatus(User user, Boolean isOwned,
+        BungStatus status, Pageable pageable);
     List<String> findJoinedBungsId(User user);
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
 }

@@ -49,27 +49,32 @@ public class BungController {
     @Operation(summary = "벙 목록 || 전체보기 || 합류한 || 출석한 ")
     public ResponseEntity<PagedResponse<BungInfoDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "null : 전체, AVAILABLE : 참여 가능, PENDING : 참여 | 시작전, ACCOMPLISHED : 참여 | 종료")
-        @RequestParam(required = false, defaultValue = "") BungStatus status,
+        @Parameter(description = "시작하거나, 종료되지 않은 벙 목록 || true : 참가 할수있는 || false : 이미 참가한 것도 보여지는")
+        @RequestParam(required = false, defaultValue = "false") boolean isAvailableOnly,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoDto> contents = bungService.getBungLists(userDetails, status, pageable);
+        Page<BungInfoDto> contents = bungService.getBungLists(userDetails, isAvailableOnly, pageable);
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
     }
 
     @GetMapping("/my-bungs")
-    @Operation(summary = "내가 소유 및 생성한 벙 목록")
+    @Operation(summary = "내가 소유 및 참가했던 벙 목록")
     public ResponseEntity<PagedResponse<BungInfoDto>> getMyBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Parameter(description = "null : 전부 || true : 소유한 || false : 소유자는 아닌")
+        @RequestParam(required = false, defaultValue = "") Boolean isOwned,
+        @Parameter(description = "null : 전부 || PARTICIPATING : 아직 시작하지 않은 || ACCOMPLISHED : 완료된")
+        @RequestParam(required = false, defaultValue = "") BungStatus status,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoDto> contents = bungService.getMyBungLists(userDetails, pageable);
+        Page<BungInfoDto> contents = bungService.getMyBungLists(
+            userDetails, isOwned, status, pageable);
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
