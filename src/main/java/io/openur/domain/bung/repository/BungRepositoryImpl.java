@@ -6,13 +6,10 @@ import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +24,13 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
 
 
     @Override
-    public Page<Bung> findBungsWithStatus(User user, BungStatus status,
+    public Page<Bung> findBungsWithStatus(User user, boolean isAvailableOnly,
         Pageable pageable) {
         List<Bung> contents = queryFactory
             .selectDistinct(bungEntity)
             .from(bungEntity)
             .where(
-                isAvailable(user, status)
+                isAvailable(user, isAvailableOnly)
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -50,13 +47,6 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
     }
 
     @Override
-    public Bung findByBungId(String bungId) {
-        BungEntity bungEntity = bungJpaRepository.findByBungId(bungId)
-            .orElseThrow(() -> new NoSuchElementException("Bung not found"));
-        return Bung.from(bungEntity);
-    }
-
-    @Override
     public void deleteByBungId(String bungId) {
         bungJpaRepository.deleteByBungId(bungId);
     }
@@ -66,10 +56,10 @@ public class BungRepositoryImpl implements BungRepository, BungDAO {
         return Bung.from(bungJpaRepository.save(bung.toEntity()));
     }
 
-    private BooleanExpression isAvailable(User user, BungStatus status) {
+    private BooleanExpression isAvailable(User user, boolean isAvailableOnly) {
         BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
 
-        if(!BungStatus.AVAILABLE.equals(status)) return baseCondition;
+        if(!isAvailableOnly) return baseCondition;
 
         List<String> filterIds = queryFactory
             .selectDistinct(userBungEntity.bungEntity.bungId)

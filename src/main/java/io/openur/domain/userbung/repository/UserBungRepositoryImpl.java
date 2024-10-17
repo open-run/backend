@@ -3,6 +3,7 @@ package io.openur.domain.userbung.repository;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
+import static io.openur.domain.bung.model.BungStatus.PARTICIPATING;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
@@ -14,7 +15,6 @@ import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
-import io.openur.domain.user.entity.QUserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
@@ -56,13 +56,18 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     }
 
     @Override
-    public Page<Bung> findJoinedBungsByUserWithStatus(User user, BungStatus status,
-        Pageable pageable) {
+    public Page<Bung> findJoinedBungsByUserWithStatus(
+        User user, Boolean isOwned, BungStatus status, Pageable pageable)
+    {
         List<Bung> contents = queryFactory
             .selectDistinct(userBungEntity.bungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
-            .where(withStatus(user, status))
+            .where(
+                userBungEntity.userEntity.eq(user.toEntity()),
+                ownedBungsOnly(isOwned),
+                withStatus(status)
+            )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch().stream().map(Bung::from)
@@ -72,7 +77,11 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .selectDistinct(userBungEntity.bungEntity.count())
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
-            .where(withStatus(user, status));
+            .where(
+                userBungEntity.userEntity.eq(user.toEntity()),
+                ownedBungsOnly(isOwned),
+                withStatus(status)
+            );
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
@@ -85,13 +94,6 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
             .join(userBungEntity.bungEntity, bungEntity)
             .where(userBungEntity.userEntity.eq(user.toEntity()))
             .fetch();
-    }
-
-    @Override
-    public Page<Bung> findMyBungs(User user, Pageable pageable) {
-        return userBungJpaRepository
-            .findAllByUserEntityAndOwnerIsTrueOrderByUserBungIdDesc(user.toEntity(), pageable)
-            .map(userBungEntity -> Bung.from(userBungEntity.getBungEntity()));
     }
 
     @Override
@@ -171,13 +173,15 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
         userBungJpaRepository.delete(userBung.toEntity());
     }
 
-    private BooleanExpression withStatus(User user, BungStatus status) {
-        BooleanExpression conditions = userBungEntity.userEntity.eq(user.toEntity());
+    private BooleanExpression ownedBungsOnly(Boolean isOwned) {
+        if(isOwned == null) return null;
+        return userBungEntity.isOwner.eq(isOwned);
+    }
 
-        if(BungStatus.PENDING.equals(status))
-            // 참여는 한 것이 조건, 시작 예정이라면 시작 시간이 지금보다는 이후일것.
-            return conditions.and(bungEntity.startDateTime.gt(LocalDateTime.now()));
-        // 종료된 상황이라면 종료 시간이 지금보다 이전일것.
-        return conditions.and(bungEntity.endDateTime.loe(LocalDateTime.now()));
+    private BooleanExpression withStatus(BungStatus status) {
+        if(status == null) return null;
+
+        if(PARTICIPATING.equals(status)) return bungEntity.startDateTime.lt(LocalDateTime.now());
+        return bungEntity.endDateTime.loe(LocalDateTime.now());
     }
 }
