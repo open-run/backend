@@ -1,16 +1,20 @@
 package io.openur.domain.bung.controller;
 
 import io.openur.domain.bung.dto.BungDetailDto;
-import io.openur.domain.bung.dto.PostBungEntityDto;
+import io.openur.domain.bung.dto.BungInfoDto;
+import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
+import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,9 +36,9 @@ public class BungController {
     @Operation(summary = "벙을 생성하는 경우")
     public ResponseEntity<Response<Void>> createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestBody PostBungEntityDto requestDto
+        @RequestBody CreateBungDto requestDto
     ) {
-        BungDetailDto bung = bungService.createBung(userDetails, requestDto);
+        BungInfoDto bung = bungService.createBung(userDetails, requestDto);
         return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
             .body(Response.<Void>builder()
             .message("success")
@@ -42,15 +46,39 @@ public class BungController {
     }
 
     @GetMapping()
-    @Operation(summary = "벙 목록을 보는 경우 || 전체보기 || 참여한 ||")
-    public ResponseEntity<Response> getBungList(
+    @Operation(summary = "벙 목록 || 전체보기 || 합류한 || 출석한 ")
+    public ResponseEntity<PagedResponse<BungInfoDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "참여한 벙 목록만 보는 경우 true 로 설정")
-        @RequestParam(required = false, defaultValue = "false") boolean isParticipating,
-        @PageableDefault Pageable pageable
+        @Parameter(description = "시작하거나, 종료되지 않은 벙 목록 || true : 참가 할수있는 || false : 이미 참가한 것도 보여지는")
+        @RequestParam(required = false, defaultValue = "false") boolean isAvailableOnly,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
     ) {
-        return null;
-    } // TODO: users_bungs 가 생기면, users_bungs type 기준으로 필터 및 join 탐색 시행, boolean 교체
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungInfoDto> contents = bungService.getBungLists(userDetails, isAvailableOnly, pageable);
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success"));
+    }
+
+    @GetMapping("/my-bungs")
+    @Operation(summary = "내가 소유 및 참가했던 벙 목록")
+    public ResponseEntity<PagedResponse<BungInfoDto>> getMyBungList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Parameter(description = "null : 전부 || true : 소유한 || false : 소유자는 아닌")
+        @RequestParam(required = false, defaultValue = "") Boolean isOwned,
+        @Parameter(description = "null : 전부 || PARTICIPATING : 아직 시작하지 않은 || ACCOMPLISHED : 완료된")
+        @RequestParam(required = false, defaultValue = "") BungStatus status,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungInfoDto> contents = bungService.getMyBungLists(
+            userDetails, isOwned, status, pageable);
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success"));
+    }
 
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")

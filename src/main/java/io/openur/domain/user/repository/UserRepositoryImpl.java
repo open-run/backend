@@ -12,11 +12,6 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public User save(User user) {
-        return User.from(userJpaRepository.save(user.toEntity()));
-    }
-
-    @Override
     public User findByEmail(String email) {
         UserEntity userEntity = userJpaRepository.findByEmail(email).orElse(null);
         if (userEntity == null) {
@@ -36,6 +31,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByNickname(String nickname) {
         return userJpaRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public User save(User user) {
+        return User.from(userJpaRepository.save(user.toEntity()));
     }
 
     @Override
