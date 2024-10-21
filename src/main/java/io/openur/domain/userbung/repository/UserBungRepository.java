@@ -1,7 +1,7 @@
 package io.openur.domain.userbung.repository;
 
 import com.querydsl.core.Tuple;
-import io.openur.domain.bung.dto.BungDetailDto;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserBungRepository {
-    BungDetailDto findBungWithUsersById(String bungId);
+    BungInfoWithMemberListDto findBungWithUsersById(String bungId);
 
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
 

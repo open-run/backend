@@ -11,7 +11,7 @@ public class UserBungInfoDto {
     private String runningPace;
 
     private Long userBungId;
-    private boolean participationstatus;
+    private boolean participationStatus;
     private boolean isOwner;
 
     public UserBungInfoDto(UserBung userBung) {
@@ -20,7 +20,7 @@ public class UserBungInfoDto {
         this.email = userBung.getUser().getEmail();
         this.runningPace = userBung.getUser().getRunningPace();
         this.userBungId = userBung.getUserBungId();
-        this.participationstatus = userBung.isParticipationStatus();
+        this.participationStatus = userBung.isParticipationStatus();
         this.isOwner = userBung.isOwner();
     }
 }
