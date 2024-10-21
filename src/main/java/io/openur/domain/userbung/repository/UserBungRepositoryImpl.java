@@ -6,6 +6,7 @@ import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,6 +14,7 @@ import io.openur.domain.bung.dto.BungDetailDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
+import io.openur.domain.user.entity.QUserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
@@ -76,10 +78,51 @@ public class UserBungRepositoryImpl implements UserBungRepository, UserBungDAO {
     }
 
     @Override
+    public List<String> findJoinedBungsId(User user) {
+        return queryFactory
+            .selectDistinct(userBungEntity.bungEntity.bungId)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(userBungEntity.userEntity.eq(user.toEntity()))
+            .fetch();
+    }
+
+    @Override
     public Page<Bung> findMyBungs(User user, Pageable pageable) {
         return userBungJpaRepository
             .findAllByUserEntityAndOwnerIsTrueOrderByUserBungIdDesc(user.toEntity(), pageable)
             .map(userBungEntity -> Bung.from(userBungEntity.getBungEntity()));
+    }
+
+    @Override
+    public Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user,
+        Pageable pageable) {
+        List<Tuple> contents = queryFactory
+            .select(userBungEntity.userEntity, userBungEntity.userEntity.count())
+            .from(userBungEntity)
+            .join(userBungEntity.userEntity, userEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.bungEntity.bungId.in(bungIds),
+                userBungEntity.userEntity.ne(user.toEntity())
+            )
+            .groupBy(userBungEntity.userEntity)
+            .orderBy(userBungEntity.userEntity.count().desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        JPAQuery<Long> count = queryFactory
+            .select(userBungEntity.userEntity.countDistinct())
+            .from(userBungEntity)
+            .join(userBungEntity.userEntity, userEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.bungEntity.bungId.in(bungIds),
+                userBungEntity.userEntity.ne(user.toEntity())
+            );
+
+        return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
 
     @Override
