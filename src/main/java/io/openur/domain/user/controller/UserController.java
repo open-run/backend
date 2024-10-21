@@ -3,11 +3,13 @@ package io.openur.domain.user.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
+import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
 import io.openur.domain.user.service.oauth.LoginServiceFactory;
+import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
@@ -17,6 +19,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -88,6 +93,20 @@ public class UserController {
             .message("success")
             .data(isExist)
             .build());
+    }
+
+    @GetMapping("/suggestion")
+    @Operation(summary = "자주 함께한 사용자 목록")
+    public ResponseEntity<PagedResponse<GetUsersResponseDto>> getUserSuggestion(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<GetUsersResponseDto> users = userService.getUserSuggestion(userDetails, pageable);
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(users, "success"));
     }
 
     @PatchMapping()
