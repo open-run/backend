@@ -1,6 +1,6 @@
 package io.openur.domain.bung.service;
 
-import io.openur.domain.bung.dto.BungDetailDto;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.Bung;
@@ -41,7 +41,7 @@ public class BungService {
         return new BungInfoDto(bung);
     }
 
-    public BungDetailDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId) {
+    public BungInfoWithMemberListDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId) {
         return userBungRepository.findBungWithUsersById(bungId);
 //        return new BungInfoDto(bungRepository.findByBungId(bungId));
     }

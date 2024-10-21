@@ -11,7 +11,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.openur.domain.bung.dto.BungDetailDto;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
@@ -39,7 +39,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public BungDetailDto findBungWithUsersById(String bungId) {
+    public BungInfoWithMemberListDto findBungWithUsersById(String bungId) {
         Map<BungEntity, List<UserBungEntity>> contents = queryFactory
             .select(userBungEntity, bungEntity)
             .from(userBungEntity)
@@ -49,7 +49,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .transform(groupBy(bungEntity).as(list(userBungEntity)));
 
         for(Entry<BungEntity, List<UserBungEntity>> entry : contents.entrySet()) {
-            return new BungDetailDto(Bung.from(entry.getKey()), entry.getValue().stream().map(UserBung::from).toList());
+            return new BungInfoWithMemberListDto(entry);
         }
 
         return null;
