@@ -1,21 +1,27 @@
 package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
-import io.openur.domain.userbung.entity.UserBungEntity;
-import java.util.Optional;
+import io.openur.domain.userbung.model.UserBung;
+import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import java.util.NoSuchElementException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class UserBungApiTest extends TestSupport {
+
+	@Autowired
+	protected UserBungRepositoryImpl userBungRepository;
 
 	private static final String PREFIX = "/v1/bungs";
 
@@ -32,9 +38,8 @@ public class UserBungApiTest extends TestSupport {
 				.contentType(MediaType.APPLICATION_JSON)
 		).andExpect(status().isAccepted());
 
-		Optional<UserBungEntity> kickedUserBung = userBungJpaRepository
-			.findByUserEntity_UserIdAndBungEntity_BungId(userIdToKick, bungId);
-		assertThat(kickedUserBung).isEmpty();
+		assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
+			.isInstanceOf(NoSuchElementException.class);
 	}
 
 	@Nested
@@ -58,15 +63,15 @@ public class UserBungApiTest extends TestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			).andExpect(status().isOk());
 
-			Optional<UserBungEntity> newOwnerBung = userBungJpaRepository
-				.findByUserEntity_UserIdAndBungEntity_BungId(newOwnerUserId, bungId);
-			assertThat(newOwnerBung).isPresent();
-			assertThat(newOwnerBung.get().isOwner()).isTrue();
+			UserBung newOwnerBung = userBungRepository.findByUserIdAndBungId(newOwnerUserId,
+				bungId);
+			assertThat(newOwnerBung).isNotNull();
+			assertThat(newOwnerBung.isOwner()).isTrue();
 
-			Optional<UserBungEntity> oldOwnerBung = userBungJpaRepository
-				.findByUserEntity_UserIdAndBungEntity_BungId(oldOwnerUserId, bungId);
-			assertThat(oldOwnerBung).isPresent();
-			assertThat(oldOwnerBung.get().isOwner()).isFalse();
+			UserBung oldOwnerBung = userBungRepository.findByUserIdAndBungId(oldOwnerUserId,
+				bungId);
+			assertThat(oldOwnerBung).isNotNull();
+			assertThat(oldOwnerBung.isOwner()).isFalse();
 		}
 
 		@Test

@@ -2,7 +2,6 @@ package io.openur.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +22,6 @@ public class TestSupport {
     private WebApplicationContext context;
     @Autowired
     protected JwtUtil jwtUtil;
-    @Autowired
-    protected UserBungJpaRepository userBungJpaRepository;
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
