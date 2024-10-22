@@ -5,16 +5,34 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
+import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.repository.BungJpaRepository;
+import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
+import io.openur.domain.hashtag.model.Hashtag;
+import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class BungApiTest extends TestSupport {
+
+    @Autowired
+    protected BungJpaRepository bungJpaRepository;
+    @Autowired
+    protected HashtagRepositoryImpl hashtagRepository;
+    @Autowired
+    protected BungHashtagRepositoryImpl bungHashtagRepository;
+
     private static final String PREFIX = "/v1/bungs";
 
     @Test
@@ -24,23 +42,38 @@ public class BungApiTest extends TestSupport {
         String token = getTestUserToken("test1@test.com");
 
         var submittedBung = new HashMap<>();
+        List<String> hashtags = Arrays.asList("LSD", "음악있음", "밤산책");
         submittedBung.put("name", "이름");
         submittedBung.put("description", "설명");
         submittedBung.put("location", "장소");
-        submittedBung.put("startDateTime", LocalDateTime.now().toString());
-        submittedBung.put("endDateTime", LocalDateTime.now().plusDays(1).toString());
+        submittedBung.put("startDateTime", LocalDateTime.now().plusDays(3).toString());
+        submittedBung.put("endDateTime", LocalDateTime.now().plusDays(4).toString());
         submittedBung.put("distance", "10.5");
         submittedBung.put("pace", "5'55\"");
         submittedBung.put("memberNumber", 5);
         submittedBung.put("hasAfterRun", false);
         submittedBung.put("afterRunDescription", "");
+        submittedBung.put("hashtags", hashtags);
 
-        mockMvc.perform(
+        MvcResult result = mockMvc.perform(
             post(PREFIX)
                 .header(AUTH_HEADER, token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonify(submittedBung))
-        ).andExpect(status().isCreated());
+        ).andExpect(status().isCreated()).andReturn();
+
+        String location = result.getResponse().getHeader("Location");
+        assert location != null;
+
+        String bungId = location.substring(location.lastIndexOf('/') + 1);
+        Optional<BungEntity> bungEntity = bungJpaRepository.findById(bungId);
+        assert bungEntity.isPresent();
+        assert bungId.equals(bungEntity.get().getBungId());
+
+        assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+            .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
+        assert hashtagRepository.findByHashtagStrIn(hashtags).stream().map(Hashtag::getHashtagStr)
+            .toList().containsAll(hashtags);
     }
 
     @Nested

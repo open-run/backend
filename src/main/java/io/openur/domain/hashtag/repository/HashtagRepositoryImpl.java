@@ -1,11 +1,12 @@
 package io.openur.domain.hashtag.repository;
 
+import io.openur.domain.hashtag.entity.HashtagEntity;
+import io.openur.domain.hashtag.model.Hashtag;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Repository;
-import io.openur.domain.hashtag.model.Hashtag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -14,7 +15,10 @@ public class HashtagRepositoryImpl implements HashtagRepository {
 
     @Override
     public Hashtag save(Hashtag hashtag) {
-        return Hashtag.from(hashtagJpaRepository.save(hashtag.toEntity()));
+        Optional<HashtagEntity> existingHashtag = hashtagJpaRepository.findByHashtagStr(
+            hashtag.getHashtagStr());
+        return existingHashtag.map(Hashtag::from)
+            .orElseGet(() -> Hashtag.from(hashtagJpaRepository.save(hashtag.toEntity())));
     }
 
     @Override

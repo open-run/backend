@@ -1,12 +1,12 @@
 package io.openur.domain.bunghashtag.repository;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.stereotype.Repository;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.model.Hashtag;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
     }
 
     @Override
-    public List<Hashtag> findBungHashtags(String bungId) {
+    public List<Hashtag> findHashtagsByBungId(String bungId) {
         return bungHashtagJpaRepository.findByBungEntity_BungId(bungId).stream()
                 .map(Hashtag::from)
                 .collect(Collectors.toList());
