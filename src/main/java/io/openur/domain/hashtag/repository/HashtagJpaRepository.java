@@ -11,4 +11,6 @@ public interface HashtagJpaRepository extends JpaRepository<HashtagEntity, Long>
     List<HashtagEntity> findByHashtagStrIn(List<String> hashtagStrs);
 
     List<HashtagEntity> findByHashtagIdIn(List<Long> hashtagIds);
+
+    List<HashtagEntity> findByHashtagStrContaining(String substring);
 }
