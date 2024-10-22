@@ -54,4 +54,12 @@ public class HashtagRepositoryImpl implements HashtagRepository {
             .map(Hashtag::from)
             .toList();
     }
+
+    @Override
+    public List<Hashtag> findByHashtagStrContaining(String substring) {
+        return hashtagJpaRepository.findByHashtagStrContaining(substring)
+            .stream()
+            .map(Hashtag::from)
+            .collect(Collectors.toList());
+    }
 }
