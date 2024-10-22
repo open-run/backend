@@ -1,7 +1,7 @@
 package io.openur.domain.bung.controller;
 
-import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoDto;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
@@ -86,7 +86,6 @@ public class BungController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
     ) {
-        // TODO: 벙 참가자도 같이 받고 싶을지도?
         BungInfoWithMemberListDto getBung = bungService.getBungDetail(userDetails, bungId);
         return ResponseEntity.ok().body(Response.<BungInfoWithMemberListDto>builder()
             .message("success")
