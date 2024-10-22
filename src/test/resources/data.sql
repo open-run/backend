@@ -22,3 +22,17 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-8036
        (2, 'c0477004-1632-455f-acc9-04584b55921f', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
         CURRENT_TIMESTAMP(), false)
 ;
+
+INSERT INTO tb_hashtags (hashtag_id, hashtag_str)
+VALUES (1, '펀런'),
+       (2, '런린이'),
+       (3, '밤산책'),
+       (4, 'LSD'),
+       (5, '고수만')
+;
+
+INSERT INTO tb_bungs_hashtags (bung_hashtag_id, bung_id, hashtag_id)
+VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', 1),
+       (2, 'c0477004-1632-455f-acc9-04584b55921f', 2),
+       (3, 'c0477004-1632-455f-acc9-04584b55921f', 3)
+;
