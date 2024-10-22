@@ -3,6 +3,7 @@ package io.openur.domain.bung.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -27,4 +28,5 @@ public class CreateBungDto {
     @NotNull
     private Boolean hasAfterRun;
     private String afterRunDescription;
+    private List<String> hashtags;
 }
