@@ -7,7 +7,6 @@ import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
-import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
@@ -43,10 +42,8 @@ public class BungService {
     }
 
     private void saveHashtags(Bung bung, List<String> hashtagStrList) {
-        List<Hashtag> hashtags = hashtagStrList.stream()
-            .map(hashtagStr -> hashtagRepository.save(new Hashtag(hashtagStr)))
-            .toList();
-        hashtags.forEach(hashtag -> bungHashtagRepository.save(new BungHashtag(bung, hashtag)));
+        List<Hashtag> savedHashtags = hashtagRepository.saveAll(hashtagStrList);
+        bungHashtagRepository.bulkInsertHashtags(bung, savedHashtags);
     }
 
     @Transactional

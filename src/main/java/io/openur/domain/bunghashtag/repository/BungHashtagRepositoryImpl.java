@@ -3,6 +3,8 @@ package io.openur.domain.bunghashtag.repository;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.model.Hashtag;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -12,9 +14,17 @@ import org.springframework.stereotype.Repository;
 public class BungHashtagRepositoryImpl implements BungHashtagRepository {
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Override
-    public BungHashtag save(BungHashtag bungHashtag) {
-        return BungHashtag.from(bungHashtagJpaRepository.save(bungHashtag.toEntity()));
+    public void bulkInsertHashtags(Bung bung, List<Hashtag> hashtags) {
+        for (Hashtag hashtag : hashtags) {
+            BungHashtag bungHashtag = new BungHashtag(bung, hashtag);
+            entityManager.persist(bungHashtag);
+        }
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override

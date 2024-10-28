@@ -13,11 +13,24 @@ public class HashtagRepositoryImpl implements HashtagRepository {
     private final HashtagJpaRepository hashtagJpaRepository;
 
     @Override
-    public Hashtag save(Hashtag hashtag) {
-        Optional<HashtagEntity> existingHashtag = hashtagJpaRepository.findByHashtagStr(
-            hashtag.getHashtagStr());
-        return existingHashtag.map(Hashtag::from)
-            .orElseGet(() -> Hashtag.from(hashtagJpaRepository.save(hashtag.toEntity())));
+    public List<Hashtag> saveAll(List<String> hashtagStrs) {
+        List<String> existingHashtags = hashtagJpaRepository.findByHashtagStrIn(hashtagStrs)
+            .stream()
+            .map(HashtagEntity::getHashtagStr)
+            .toList();
+
+        List<Hashtag> toSave = hashtagStrs.stream()
+            .filter(hashtagStr -> !existingHashtags.contains(hashtagStr))
+            .map(Hashtag::new)
+            .toList();
+
+        return hashtagJpaRepository.saveAll(
+                toSave.stream()
+                .map(Hashtag::toEntity)
+                .toList())
+            .stream()
+            .map(Hashtag::from)
+            .toList();
     }
 
     @Override
