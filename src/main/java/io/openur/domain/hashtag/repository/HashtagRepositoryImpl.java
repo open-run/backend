@@ -4,7 +4,6 @@ import io.openur.domain.hashtag.entity.HashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -32,7 +31,7 @@ public class HashtagRepositoryImpl implements HashtagRepository {
         return hashtagJpaRepository.findByHashtagStrIn(hashtagStrs)
             .stream()
             .map(Hashtag::from)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override
@@ -40,6 +39,6 @@ public class HashtagRepositoryImpl implements HashtagRepository {
         return hashtagJpaRepository.findByHashtagIdIn(hashtagIds)
             .stream()
             .map(Hashtag::from)
-            .collect(Collectors.toList());
+            .toList();
     }
 }
