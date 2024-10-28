@@ -1,12 +1,11 @@
 package io.openur.domain.bunghashtag.repository;
 
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.model.Hashtag;
 import java.util.List;
 
 public interface BungHashtagRepository {
-    BungHashtag save(BungHashtag bungHashtag);
+    void bulkInsertHashtags(Bung bung, List<Hashtag> hashtags);
 
     List<Hashtag> findHashtagsByBungId(String bungId);
 
