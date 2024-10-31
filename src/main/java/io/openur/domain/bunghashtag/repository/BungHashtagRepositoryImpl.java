@@ -21,7 +21,7 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
     public void bulkInsertHashtags(Bung bung, List<Hashtag> hashtags) {
         for (Hashtag hashtag : hashtags) {
             BungHashtag bungHashtag = new BungHashtag(bung, hashtag);
-            entityManager.persist(bungHashtag);
+            entityManager.persist(bungHashtag.toEntity());
         }
         entityManager.flush();
         entityManager.clear();
