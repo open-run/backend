@@ -60,6 +60,6 @@ public class HashtagRepositoryImpl implements HashtagRepository {
         return hashtagJpaRepository.findByHashtagStrContaining(substring)
             .stream()
             .map(Hashtag::from)
-            .collect(Collectors.toList());
+            .toList();
     }
 }
