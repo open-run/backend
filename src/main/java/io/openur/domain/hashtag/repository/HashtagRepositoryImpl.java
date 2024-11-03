@@ -1,7 +1,7 @@
 package io.openur.domain.hashtag.repository;
 
-import io.openur.domain.hashtag.entity.HashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -12,25 +12,39 @@ import org.springframework.stereotype.Repository;
 public class HashtagRepositoryImpl implements HashtagRepository {
     private final HashtagJpaRepository hashtagJpaRepository;
 
+    /**
+     * Saves new hashtag strings into the database and returns all hashtag elements with their ID
+     * values.
+     *
+     * @param hashtagStrs List of hashtag strings to save.
+     * @return List of all hashtags with their ID values.
+     */
     @Override
     public List<Hashtag> saveAll(List<String> hashtagStrs) {
-        List<String> existingHashtags = hashtagJpaRepository.findByHashtagStrIn(hashtagStrs)
+        List<Hashtag> existingHashtags = hashtagJpaRepository.findByHashtagStrIn(hashtagStrs)
             .stream()
-            .map(HashtagEntity::getHashtagStr)
+            .map(Hashtag::from)
             .toList();
 
         List<Hashtag> toSave = hashtagStrs.stream()
-            .filter(hashtagStr -> !existingHashtags.contains(hashtagStr))
+            .filter(hashtagStr -> existingHashtags.stream()
+                .map(Hashtag::getHashtagStr)
+                .noneMatch(hashtagStr::equals)
+            )
             .map(Hashtag::new)
             .toList();
 
-        return hashtagJpaRepository.saveAll(
+        List<Hashtag> saved = hashtagJpaRepository.saveAll(
                 toSave.stream()
                 .map(Hashtag::toEntity)
                 .toList())
             .stream()
             .map(Hashtag::from)
             .toList();
+
+        List<Hashtag> allHashtags = new ArrayList<>(existingHashtags);
+        allHashtags.addAll(saved);
+        return allHashtags;
     }
 
     @Override
