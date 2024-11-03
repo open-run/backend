@@ -42,8 +42,8 @@ public class BungService {
     }
 
     private void saveHashtags(Bung bung, List<String> hashtagStrList) {
-        List<Hashtag> savedHashtags = hashtagRepository.saveAll(hashtagStrList);
-        bungHashtagRepository.bulkInsertHashtags(bung, savedHashtags);
+        List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagStrList);
+        bungHashtagRepository.bulkInsertHashtags(bung, hashtags);
     }
 
     @Transactional
