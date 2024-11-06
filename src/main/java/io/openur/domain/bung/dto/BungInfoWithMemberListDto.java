@@ -8,8 +8,10 @@ import io.openur.domain.userbung.model.UserBung;
 import java.util.List;
 import java.util.Map.Entry;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class BungInfoWithMemberListDto extends BungInfoWithHashtagsDto {
     private List<UserBungInfoDto> memberList;
 

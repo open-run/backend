@@ -5,12 +5,15 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
+import io.openur.global.common.Response;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -113,6 +116,14 @@ public class BungApiTest extends TestSupport {
                     .header(AUTH_HEADER, token)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
+
+            Response<BungInfoWithMemberListDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {}
+            );
+            assert !response.getData().getHashtags().isEmpty();
+            assert !response.getData().getMemberList().isEmpty();
+            assert response.getData().getMemberList().size() == response.getData().getMemberNumber();
         }
     }
 

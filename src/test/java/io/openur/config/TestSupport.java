@@ -1,7 +1,9 @@
 package io.openur.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.openur.global.common.Response;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
@@ -55,7 +57,9 @@ public class TestSupport {
         return new ObjectMapper().writeValueAsString(req);
     }
 
-    protected Response parseResponse(String resString) throws JsonProcessingException {
-        return new ObjectMapper().readValue(resString, Response.class);
+    protected <T> Response<T> parseResponse(String resString, TypeReference<Response<T>> typeReference) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper.readValue(resString, typeReference);
     }
 }
