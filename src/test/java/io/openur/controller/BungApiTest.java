@@ -2,6 +2,7 @@ package io.openur.controller;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
@@ -74,6 +75,45 @@ public class BungApiTest extends TestSupport {
             .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
         assert hashtagRepository.findByHashtagStrIn(hashtags).stream().map(Hashtag::getHashtagStr)
             .toList().containsAll(hashtags);
+    }
+
+    @Nested
+    @DisplayName("벙 정보 상세보기")
+    class getBungDetailTest {
+
+        String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+        @Test
+        @DisplayName("403 Forbidden. Authorization Header 없음")
+        @Transactional
+        void getBungDetail_isForbidden() throws Exception {
+            mockMvc.perform(
+                get(PREFIX + "/" + bungId)
+            ).andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("401 Unauthorized. invalid Authorization Header")
+        @Transactional
+        void getBungDetail_isUnauthorized() throws Exception {
+            String invalidToken = "Bearer invalidToken";
+            mockMvc.perform(
+                get(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, invalidToken)
+            ).andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("200 OK.")
+        @Transactional
+        void getBungDetail_isOk() throws Exception {
+            String token = getTestUserToken("test3@test.com");  // not owner of the bung
+            MvcResult result = mockMvc.perform(
+                get(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+        }
     }
 
     @Nested
