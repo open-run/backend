@@ -4,6 +4,7 @@ package io.openur.controller;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.global.common.Response;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class HashtagApiTest extends TestSupport {
 			).andExpect(status().isOk()).andReturn();
 
 			Response<List<String>> response = parseResponse(
-				result.getResponse().getContentAsString());
+				result.getResponse().getContentAsString(), new TypeReference<>() {});
 			assert response.getData().containsAll(entry.getValue());
 		}
 	}
