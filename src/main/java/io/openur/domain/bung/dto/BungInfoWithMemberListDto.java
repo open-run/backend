@@ -10,12 +10,14 @@ import java.util.Map.Entry;
 import lombok.Getter;
 
 @Getter
-public class BungInfoWithMemberListDto extends BungInfoDto {
+public class BungInfoWithMemberListDto extends BungInfoWithHashtagsDto {
     private List<UserBungInfoDto> memberList;
 
     public BungInfoWithMemberListDto(
-        Entry<BungEntity, List<UserBungEntity>> entrySet) {
-        super(Bung.from(entrySet.getKey()));
+		Entry<BungEntity, List<UserBungEntity>> entrySet,
+		List<String> hashtags
+	) {
+		super(Bung.from(entrySet.getKey()), hashtags);
 
         this.memberList =
             entrySet.getValue()
