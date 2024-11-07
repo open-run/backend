@@ -1,12 +1,17 @@
 package io.openur.domain.bung.entity;
 
+import io.openur.domain.hashtag.entity.HashtagEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,4 +36,12 @@ public class BungEntity  {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
+
+    @ManyToMany
+    @JoinTable(
+        name = "tb_bungs_hashtags",
+        joinColumns = @JoinColumn(name = "bung_id"),
+        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    private Set<HashtagEntity> hashtags;
 }

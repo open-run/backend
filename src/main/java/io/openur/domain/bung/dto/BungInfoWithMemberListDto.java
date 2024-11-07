@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class BungInfoWithMemberListDto extends BungInfoWithHashtagsDto {
+public class BungInfoWithMemberListDto extends BungInfoDto {
     private List<UserBungInfoDto> memberList;
 
     public BungInfoWithMemberListDto(
