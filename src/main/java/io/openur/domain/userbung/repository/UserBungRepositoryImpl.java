@@ -4,7 +4,6 @@ import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.model.BungStatus.PARTICIPATING;
-import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
@@ -50,15 +49,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .where(bungEntity.bungId.eq(bungId))
             .transform(groupBy(bungEntity).as(list(userBungEntity)));
 
-        List<String> hashtags = queryFactory
-            .select(bungHashtagEntity.hashtagEntity.hashtagStr)
-            .from(bungHashtagEntity)
-            .join(bungHashtagEntity.bungEntity, bungEntity)
-            .where(bungEntity.bungId.eq(bungId))
-            .fetch();
-
         for (Entry<BungEntity, List<UserBungEntity>> entry : contents.entrySet()) {
-            return new BungInfoWithMemberListDto(entry, hashtags);
+            return new BungInfoWithMemberListDto(entry);
         }
 
         return null;
