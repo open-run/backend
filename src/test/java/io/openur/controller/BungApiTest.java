@@ -7,17 +7,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
+import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
+import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -81,6 +84,61 @@ public class BungApiTest extends TestSupport {
     }
 
     @Nested
+    @DisplayName("벙 목록 조회")
+    class getBungListTest {
+
+        String uriPath = PREFIX + "?isAvailableOnly=";
+
+        @Test
+        @DisplayName("200 OK. isAvailableOnly = false")
+        void getBungList_isOk() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+            MvcResult result = mockMvc.perform(
+                get(uriPath + false)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+            assert !response.isEmpty();
+            List<BungInfoDto> bungInfoDtoList = response.getData();
+            assert bungInfoDtoList.size() == 2;
+            BungInfoDto oneBung = bungInfoDtoList.get(0);
+            assert !oneBung.getHashtags().isEmpty();
+        }
+
+        @Test
+        @DisplayName("200 OK. isAvailableOnly = true")
+        void getBungList_isOk_availableOnly() throws Exception {
+            String notAvailableBungId = "90477004-1422-4551-acce-04584b34612e";
+            String participatingUserToken = getTestUserToken(
+                "test3@test.com");  // owner of the bung so already participating.
+
+            MvcResult result = mockMvc.perform(
+                get(uriPath + true)
+                    .header(AUTH_HEADER, participatingUserToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+            assert !response.isEmpty();
+            List<BungInfoDto> bungInfoDtoList = response.getData();
+            assert bungInfoDtoList.size() == 1;
+            BungInfoDto oneBung = bungInfoDtoList.get(0);
+            assert !oneBung.getHashtags().isEmpty();
+            assert !Objects.equals(oneBung.getBungId(), notAvailableBungId);
+        }
+    }
+
+    @Nested
     @DisplayName("벙 정보 상세보기")
     class getBungDetailTest {
 
@@ -88,7 +146,6 @@ public class BungApiTest extends TestSupport {
 
         @Test
         @DisplayName("403 Forbidden. Authorization Header 없음")
-        @Transactional
         void getBungDetail_isForbidden() throws Exception {
             mockMvc.perform(
                 get(PREFIX + "/" + bungId)
@@ -97,7 +154,6 @@ public class BungApiTest extends TestSupport {
 
         @Test
         @DisplayName("401 Unauthorized. invalid Authorization Header")
-        @Transactional
         void getBungDetail_isUnauthorized() throws Exception {
             String invalidToken = "Bearer invalidToken";
             mockMvc.perform(
@@ -108,7 +164,6 @@ public class BungApiTest extends TestSupport {
 
         @Test
         @DisplayName("200 OK.")
-        @Transactional
         void getBungDetail_isOk() throws Exception {
             String token = getTestUserToken("test3@test.com");  // not owner of the bung
             MvcResult result = mockMvc.perform(
