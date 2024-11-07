@@ -3,6 +3,7 @@ package io.openur.domain.bung.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.openur.domain.bung.model.Bung;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,6 +23,7 @@ public class BungInfoDto {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
+    private List<String> hashtags = List.of();
 
     public BungInfoDto(Bung bung) {
         this.bungId = bung.getBungId();
@@ -35,5 +37,11 @@ public class BungInfoDto {
         this.memberNumber = bung.getMemberNumber();
         this.hasAfterRun = bung.getHasAfterRun();
         this.afterRunDescription = bung.getAfterRunDescription();
+        this.hashtags = bung.getHashtags();
+    }
+
+    public BungInfoDto(Bung bung, List<String> hashtags) {
+        this(bung);
+        this.hashtags = hashtags;
     }
 }

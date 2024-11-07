@@ -2,7 +2,9 @@ package io.openur.domain.bung.model;
 
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +23,7 @@ public class Bung {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
+    private List<String> hashtags;
 
     public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
@@ -37,7 +40,7 @@ public class Bung {
     }
 
     public static Bung from(final BungEntity bungEntity) {
-        return new Bung(
+        Bung bung = new Bung(
             bungEntity.getBungId(),
             bungEntity.getName(),
             bungEntity.getDescription(),
@@ -48,8 +51,13 @@ public class Bung {
             bungEntity.getPace(),
             bungEntity.getMemberNumber(),
             bungEntity.getHasAfterRun(),
-            bungEntity.getAfterRunDescription()
+            bungEntity.getAfterRunDescription(),
+            null
         );
+        if (bungEntity.getHashtags() != null) {
+            bung.hashtags = bungEntity.getHashtags().stream().map(HashtagEntity::getHashtagStr).toList();
+        }
+        return bung;
     }
 
     public BungEntity toEntity() {
@@ -64,7 +72,8 @@ public class Bung {
             pace,
             memberNumber,
             hasAfterRun,
-            afterRunDescription
+            afterRunDescription,
+            null
         );
     }
 }
