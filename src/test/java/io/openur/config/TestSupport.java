@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.openur.global.common.Response;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +56,8 @@ public class TestSupport {
         return new ObjectMapper().writeValueAsString(req);
     }
 
-    protected <T> Response<T> parseResponse(String resString, TypeReference<Response<T>> typeReference) throws JsonProcessingException {
+    protected <T> T parseResponse(String resString, TypeReference<T> typeReference)
+        throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper.readValue(resString, typeReference);

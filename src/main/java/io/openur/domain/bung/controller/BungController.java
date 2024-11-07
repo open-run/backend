@@ -46,10 +46,10 @@ public class BungController {
     }
 
     @GetMapping()
-    @Operation(summary = "벙 목록 || 전체보기 || 합류한 || 출석한 ")
+    @Operation(summary = "현재 시각 기준 시작 시각이 미래인 벙 목록")
     public ResponseEntity<PagedResponse<BungInfoDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "시작하거나, 종료되지 않은 벙 목록 || true : 참가 할수있는 || false : 이미 참가한 것도 보여지는")
+        @Parameter(description = "true : 참가하지 않은 || false : 참가 유무와 상관 없이 전체 벙 목록")
         @RequestParam(required = false, defaultValue = "false") boolean isAvailableOnly,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
