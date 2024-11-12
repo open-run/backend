@@ -40,6 +40,19 @@ public class UserApiTest extends TestSupport {
             .andExpect(status().isOk());
     }
 
+    @Test
+    @DisplayName("유저 닉네임으로 검색")
+    void getUserByNicknameTest() throws Exception {
+        String token = getTestUserToken("test1@test.com");
+
+        mockMvc.perform(
+                get(PREFIX + "/nickname?nickname={nickname}", "test1")
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isOk());
+    }
+
     @Nested
     @DisplayName("페이스 기록 입력 저장")
     class saveSurveyResultTest {
