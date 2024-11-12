@@ -37,6 +37,11 @@ public class UserService {
         return new GetUserResponseDto(user);
     }
 
+    public List<GetUserResponseDto> searchByNickName(String nickName) {
+        List<User> users = userRepository.findByUserNickName(nickName);
+        return users.stream().map(GetUserResponseDto::new).toList();
+    }
+
     public Page<GetUsersResponseDto> getUserSuggestion(
         @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
 
@@ -51,7 +56,6 @@ public class UserService {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
         userRepository.deleteUserInfo(user);
     }
-
     @Transactional
     public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         String email = userDetails.getUser().getEmail();
