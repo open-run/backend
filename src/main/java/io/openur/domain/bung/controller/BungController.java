@@ -2,6 +2,7 @@ package io.openur.domain.bung.controller;
 
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.dto.BungInvitationDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/bungs")
@@ -100,6 +103,27 @@ public class BungController {
         @PathVariable String bungId
     ) {
         bungService.deleteBung(userDetails, bungId);
+        return ResponseEntity.accepted().body(Response.<Void>builder()
+            .message("success")
+            .build());
+    }
+
+    @PostMapping("/invitation")
+    @Operation(summary = "초대할 사람 리스트 전달")
+    public ResponseEntity<Response<Void>> inviteUsersToBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestBody BungInvitationDto invitationRequest) {
+
+        Long bungId = invitationRequest.getBungId();
+        List<Long> userIdList = invitationRequest.getUserIdList();
+
+        //todo 알람 전송 및 알람 후 ok한 사람들 bundId에 userId 입력해야함.
+        //알람을 보낸 후 처리는 여기서 확인할 필요가 없으니 알람 보내면 그냥 success 보내게 해야됨.
+        //알람을 보내고 signal slot 처럼 알람 response 받으면 bungId에 ok한 사람들 넣는 함수 필요함.
+        //ok한 사람들 확인을 bungService에서 확인하고 직접 넣어주는게 좋아보임. 의견 구함
+
+
+        //근데 response로 return을 보낼 필요가 있나 싶긴함. 우선 넣어둠.
         return ResponseEntity.accepted().body(Response.<Void>builder()
             .message("success")
             .build());
