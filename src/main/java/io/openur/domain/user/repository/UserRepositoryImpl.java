@@ -2,6 +2,7 @@ package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
+import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -26,6 +27,12 @@ public class UserRepositoryImpl implements UserRepository {
         UserEntity userEntity = userJpaRepository.findByUserId(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found"));
         return User.from(userEntity);
+    }
+
+    @Override
+    public List<User> findByUserNickName(String nickName) {
+        List<UserEntity> userEntity = userJpaRepository.findAllByNicknameContains(nickName);
+        return userEntity.stream().map(User::from).toList();
     }
 
     @Override
