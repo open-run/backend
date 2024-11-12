@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -71,11 +72,22 @@ public class UserController {
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        GetUserResponseDto getUserResponseDto = userService.getUserEmail(
-            userDetails);
+        GetUserResponseDto getUserResponseDto = userService.getUserEmail(userDetails);
         return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
             .message("success")
             .data(getUserResponseDto)
+            .build());
+    }
+
+    @GetMapping("/{nickName}")
+    public ResponseEntity<Response<List<GetUserResponseDto>>> findUsersInfo(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String nickName
+    ) {
+        List<GetUserResponseDto> users = userService.searchByNickName(nickName);
+        return ResponseEntity.ok().body(Response.<List<GetUserResponseDto>>builder()
+            .message("success")
+            .data(users)
             .build());
     }
 
