@@ -2,6 +2,7 @@ package io.openur.domain.user.repository;
 
 
 import io.openur.domain.user.model.User;
+import java.util.List;
 
 
 public interface UserRepository {
@@ -13,6 +14,8 @@ public interface UserRepository {
     User findByEmail(String email);
 
     User findById(String userId);
+
+    List<User> findByUserNickName(String nickName);
 
     boolean existsByNickname(String nickname);
 
