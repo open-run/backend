@@ -26,8 +26,8 @@ public class JwtUtil {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
-    // 토큰 만료시간
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 60분
+    // 토큰 만료시간 TODO : 개발 프로세스 상 너무 짧아 임시 6시간으로 연장합니다, 추후 더 늘릴지, 정책 논의 필요합니다!
+    private final long TOKEN_TIME = 6 * 60 * 60 * 1000L; // 60분
 
     @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
     private String secretKey;
