@@ -30,8 +30,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findByUserNickName(String nickName) {
-        List<UserEntity> userEntity = userJpaRepository.findAllByNicknameContains(nickName);
+    public List<User> findByUserNickname(String nickname) {
+        List<UserEntity> userEntity = userJpaRepository.findAllByNicknameContains(nickname);
         return userEntity.stream().map(User::from).toList();
     }
 
