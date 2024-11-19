@@ -79,12 +79,12 @@ public class UserController {
             .build());
     }
 
-    @GetMapping("/{nickName}")
+    @GetMapping("/{nickname}")
     public ResponseEntity<Response<List<GetUserResponseDto>>> findUsersInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable String nickName
+        @PathVariable String nickname
     ) {
-        List<GetUserResponseDto> users = userService.searchByNickName(nickName);
+        List<GetUserResponseDto> users = userService.searchByNickname(nickname);
         return ResponseEntity.ok().body(Response.<List<GetUserResponseDto>>builder()
             .message("success")
             .data(users)

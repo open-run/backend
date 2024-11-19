@@ -15,7 +15,7 @@ public interface UserRepository {
 
     User findById(String userId);
 
-    List<User> findByUserNickName(String nickName);
+    List<User> findByUserNickname(String nickName);
 
     boolean existsByNickname(String nickname);
 

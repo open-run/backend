@@ -37,8 +37,8 @@ public class UserService {
         return new GetUserResponseDto(user);
     }
 
-    public List<GetUserResponseDto> searchByNickName(String nickName) {
-        List<User> users = userRepository.findByUserNickName(nickName);
+    public List<GetUserResponseDto> searchByNickname(String nickname) {
+        List<User> users = userRepository.findByUserNickname(nickname);
         return users.stream().map(GetUserResponseDto::new).toList();
     }
 
