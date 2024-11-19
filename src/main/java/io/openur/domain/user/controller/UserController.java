@@ -79,10 +79,11 @@ public class UserController {
             .build());
     }
 
-    @GetMapping("/{nickname}")
+    @GetMapping("/nickname")
+    @Operation(summary = "닉네임으로 사용자 검색")
     public ResponseEntity<Response<List<GetUserResponseDto>>> findUsersInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable String nickname
+        @RequestParam String nickname
     ) {
         List<GetUserResponseDto> users = userService.searchByNickname(nickname);
         return ResponseEntity.ok().body(Response.<List<GetUserResponseDto>>builder()

@@ -40,17 +40,35 @@ public class UserApiTest extends TestSupport {
             .andExpect(status().isOk());
     }
 
-    @Test
+    @Nested
     @DisplayName("유저 닉네임으로 검색")
-    void getUserByNicknameTest() throws Exception {
-        String token = getTestUserToken("test1@test.com");
+    class getUserByNicknameTest {
 
-        mockMvc.perform(
-                get(PREFIX + "/nickname?nickname={nickname}", "test1")
-                    .header(AUTH_HEADER, token)
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isOk());
+        @Test
+        @DisplayName("200 Ok.")
+        void getUserByNickname_isOk() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+
+            mockMvc.perform(
+                    get(PREFIX + "/nickname?nickname={nickname}", "test1")
+                        .header(AUTH_HEADER, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("400 Bad Request. Query parameter is required.")
+        void getUserByNickname_isBadRequest() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+
+            mockMvc.perform(
+                    get(PREFIX + "/nickname")
+                        .header(AUTH_HEADER, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
+        }
     }
 
     @Nested

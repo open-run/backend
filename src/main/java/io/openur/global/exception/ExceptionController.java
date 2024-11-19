@@ -8,14 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ExceptionController {
 
-	@ExceptionHandler({IllegalArgumentException.class})
-	public ResponseEntity<ExceptionDto> handBadRequestException(Exception e) {
+	@ExceptionHandler({IllegalArgumentException.class,
+		MissingServletRequestParameterException.class})
+	public ResponseEntity<ExceptionDto> handleBadRequestException(Exception e) {
 		return createResponse(HttpStatus.BAD_REQUEST, e.getMessage());
 	}
 
