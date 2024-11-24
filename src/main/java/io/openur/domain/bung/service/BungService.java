@@ -1,7 +1,6 @@
 package io.openur.domain.bung.service;
 
 import io.openur.domain.bung.dto.BungInfoDto;
-import io.openur.domain.bung.dto.BungInfoWithHashtagsDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.model.Bung;
@@ -51,7 +50,7 @@ public class BungService {
         CreateBungDto dto) {
         Bung bung = this.saveNewBung(userDetails, dto);
         this.saveHashtags(bung, dto.getHashtags());
-        return new BungInfoWithHashtagsDto(bung, dto.getHashtags());
+        return new BungInfoDto(bung, dto.getHashtags());
     }
 
     public BungInfoWithMemberListDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId) {
@@ -60,6 +59,7 @@ public class BungService {
 
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
+        // FIXME: BE-60 해당 bung 과 연관된 user_bung data 도 지워야함
         bungRepository.deleteByBungId(bungId);
     }
 

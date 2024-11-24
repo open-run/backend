@@ -4,12 +4,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
+import io.openur.domain.user.dto.GetUserResponseDto;
+import io.openur.global.common.Response;
 import java.util.HashMap;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 public class UserApiTest extends TestSupport {
 
@@ -49,12 +55,19 @@ public class UserApiTest extends TestSupport {
         void getUserByNickname_isOk() throws Exception {
             String token = getTestUserToken("test1@test.com");
 
-            mockMvc.perform(
-                    get(PREFIX + "/nickname?nickname={nickname}", "test1")
+            MvcResult result = mockMvc.perform(
+                    get(PREFIX + "/nickname?nickname={nickname}", "test")
                         .header(AUTH_HEADER, token)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()).andReturn();
+
+            Response<List<GetUserResponseDto>> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+            assert response.getData().size() == 3;
         }
 
         @Test
@@ -94,6 +107,7 @@ public class UserApiTest extends TestSupport {
 
         @Test
         @DisplayName("201 Created.")
+        @Transactional
         void saveSurveyResult_isOk() throws Exception {
             String token = getTestUserToken("test1@test.com");
             var surveyResult = new HashMap<>();

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class BungRepositoryImpl implements BungRepository {
+
     private final JPAQueryFactory queryFactory;
     private final BungJpaRepository bungJpaRepository;
 
@@ -58,7 +59,9 @@ public class BungRepositoryImpl implements BungRepository {
     private BooleanExpression isAvailable(User user, boolean isAvailableOnly) {
         BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
 
-        if(!isAvailableOnly) return baseCondition;
+        if (!isAvailableOnly) {
+            return baseCondition;
+        }
 
         List<String> filterIds = queryFactory
             .selectDistinct(userBungEntity.bungEntity.bungId)

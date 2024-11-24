@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.model.User;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@NoArgsConstructor
 public class GetUserResponseDto {
     private String userId;
-    private final String nickname;
-    private final String email;
+    private String nickname;
+    private String email;
     private Boolean identityAuthenticated;
     private Provider provider;
     private Boolean blackListed;
