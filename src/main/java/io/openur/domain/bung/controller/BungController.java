@@ -46,7 +46,7 @@ public class BungController {
     }
 
     @GetMapping()
-    @Operation(summary = "현재 시각 기준 시작 시각이 미래인 벙 목록")
+    @Operation(summary = "현재 시각 기준 벙 시작 시각이 미래인 벙 목록, 시작 시간 오름차순 (가장 임박한 벙 먼저)")
     public ResponseEntity<PagedResponse<BungInfoDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "true : 참가하지 않은 || false : 참가 유무와 상관 없이 전체 벙 목록")
@@ -62,7 +62,10 @@ public class BungController {
     }
 
     @GetMapping("/my-bungs")
-    @Operation(summary = "내가 소유 및 참가했던 벙 목록")
+    @Operation(summary = "내가 소유 및 참가했던 벙 목록.\n"
+        // TODO: ordering
+        + " status == PARTICIPATING 이면 시작 시간 오름차순 (가장 임박한 벙 먼저),\n"
+        + " status == (ACCOMPLISHED or null) 이면 시작 시간 내림차순 (가장 최근에 완료된 or 가장 먼 미래의 벙 먼저)")
     public ResponseEntity<PagedResponse<BungInfoDto>> getMyBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "null : 전부 || true : 소유한 || false : 소유자는 아닌")
