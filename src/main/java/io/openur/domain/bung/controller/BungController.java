@@ -33,7 +33,7 @@ public class BungController {
     private final BungService bungService;
 
     @PostMapping()
-    @Operation(summary = "벙을 생성하는 경우")
+    @Operation(summary = "벙 생성하기")
     public ResponseEntity<Response<Void>> createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody CreateBungDto requestDto
