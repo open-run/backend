@@ -266,14 +266,14 @@ public class BungApiTest extends TestSupport {
 		}
 
 		@Test
-		@DisplayName("202 Accepted.")
+		@DisplayName("200 Ok.")
 		@Transactional
-		void deleteBung_isAccepted() throws Exception {
+		void deleteBung_isOk() throws Exception {
 			String token = getTestUserToken("test1@test.com");
 			mockMvc.perform(
 				delete(PREFIX + "/" + bungId)
 					.header(AUTH_HEADER, token)
-			).andExpect(status().isAccepted());
+			).andExpect(status().isOk());
 		}
 
 	}
