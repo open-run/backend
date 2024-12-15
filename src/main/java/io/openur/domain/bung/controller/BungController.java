@@ -103,7 +103,7 @@ public class BungController {
         @PathVariable String bungId
     ) {
         bungService.deleteBung(userDetails, bungId);
-        return ResponseEntity.accepted().body(Response.<Void>builder()
+        return ResponseEntity.ok().body(Response.<Void>builder()
             .message("success")
             .build());
     }

@@ -44,9 +44,8 @@ public class UserBungController {
 		@PathVariable String userIdToRemove
 	) {
 		userBungService.removeUserFromBung(userDetails, bungId, userIdToRemove);
-		// TODO: Delete endpoint들의 response status accepted -> ok로 변경하기
-		return ResponseEntity.accepted().body(Response.<Void>builder()
-			.message("success")
+		return ResponseEntity.ok().body(Response.<Void>builder()
+			.message("Member deleted successfully")
 			.build());
 	}
 }
