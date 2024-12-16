@@ -1,5 +1,6 @@
 package io.openur.domain.bung.model;
 
+import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.hashtag.entity.HashtagEntity;
@@ -27,6 +28,20 @@ public class Bung {
 
     public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
+        this.name = dto.getName();
+        this.description = dto.getDescription();
+        this.location = dto.getLocation();
+        this.startDateTime = dto.getStartDateTime();
+        this.endDateTime = dto.getEndDateTime();
+        this.distance = dto.getDistance();
+        this.pace = dto.getPace();
+        this.memberNumber = dto.getMemberNumber();
+        this.hasAfterRun = dto.getHasAfterRun();
+        this.afterRunDescription = dto.getAfterRunDescription();
+    }
+
+    public Bung(BungInfoDto dto) {
+        this.bungId = dto.getBungId();
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.location = dto.getLocation();
