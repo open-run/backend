@@ -3,6 +3,7 @@ package io.openur.domain.bung.controller;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.dto.JoinBungResultDto;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
@@ -11,6 +12,10 @@ import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -106,5 +111,33 @@ public class BungController {
         return ResponseEntity.ok().body(Response.<Void>builder()
             .message("success")
             .build());
+    }
+
+    @GetMapping("/{bungId}/join")
+    @Operation(summary = "벙 참가하기")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "성공적으로 참가됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"successfully joined\",\"data\":\"SUCCESSFULLY_JOINED\"}")
+        )),
+        @ApiResponse(responseCode = "409", description = "특정 사유로 참가가 반려됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"bung has already started\",\"data\":\"BUNG_HAS_ALREADY_STARTED\"}")
+        ))
+    })
+    public ResponseEntity<Response<JoinBungResultDto>> joinBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId
+    ) {
+        JoinBungResultDto result = bungService.joinBung(userDetails, bungId);
+        Response<JoinBungResultDto> response = Response.<JoinBungResultDto>builder()
+            .message(result.toString().toLowerCase().replace("_", " "))
+            .data(result)
+            .build();
+
+        if (result == JoinBungResultDto.SUCCESSFULLY_JOINED) {
+            return ResponseEntity.ok().body(response);
+        }
+        return ResponseEntity.status(409).body(response);
     }
 }
