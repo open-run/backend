@@ -49,4 +49,5 @@ public class UserEntity {
 
     private String runningPace;
     private Integer runningFrequency;
+    private Integer feedback;
 }
