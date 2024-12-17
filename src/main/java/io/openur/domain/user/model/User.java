@@ -88,6 +88,10 @@ public class User {
         applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(), newRunningFrequency -> this.runningFrequency = newRunningFrequency);
     }
 
+    public void increaseFeedback() {
+        this.feedback = (this.feedback == 0) ? 1 : this.feedback + 1;
+    }
+
     private <T> void applyIfNotNull(T value, Consumer<T> setter) {
         if (value != null) {
             setter.accept(value);
