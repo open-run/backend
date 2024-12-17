@@ -63,4 +63,13 @@ public class UserService {
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
     }
+
+    @Transactional
+    public void increaseFeedback(@AuthenticationPrincipal UserDetailsImpl userDetails,List<String> targetUserIds) {
+        for (String userId : targetUserIds) {
+            User user = userRepository.findById(userId);
+            user.increaseFeedback();
+            userRepository.save(user);
+        }
+    }
 }

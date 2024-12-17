@@ -5,6 +5,7 @@ import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
+import io.openur.domain.user.dto.GetFeedbackDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
@@ -146,5 +147,12 @@ public class UserController {
         userService.deleteUserInfo(userDetails);
         return ResponseEntity.ok()
             .body(Response.<Void>builder().message("success").build());
+    }
+
+    @GetMapping("/feedback")
+    public ResponseEntity<String> increaseFeedback(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                   @RequestBody GetFeedbackDto feedbackRequestDto) {
+        userService.increaseFeedback(userDetails,feedbackRequestDto.getTargetUserId());
+        return ResponseEntity.ok("Feedback increased successfully.");
     }
 }
