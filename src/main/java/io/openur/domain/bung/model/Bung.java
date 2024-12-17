@@ -13,6 +13,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class Bung {
+
     private String bungId;
     private String name;
     private String description;
@@ -70,7 +71,10 @@ public class Bung {
             null
         );
         if (bungEntity.getHashtags() != null) {
-            bung.hashtags = bungEntity.getHashtags().stream().map(HashtagEntity::getHashtagStr).toList();
+            bung.hashtags = bungEntity.getHashtags()
+                .stream()
+                .map(HashtagEntity::getHashtagStr)
+                .toList();
         }
         return bung;
     }
