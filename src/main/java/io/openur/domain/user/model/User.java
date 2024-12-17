@@ -26,6 +26,7 @@ public class User {
     private String blockchainAddress;
     private String runningPace;
     private Integer runningFrequency;
+    private Integer feedback;
 
     public User(
         String email,
@@ -42,6 +43,7 @@ public class User {
         this.blockchainAddress = "0x";
         this.runningPace = null;
         this.runningFrequency = null;
+        this.feedback = 0;
     }
 
     public static User from(final UserEntity userEntity){
@@ -56,7 +58,8 @@ public class User {
             userEntity.getLastLoginDate(),
             userEntity.getBlockchainAddress(),
             userEntity.getRunningPace(),
-            userEntity.getRunningFrequency()
+            userEntity.getRunningFrequency(),
+            userEntity.getFeedback()
         );
     }
 
@@ -72,7 +75,8 @@ public class User {
             lastLoginDate,
             blockchainAddress,
             runningPace,
-            runningFrequency
+            runningFrequency,
+            feedback
 
         );
     }

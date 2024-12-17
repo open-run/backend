@@ -24,6 +24,7 @@ public class GetUserResponseDto {
     private String blockchainAddress;
     private String runningPace;
     private Integer runningFrequency;
+    private Integer feedback;
 
     public GetUserResponseDto(User user) {
         this.userId = user.getUserId();
@@ -37,5 +38,6 @@ public class GetUserResponseDto {
         this.blockchainAddress = user.getBlockchainAddress();
         this.runningPace = user.getRunningPace();
         this.runningFrequency = user.getRunningFrequency();
+        this.feedback = user.getFeedback();
     }
 }
