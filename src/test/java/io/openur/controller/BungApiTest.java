@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.dto.JoinBungResultDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
@@ -278,4 +279,81 @@ public class BungApiTest extends TestSupport {
 
 	}
 
+	@Nested
+	@DisplayName("벙 참가")
+	class joinBungTest {
+
+		@Test
+		@DisplayName("409 Conflict. 이미 참가한 경우")
+		void joinBung_isConflict_alreadyJoined() throws Exception {
+			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+			String token = getTestUserToken("test1@test.com");
+			MvcResult result = mockMvc.perform(
+				get(PREFIX + "/" + bungId + "/join")
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isConflict()).andReturn();
+
+			Response<JoinBungResultDto> response = parseResponse(
+				result.getResponse().getContentAsString(),
+				new TypeReference<>() {
+				});
+			assert response.getData() == JoinBungResultDto.USER_HAS_ALREADY_JOINED;
+		}
+
+		@Test
+		@DisplayName("409 Conflict. 벙이 이미 시작된 경우")
+		void joinBung_isConflict_alreadyStarted() throws Exception {
+			String bungId = "a1234567-89ab-cdef-0123-456789abcdef";
+			String token = getTestUserToken("test1@test.com");
+			MvcResult result = mockMvc.perform(
+				get(PREFIX + "/" + bungId + "/join")
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isConflict()).andReturn();
+
+			Response<JoinBungResultDto> response = parseResponse(
+				result.getResponse().getContentAsString(),
+				new TypeReference<>() {
+				});
+			assert response.getData() == JoinBungResultDto.BUNG_HAS_ALREADY_STARTED;
+		}
+
+		@Test
+		@DisplayName("409 Conflict. 벙 인원이 다 찬 경우")
+		void joinBung_isConflict_isFull() throws Exception {
+			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+			String token = getTestUserToken("test3@test.com");
+			MvcResult result = mockMvc.perform(
+				get(PREFIX + "/" + bungId + "/join")
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isConflict()).andReturn();
+
+			Response<JoinBungResultDto> response = parseResponse(
+				result.getResponse().getContentAsString(),
+				new TypeReference<>() {
+				});
+			assert response.getData() == JoinBungResultDto.BUNG_IS_FULL;
+		}
+
+		@Test
+		@DisplayName("200 OK.")
+		@Transactional
+		void joinBung_isOk() throws Exception {
+			String bungId = "90477004-1422-4551-acce-04584b34612e";
+			String token = getTestUserToken("test2@test.com");
+			MvcResult result = mockMvc.perform(
+				get(PREFIX + "/" + bungId + "/join")
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isOk()).andReturn();
+
+			Response<JoinBungResultDto> response = parseResponse(
+				result.getResponse().getContentAsString(),
+				new TypeReference<>() {
+				});
+			assert response.getData() == JoinBungResultDto.SUCCESSFULLY_JOINED;
+		}
+	}
 }
