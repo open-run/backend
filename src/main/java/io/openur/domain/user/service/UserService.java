@@ -63,4 +63,12 @@ public class UserService {
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
     }
+
+    @Transactional
+    public void increaseFeedback(List<String> targetUserIds) {
+        if (targetUserIds == null || targetUserIds.isEmpty()) {
+            throw new IllegalArgumentException("Target user IDs cannot be null or empty");
+        }
+        userRepository.batchIncrementFeedback(targetUserIds);
+    }
 }
