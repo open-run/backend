@@ -21,15 +21,15 @@ VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'Seoul', 'temp_des
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
                             is_owner)
-VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-803653707192', true,
+VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-803653707192', false,
         CURRENT_TIMESTAMP(), true),
-       (2, 'c0477004-1632-455f-acc9-04584b55921f', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+       (2, 'c0477004-1632-455f-acc9-04584b55921f', '91b4928f-8288-44dc-a04d-640911f0b2be', false,
         CURRENT_TIMESTAMP(), false),
-       (3, '90477004-1422-4551-acce-04584b34612e', '5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', true,
+       (3, '90477004-1422-4551-acce-04584b34612e', '5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', false,
         CURRENT_TIMESTAMP(), true),
-       (4, 'a1234567-89ab-cdef-0123-456789abcdef', '9e1bfc60-f76a-47dc-9147-803653707192', true,
+       (4, 'a1234567-89ab-cdef-0123-456789abcdef', '9e1bfc60-f76a-47dc-9147-803653707192', false,
         CURRENT_TIMESTAMP(), false),
-       (5, 'a1234567-89ab-cdef-0123-456789abcdef', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+       (5, 'a1234567-89ab-cdef-0123-456789abcdef', '91b4928f-8288-44dc-a04d-640911f0b2be', false,
         CURRENT_TIMESTAMP(), true)
 ;
 
