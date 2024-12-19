@@ -90,14 +90,14 @@ public class BungService {
 
         BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
             bungId);
-        if (bungWithMembers.getMemberList().size() == bungWithMembers.getMemberNumber()) {
-            return JoinBungResultDto.BUNG_IS_FULL;
-        }
-
         if (bungWithMembers.getMemberList().stream().anyMatch(
             user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
             return JoinBungResultDto.USER_HAS_ALREADY_JOINED;
+        }
+
+        if (bungWithMembers.getMemberList().size() == bungWithMembers.getMemberNumber()) {
+            return JoinBungResultDto.BUNG_IS_FULL;
         }
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
