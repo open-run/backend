@@ -1,12 +1,11 @@
 package io.openur.domain.user.dto;
-import lombok.Getter;
 
 import java.util.List;
+import lombok.Getter;
 
+@Getter
 public class GetFeedbackDto {
-    private String bungId;
-    private String userId;
-    @Getter
-    private List<String> targetUserId;
+
+    private List<String> targetUserIds;
 
 }

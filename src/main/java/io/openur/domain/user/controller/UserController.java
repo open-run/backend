@@ -1,11 +1,11 @@
 package io.openur.domain.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.openur.domain.user.dto.GetFeedbackDto;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
-import io.openur.domain.user.dto.GetFeedbackDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
@@ -151,8 +151,10 @@ public class UserController {
 
     @GetMapping("/feedback")
     @Operation(summary = "벙 참가자들 피드백(좋아요) 증가")
-    public ResponseEntity<String> increaseFeedback(@RequestBody GetFeedbackDto feedbackRequestDto) {
-        userService.increaseFeedback(feedbackRequestDto.getTargetUserId());
+    public ResponseEntity<String> increaseFeedback(
+        @RequestBody GetFeedbackDto feedbackRequestDto
+    ) {
+        userService.increaseFeedback(feedbackRequestDto.getTargetUserIds());
         return ResponseEntity.ok("Feedback increased successfully.");
     }
 }
