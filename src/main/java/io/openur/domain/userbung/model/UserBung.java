@@ -20,7 +20,7 @@ public class UserBung {
     public UserBung(User user, Bung bung) {
         this.user = user;
         this.bung = bung;
-        this.participationStatus = true;
+        this.participationStatus = false;
         this.modifiedAt = LocalDateTime.now();
         this.isOwner = false;
     }

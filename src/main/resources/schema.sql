@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS tb_users_bungs (
                                              user_id VARCHAR(36) DEFAULT (UUID()) NOT NULL,
                                              FOREIGN KEY (bung_id) REFERENCES tb_bungs (bung_id), -- TODO: CASCADE 설정
                                              FOREIGN KEY (user_id) REFERENCES tb_users(user_id),
-                                             participation_status BOOLEAN NOT NULL,               -- CHECK: participation_status 가 왜 필요하지? 이 테이블에 데이터가 있다는거 자체가 participate 하고 있다는거 아닌가?
+                                             participation_status BOOLEAN DEFAULT FALSE NOT NULL, -- TODO: 벙 참여 인증 완료 했을 때 사용할 값
                                              modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                              is_owner    BOOLEAN   DEFAULT FALSE NOT NULL
 );
