@@ -2,6 +2,7 @@ package io.openur.domain.bung.service;
 
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.JoinBungResultDto;
 import io.openur.domain.bung.exception.JoinBungException;
@@ -80,7 +81,7 @@ public class BungService {
 
         return userBungRepository
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
-            .map(BungInfoDto::new);
+            .map(BungInfoWithOwnershipDto::new);
     }
 
     @Transactional
