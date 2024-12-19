@@ -56,6 +56,12 @@ public class BungRepositoryImpl implements BungRepository {
         return Bung.from(bungJpaRepository.save(bung.toEntity()));
     }
 
+    @Override
+    public Boolean isBungStarted(String bungId) {
+        Bung bung = Bung.from(bungJpaRepository.findBungEntityByBungId(bungId));
+        return bung.getStartDateTime().isBefore(LocalDateTime.now());
+    }
+
     private BooleanExpression isAvailable(User user, boolean isAvailableOnly) {
         BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
 

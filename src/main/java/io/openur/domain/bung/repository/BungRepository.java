@@ -13,4 +13,5 @@ public interface BungRepository {
 
     void deleteByBungId(String bungId);
 
+    Boolean isBungStarted(String bungId);
 }

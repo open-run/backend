@@ -36,7 +36,7 @@ public class UserBungApiTest extends TestSupport {
 			delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
 				.header(AUTH_HEADER, token)
 				.contentType(MediaType.APPLICATION_JSON)
-		).andExpect(status().isAccepted());
+		).andExpect(status().isOk());
 
 		assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
 			.isInstanceOf(NoSuchElementException.class);

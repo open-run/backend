@@ -144,7 +144,7 @@ public class UserController {
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         userService.deleteUserInfo(userDetails);
-        return ResponseEntity.accepted()
+        return ResponseEntity.ok()
             .body(Response.<Void>builder().message("success").build());
     }
 }

@@ -23,7 +23,7 @@ public class BungInfoDto {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
-    private List<String> hashtags = List.of();
+    private List<String> hashtags;
 
     public BungInfoDto(Bung bung) {
         this.bungId = bung.getBungId();
