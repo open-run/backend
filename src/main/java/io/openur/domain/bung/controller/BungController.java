@@ -131,7 +131,7 @@ public class BungController {
     ) {
         JoinBungResultDto result = bungService.joinBung(userDetails, bungId);
         Response<JoinBungResultDto> response = Response.<JoinBungResultDto>builder()
-            .message(result.toString().toLowerCase().replace("_", " "))
+            .message(result.toString())
             .data(result)
             .build();
 
