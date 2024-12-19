@@ -14,7 +14,7 @@ INSERT INTO tb_bungs (bung_id, name, location, description, start_datetime, end_
 VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'Seoul', 'temp_description',
         CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, false, null),
        ('90477004-1422-4551-acce-04584b34612e', 'test2_bung', 'Bangkok', 'second_bung_data',
-        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 1, '6"30', 1, true, 'chicken & beer'),
+        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 1, '6"30', 2, true, 'chicken & beer'),
        ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung', 'New York', 'past_bung_description',
         CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null)
 ;
