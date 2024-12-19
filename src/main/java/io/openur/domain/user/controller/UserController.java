@@ -151,9 +151,8 @@ public class UserController {
 
     @GetMapping("/feedback")
     @Operation(summary = "벙 참가자들 피드백(좋아요) 증가")
-    public ResponseEntity<String> increaseFeedback(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                   @RequestBody GetFeedbackDto feedbackRequestDto) {
-        userService.increaseFeedback(userDetails, feedbackRequestDto.getTargetUserId());
+    public ResponseEntity<String> increaseFeedback(@RequestBody GetFeedbackDto feedbackRequestDto) {
+        userService.increaseFeedback(feedbackRequestDto.getTargetUserId());
         return ResponseEntity.ok("Feedback increased successfully.");
     }
 }
