@@ -3,17 +3,18 @@ package io.openur.domain.userbung.repository;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
+import static io.openur.domain.bung.model.BungStatus.ACCOMPLISHED;
 import static io.openur.domain.bung.model.BungStatus.PARTICIPATING;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
-import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
@@ -57,20 +58,21 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
-    public Page<Bung> findJoinedBungsByUserWithStatus(
+    public Page<UserBung> findJoinedBungsByUserWithStatus(
         User user, Boolean isOwned, BungStatus status, Pageable pageable) {
-        List<Bung> contents = queryFactory
-            .selectDistinct(userBungEntity.bungEntity)
+        List<UserBung> contents = queryFactory
+            .selectDistinct(userBungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),
-                withStatus(status)
+                withStatusCondition(status)
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .fetch().stream().map(Bung::from)
+            .orderBy(withStatusOrdering(status))
+            .fetch().stream().map(UserBung::from)
             .toList();
 
         JPAQuery<Long> count = queryFactory
@@ -80,7 +82,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),
-                withStatus(status)
+                withStatusCondition(status)
             );
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
@@ -180,14 +182,28 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         return userBungEntity.isOwner.eq(isOwned);
     }
 
-    private BooleanExpression withStatus(BungStatus status) {
+    private BooleanExpression withStatusCondition(BungStatus status) {
+        BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
+
         if (status == null) {
-            return null;
+            return baseCondition;
         }
 
+        // 행사가 시작한, 즉 시작은 지금보다 나중이지만, 종료 시간이 지금보다 과거여서는 안됌
         if (PARTICIPATING.equals(status)) {
-            return bungEntity.startDateTime.lt(LocalDateTime.now());
+            return bungEntity.startDateTime.loe(LocalDateTime.now()).and(bungEntity.endDateTime.gt(LocalDateTime.now()));
         }
+
+        // 이미 행사가 성공적으로 끝났을 것인
         return bungEntity.endDateTime.loe(LocalDateTime.now());
+    }
+
+    private OrderSpecifier withStatusOrdering(BungStatus status) {
+
+        // 완료된 벙을 볼 경우는 최근 끝난것부터 내림차순
+        if(ACCOMPLISHED.equals(status)) return bungEntity.endDateTime.desc();
+
+        // 진행중 및 예정인 경우는 시작 시간 오름차순 ( 임박순 )
+        return bungEntity.startDateTime.asc();
     }
 }

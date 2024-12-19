@@ -1,8 +1,8 @@
 package io.openur.domain.userbung.repository;
 
 import com.querydsl.core.Tuple;
+
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
-import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.model.UserBung;
@@ -15,7 +15,7 @@ public interface UserBungRepository {
 
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
 
-    Page<Bung> findJoinedBungsByUserWithStatus(
+    Page<UserBung> findJoinedBungsByUserWithStatus(
         User user, Boolean isOwned, BungStatus status, Pageable pageable);
 
     List<String> findJoinedBungsId(User user);
