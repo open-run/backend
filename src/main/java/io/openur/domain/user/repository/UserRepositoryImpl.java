@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
