@@ -41,7 +41,9 @@ public class BungRepositoryImpl implements BungRepository {
         JPAQuery<Long> count = queryFactory
             .selectDistinct(bungEntity.count())
             .from(bungEntity)
-            .where(bungEntity.startDateTime.goe(LocalDateTime.now()));
+            .where(
+                isAvailable(user, isAvailableOnly)
+            );
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
@@ -63,12 +65,14 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     private BooleanExpression isAvailable(User user, boolean isAvailableOnly) {
+        // 기본적으로 Bung 은 행사 시작 이전것이 보여야함.
         BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
 
         if (!isAvailableOnly) {
             return baseCondition;
         }
 
+        // 내가 이미 참여한 벙들의 ID
         List<String> filterIds = queryFactory
             .selectDistinct(userBungEntity.bungEntity.bungId)
             .from(userBungEntity)
