@@ -4,6 +4,7 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.JoinBungResultDto;
+import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
@@ -83,9 +84,10 @@ public class BungService {
     }
 
     @Transactional
-    public JoinBungResultDto joinBung(UserDetailsImpl userDetails, String bungId) {
+    public JoinBungResultDto joinBung(UserDetailsImpl userDetails, String bungId)
+        throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
-            return JoinBungResultDto.BUNG_HAS_ALREADY_STARTED;
+            throw new JoinBungException(JoinBungResultDto.BUNG_HAS_ALREADY_STARTED.toString());
         }
 
         BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
@@ -93,11 +95,11 @@ public class BungService {
         if (bungWithMembers.getMemberList().stream().anyMatch(
             user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
-            return JoinBungResultDto.USER_HAS_ALREADY_JOINED;
+            throw new JoinBungException(JoinBungResultDto.USER_HAS_ALREADY_JOINED.toString());
         }
 
         if (bungWithMembers.getMemberList().size() == bungWithMembers.getMemberNumber()) {
-            return JoinBungResultDto.BUNG_IS_FULL;
+            throw new JoinBungException(JoinBungResultDto.BUNG_IS_FULL.toString());
         }
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));

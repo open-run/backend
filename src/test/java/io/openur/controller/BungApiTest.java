@@ -17,6 +17,7 @@ import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
+import io.openur.global.dto.ExceptionDto;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -294,11 +295,12 @@ public class BungApiTest extends TestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			).andExpect(status().isConflict()).andReturn();
 
-			Response<JoinBungResultDto> response = parseResponse(
+			ExceptionDto response = parseResponse(
 				result.getResponse().getContentAsString(),
 				new TypeReference<>() {
 				});
-			assert response.getData() == JoinBungResultDto.USER_HAS_ALREADY_JOINED;
+			assert Objects.equals(response.getMessage(),
+				JoinBungResultDto.USER_HAS_ALREADY_JOINED.toString());
 		}
 
 		@Test
@@ -312,11 +314,12 @@ public class BungApiTest extends TestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			).andExpect(status().isConflict()).andReturn();
 
-			Response<JoinBungResultDto> response = parseResponse(
+			ExceptionDto response = parseResponse(
 				result.getResponse().getContentAsString(),
 				new TypeReference<>() {
 				});
-			assert response.getData() == JoinBungResultDto.BUNG_HAS_ALREADY_STARTED;
+			assert Objects.equals(response.getMessage(),
+				JoinBungResultDto.BUNG_HAS_ALREADY_STARTED.toString());
 		}
 
 		@Test
@@ -330,11 +333,11 @@ public class BungApiTest extends TestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			).andExpect(status().isConflict()).andReturn();
 
-			Response<JoinBungResultDto> response = parseResponse(
+			ExceptionDto response = parseResponse(
 				result.getResponse().getContentAsString(),
 				new TypeReference<>() {
 				});
-			assert response.getData() == JoinBungResultDto.BUNG_IS_FULL;
+			assert Objects.equals(response.getMessage(), JoinBungResultDto.BUNG_IS_FULL.toString());
 		}
 
 		@Test

@@ -1,5 +1,6 @@
 package io.openur.global.exception;
 
+import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.jwt.InvalidJwtException;
 import java.awt.HeadlessException;
@@ -47,6 +48,11 @@ public class ExceptionController {
 	@ExceptionHandler({Exception.class, HeadlessException.class})
 	public ResponseEntity<ExceptionDto> handleInternalServerErrorException(Exception e) {
 		return createResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+	}
+
+	@ExceptionHandler({JoinBungException.class})
+	public ResponseEntity<ExceptionDto> handleJoinBungException(JoinBungException e) {
+		return createResponse(HttpStatus.CONFLICT, e.getMessage());
 	}
 
 	private ResponseEntity<ExceptionDto> createResponse(HttpStatus status, String message) {
