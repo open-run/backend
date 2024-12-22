@@ -122,13 +122,13 @@ public class BungController {
         )),
         @ApiResponse(responseCode = "409", description = "특정 사유로 참가가 반려됨", content = @Content(
             mediaType = "application/json",
-            examples = @ExampleObject(value = "{\"message\":\"bung has already started\",\"data\":\"BUNG_HAS_ALREADY_STARTED\"}")
+            examples = @ExampleObject(value = "{\"statusCode\":409,\"state\":\"CONFLICT\",\"message\":\"bung has already started\"}")
         ))
     })
     public ResponseEntity<Response<JoinBungResultDto>> joinBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
-    ) {
+    ) throws Exception {
         JoinBungResultDto result = bungService.joinBung(userDetails, bungId);
         Response<JoinBungResultDto> response = Response.<JoinBungResultDto>builder()
             .message(result.toString())
@@ -138,6 +138,7 @@ public class BungController {
         if (result == JoinBungResultDto.SUCCESSFULLY_JOINED) {
             return ResponseEntity.ok().body(response);
         }
-        return ResponseEntity.status(409).body(response);
+
+        throw new Exception("Unexcepted result from joinBung.");
     }
 }
