@@ -2,6 +2,7 @@ package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import jakarta.persistence.EntityManager;
@@ -61,15 +62,21 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void batchIncrementFeedback(List<String> targetUserIds) {
+    public List<String> batchIncrementFeedback(List<String> targetUserIds) {
+        List<String> notFoundUserIds = new ArrayList<>(); // 조회되지 않은 userId를 저장할 리스트
+
         for (String userId : targetUserIds) {
             UserEntity userEntity = entityManager.find(UserEntity.class, userId);
             if (userEntity != null) {
                 userEntity.setFeedback(userEntity.getFeedback() + 1);
                 entityManager.merge(userEntity);
+            }else {
+                notFoundUserIds.add(userId); // 조회되지 않은 userId를 리스트에 추가
             }
         }
         entityManager.flush();
         entityManager.clear();
+
+        return notFoundUserIds;
     }
 }
