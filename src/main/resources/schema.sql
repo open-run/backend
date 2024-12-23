@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS tb_users (
                                         blockchain_address VARCHAR(42) NOT NULL DEFAULT '0x',
                                         running_pace VARCHAR(8) DEFAULT NULL,
                                         running_frequency SMALLINT(4) DEFAULT NULL,
-                                        feedback BIGINT(4) DEFAULT 0
+                                        feedback INT(4) UNSIGNED DEFAULT 0 NOT NULL
 );
 
 -- tb_bungs 테이블 생성 (존재하지 않을 경우에만)
@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS tb_bungs (
                                        pace VARCHAR(8) NOT NULL,
                                        member_number SMALLINT NOT NULL,
                                        has_after_run BOOLEAN DEFAULT FALSE,
-                                       after_run_description VARCHAR(4096) DEFAULT NULL
+                                       after_run_description VARCHAR(4096) DEFAULT NULL,
+                                       completed BOOLEAN NOT NULL DEFAULT false
 );
 
 -- tb_users_bungs 테이블 생성 (존재하지 않을 경우에만)
