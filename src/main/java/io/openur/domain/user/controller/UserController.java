@@ -10,11 +10,16 @@ import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.oauth.LoginService;
 import io.openur.domain.user.service.oauth.LoginServiceFactory;
+import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -151,10 +156,29 @@ public class UserController {
 
     @GetMapping("/feedback")
     @Operation(summary = "벙 참가자들 피드백(좋아요) 증가")
-    public ResponseEntity<String> increaseFeedback(
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "피드백이 성공적으로 증가됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"Feedback increased successfully\"}")
+        )),
+        @ApiResponse(responseCode = "409", description = "일부 유저 ID를 찾을 수 없음", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"Some user IDs were not found\",\"notFoundUserIds\":[\"userId1\",\"userId2\"]}")
+        ))
+    })
+    public ResponseEntity<Response<List<String>>> increaseFeedback(
         @RequestBody GetFeedbackDto feedbackRequestDto
     ) {
-        userService.increaseFeedback(feedbackRequestDto.getTargetUserIds());
-        return ResponseEntity.ok("Feedback increased successfully.");
+        List<String> notFoundUserIds = userService.increaseFeedback(feedbackRequestDto.getTargetUserIds());
+
+        if (!notFoundUserIds.isEmpty()) {
+            throw new UserNotFoundException(notFoundUserIds);
+        }
+
+        Response<List<String>> response = Response.<List<String>>builder()
+            .message("feedback increased successfully")
+            .data(null)
+            .build();
+        return ResponseEntity.ok().body(response);
     }
 }

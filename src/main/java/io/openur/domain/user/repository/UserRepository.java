@@ -23,5 +23,5 @@ public interface UserRepository {
 
     void deleteUserInfo(User user);
 
-    void batchIncrementFeedback(List<String> targetUserIds);
+    List<String> batchIncrementFeedback(List<String> targetUserIds);
 }

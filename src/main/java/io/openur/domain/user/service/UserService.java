@@ -65,10 +65,10 @@ public class UserService {
     }
 
     @Transactional
-    public void increaseFeedback(List<String> targetUserIds) {
+    public List<String> increaseFeedback(List<String> targetUserIds) {
         if (targetUserIds == null || targetUserIds.isEmpty()) {
             throw new IllegalArgumentException("Target user IDs cannot be null or empty");
         }
-        userRepository.batchIncrementFeedback(targetUserIds);
+        return userRepository.batchIncrementFeedback(targetUserIds);
     }
 }
