@@ -23,6 +23,7 @@ public class BungInfoDto {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
+    private Boolean isCompleted;
     private List<String> hashtags;
 
     public BungInfoDto(Bung bung) {
@@ -37,6 +38,7 @@ public class BungInfoDto {
         this.memberNumber = bung.getMemberNumber();
         this.hasAfterRun = bung.getHasAfterRun();
         this.afterRunDescription = bung.getAfterRunDescription();
+        this.isCompleted = bung.isCompleted();
         this.hashtags = bung.getHashtags();
     }
 
