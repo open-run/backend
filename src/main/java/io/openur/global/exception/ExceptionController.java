@@ -3,6 +3,7 @@ package io.openur.global.exception;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.userbung.exception.RemoveUserFromBungException;
+import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.jwt.InvalidJwtException;
 import java.awt.HeadlessException;
@@ -56,6 +57,12 @@ public class ExceptionController {
 	public ResponseEntity<ExceptionDto> handleJoinBungException(Exception e) {
 		return createResponse(HttpStatus.CONFLICT, e.getMessage());
 	}
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionDto> handleUserNotFoundException(UserNotFoundException e) {
+        return createResponse(HttpStatus.CONFLICT,
+            e.getMessage() + ": " + String.join(", ", e.getNotFoundUserIds()));
+    }
 
 	private ResponseEntity<ExceptionDto> createResponse(HttpStatus status, String message) {
 		return ResponseEntity.status(status.value())
