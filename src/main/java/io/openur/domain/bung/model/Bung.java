@@ -26,6 +26,7 @@ public class Bung {
     private Boolean hasAfterRun;
     private String afterRunDescription;
     private List<String> hashtags;
+    private boolean isCompleted;
 
     public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
@@ -53,6 +54,7 @@ public class Bung {
         this.memberNumber = dto.getMemberNumber();
         this.hasAfterRun = dto.getHasAfterRun();
         this.afterRunDescription = dto.getAfterRunDescription();
+
     }
 
     public static Bung from(final BungEntity bungEntity) {
@@ -68,7 +70,8 @@ public class Bung {
             bungEntity.getMemberNumber(),
             bungEntity.getHasAfterRun(),
             bungEntity.getAfterRunDescription(),
-            null
+            null,
+            bungEntity.isCompleted()
         );
         if (bungEntity.getHashtags() != null) {
             bung.hashtags = bungEntity.getHashtags()
@@ -92,7 +95,12 @@ public class Bung {
             memberNumber,
             hasAfterRun,
             afterRunDescription,
+            isCompleted,
             null
         );
+    }
+
+    public void completeBung() {
+        this.isCompleted = true;
     }
 }

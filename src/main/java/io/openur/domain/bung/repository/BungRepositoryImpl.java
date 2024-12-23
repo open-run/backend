@@ -49,6 +49,11 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     @Override
+    public Bung findBungById(String bungId) {
+        return Bung.from(bungJpaRepository.findBungEntityByBungId(bungId));
+    }
+
+    @Override
     public void deleteByBungId(String bungId) {
         bungJpaRepository.deleteByBungId(bungId);
     }

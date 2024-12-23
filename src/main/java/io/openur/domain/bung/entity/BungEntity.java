@@ -36,6 +36,8 @@ public class BungEntity  {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
+    @Column(name = "is_completed")
+    private boolean completed;
 
     @ManyToMany
     @JoinTable(

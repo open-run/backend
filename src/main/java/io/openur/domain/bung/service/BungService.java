@@ -17,6 +17,7 @@ import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -105,5 +106,18 @@ public class BungService {
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
         return JoinBungResultDto.SUCCESSFULLY_JOINED;
+    }
+
+    @Transactional
+    public void completeBung(UserDetailsImpl userDetails, String bungId) {
+        Bung bung = bungRepository.findBungById(bungId);
+        if (bung.isCompleted())
+            throw new IllegalStateException("Bung is already completed");
+
+        if (bung.getStartDateTime().isAfter(LocalDateTime.now()))
+            throw new IllegalStateException("Bung has not started yet");
+
+        bung.completeBung();
+        bungRepository.save(bung);
     }
 }

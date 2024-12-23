@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -140,5 +141,17 @@ public class BungController {
         }
 
         throw new Exception("Unexcepted result from joinBung.");
+    }
+
+    @PatchMapping("/{bungId}/complete")
+    @Operation(summary = "벙 완료하기")
+    public ResponseEntity<Response<Void>> completeBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId
+    ) {
+        bungService.completeBung(userDetails, bungId);
+        return ResponseEntity.ok().body(Response.<Void>builder()
+            .message("success")
+            .build());
     }
 }
