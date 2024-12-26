@@ -76,7 +76,7 @@ public class BungService {
             .map(BungInfoDto::new);
     }
 
-    public Page<BungInfoDto> getMyBungLists(UserDetailsImpl userDetails,
+    public Page<BungInfoWithOwnershipDto> getMyBungLists(UserDetailsImpl userDetails,
         Boolean isOwned, BungStatus status, Pageable pageable) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
@@ -116,6 +116,8 @@ public class BungService {
 
         if (bung.getStartDateTime().isAfter(LocalDateTime.now()))
             throw new IllegalStateException("Bung has not started yet");
+
+        //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
 
         bung.completeBung();
         bungRepository.save(bung);

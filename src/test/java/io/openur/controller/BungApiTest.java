@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.JoinBungResultDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.repository.BungJpaRepository;
@@ -153,7 +154,7 @@ public class BungApiTest extends TestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			).andExpect(status().isOk()).andReturn();
 
-			PagedResponse<BungInfoDto> response = parseResponse(
+			PagedResponse<BungInfoWithOwnershipDto> response = parseResponse(
 				result.getResponse().getContentAsString(),
 				new TypeReference<>() {
 				}
