@@ -25,21 +25,41 @@ public class UserBungApiTest extends TestSupport {
 
 	private static final String PREFIX = "/v1/bungs";
 
-	@Test
+	@Nested
 	@DisplayName("멤버 제거")
-	void kickMember_successTest() throws Exception {
-		String token = getTestUserToken("test1@test.com");
-		String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-		String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+	class kickMemberTest {
 
-		mockMvc.perform(
-			delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
-				.header(AUTH_HEADER, token)
-				.contentType(MediaType.APPLICATION_JSON)
-		).andExpect(status().isOk());
+		@Test
+		@DisplayName("200 Ok. Is bung owner.")
+		@Transactional
+		void kickMember_successTest() throws Exception {
+			String token = getTestUserToken("test1@test.com");
+			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+			String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-		assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
-			.isInstanceOf(NoSuchElementException.class);
+			mockMvc.perform(
+				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("200 Ok. Is self.")
+		void kickMember_success_isSelf() throws Exception {
+			String token = getTestUserToken("test2@test.com");
+			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+			String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+			mockMvc.perform(
+				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isOk());
+
+			assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
+				.isInstanceOf(NoSuchElementException.class);
+		}
 	}
 
 	@Nested

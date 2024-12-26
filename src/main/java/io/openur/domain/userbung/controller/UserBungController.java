@@ -37,7 +37,7 @@ public class UserBungController {
 	}
 
 	@DeleteMapping("/{bungId}/members/{userIdToRemove}")
-	@Operation(summary = "멤버 삭제하기(벙주만 가능)")
+	@Operation(summary = "멤버 삭제하기(벙주와 본인만 가능)")
 	public ResponseEntity<Response<Void>> kickMember(
 		@AuthenticationPrincipal UserDetailsImpl userDetails,
 		@PathVariable String bungId,
