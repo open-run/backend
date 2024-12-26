@@ -29,7 +29,8 @@ public class UserBungService {
 	}
 
 	@Transactional
-	@PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
+	@PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId) || "
+		+ "@methodSecurityService.isSelf(#userDetails, #userIdToRemove)")
 	public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
 		String userIdToRemove) {
 		UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);

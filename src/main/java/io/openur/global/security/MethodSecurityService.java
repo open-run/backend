@@ -20,4 +20,9 @@ public class MethodSecurityService {
 			userDetails.getUser().getUserId(), bungId);
 		return userBung.isOwner();
 	}
+
+	public boolean isSelf(@AuthenticationPrincipal UserDetailsImpl userDetails,
+		String userId) {
+		return userDetails.getUser().getUserId().equals(userId);
+	}
 }
