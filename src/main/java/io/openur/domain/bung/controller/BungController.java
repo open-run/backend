@@ -2,6 +2,7 @@ package io.openur.domain.bung.controller;
 
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.JoinBungResultDto;
 import io.openur.domain.bung.model.BungStatus;
@@ -72,7 +73,7 @@ public class BungController {
         // TODO: ordering
         + " status == PARTICIPATING 이면 시작 시간 오름차순 (가장 임박한 벙 먼저),\n"
         + " status == (ACCOMPLISHED or null) 이면 시작 시간 내림차순 (가장 최근에 완료된 or 가장 먼 미래의 벙 먼저)")
-    public ResponseEntity<PagedResponse<BungInfoDto>> getMyBungList(
+    public ResponseEntity<PagedResponse<BungInfoWithOwnershipDto>> getMyBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "null : 전부 || true : 소유한 || false : 소유자는 아닌")
         @RequestParam(required = false, defaultValue = "") Boolean isOwned,
@@ -82,7 +83,7 @@ public class BungController {
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoDto> contents = bungService.getMyBungLists(
+        Page<BungInfoWithOwnershipDto> contents = bungService.getMyBungLists(
             userDetails, isOwned, status, pageable);
 
         return ResponseEntity.ok().body(
