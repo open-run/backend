@@ -1,5 +1,6 @@
 package io.openur.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -16,6 +17,7 @@ import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
+import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
@@ -43,6 +45,8 @@ public class BungApiTest extends TestSupport {
 	private static final String PREFIX = "/v1/bungs";
 	@Autowired
 	protected BungJpaRepository bungJpaRepository;
+	@Autowired
+	protected UserBungJpaRepository userBungJpaRepository;
 	@Autowired
 	protected HashtagRepositoryImpl hashtagRepository;
 	@Autowired
@@ -230,7 +234,6 @@ public class BungApiTest extends TestSupport {
 
 		@Test
 		@DisplayName("403 Forbidden. Authorization Header 없음")
-		@Transactional
 		void deleteBung_isForbidden() throws Exception {
 			mockMvc.perform(
 					delete(PREFIX + "/" + bungId)
@@ -240,7 +243,6 @@ public class BungApiTest extends TestSupport {
 
 		@Test
 		@DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
-		@Transactional
 		void deleteBung_isForbidden_notOwner() throws Exception {
 			String notOwnerToken = getTestUserToken("test2@test.com");
 			mockMvc.perform(
@@ -251,7 +253,6 @@ public class BungApiTest extends TestSupport {
 
 		@Test
 		@DisplayName("401 Unauthorized. invalid Authorization Header")
-		@Transactional
 		void deleteBung_isUnauthorized() throws Exception {
 			String invalidToken = "Bearer invalidToken";
 			mockMvc.perform(
@@ -262,7 +263,6 @@ public class BungApiTest extends TestSupport {
 
 		@Test
 		@DisplayName("401 Unauthorized. Unknown user token")
-		@Transactional
 		void deleteBung_isUnauthorized_unknownUser() throws Exception {
 			String unknownUserToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5ZWppbmtlbGx5am9vQGdtYWlsLmNvbSIsImV4cCI6MTcyMzYyNDgxMCwiaWF0IjoxNzIzNjIxMjEwfQ.wH-eJCvEBgFg_QjWr7CdxBpMqlQzGt45DLmrsWju-HU";
 			mockMvc.perform(
@@ -273,13 +273,15 @@ public class BungApiTest extends TestSupport {
 
 		@Test
 		@DisplayName("200 Ok.")
-		@Transactional
 		void deleteBung_isOk() throws Exception {
 			String token = getTestUserToken("test1@test.com");
 			mockMvc.perform(
 				delete(PREFIX + "/" + bungId)
 					.header(AUTH_HEADER, token)
 			).andExpect(status().isOk());
+
+			assertThat(bungJpaRepository.findById(bungId)).isEmpty();
+			assertThat(userBungJpaRepository.findByBungEntity_BungId(bungId)).isEmpty();
 		}
 
 	}

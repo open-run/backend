@@ -178,6 +178,11 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         userBungJpaRepository.delete(userBung.toEntity());
     }
 
+    @Override
+    public void deleteByBungId(String bungId) {
+        userBungJpaRepository.deleteByBungEntity_BungId(bungId);
+    }
+
     private BooleanExpression ownedBungsOnly(Boolean isOwned) {
         if (isOwned == null) {
             return null;
