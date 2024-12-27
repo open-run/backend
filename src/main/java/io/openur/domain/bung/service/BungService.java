@@ -63,9 +63,10 @@ public class BungService {
         return userBungRepository.findBungWithUsersById(bungId);
     }
 
+    @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
-        // FIXME: BE-60 해당 bung 과 연관된 user_bung data 도 지워야함
+        userBungRepository.deleteByBungId(bungId);
         bungRepository.deleteByBungId(bungId);
     }
 
