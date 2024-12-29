@@ -15,8 +15,10 @@ VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'Seoul', 'temp_des
         CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, false, null, false),
        ('90477004-1422-4551-acce-04584b34612e', 'test2_bung', 'Bangkok', 'second_bung_data',
         CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 1, '6"30', 2, true, 'chicken & beer', false),
-       ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung', 'New York', 'past_bung_description',
-        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, false)
+       ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung_incompleted', 'New York', 'past_bung_description',
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, false),
+       ('a1234567-89ab-cdef-0123-1982ey1kbjas', 'past_bung_completed', 'New York', 'past_bung_description',
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, true)
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
@@ -30,6 +32,8 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-8036
        (4, 'a1234567-89ab-cdef-0123-456789abcdef', '9e1bfc60-f76a-47dc-9147-803653707192', false,
         CURRENT_TIMESTAMP(), false),
        (5, 'a1234567-89ab-cdef-0123-456789abcdef', '91b4928f-8288-44dc-a04d-640911f0b2be', false,
+        CURRENT_TIMESTAMP(), true),
+       (6, 'a1234567-89ab-cdef-0123-1982ey1kbjas', '5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', false,
         CURRENT_TIMESTAMP(), true)
 ;
 
