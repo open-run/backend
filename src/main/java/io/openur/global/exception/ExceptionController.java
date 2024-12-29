@@ -1,5 +1,6 @@
 package io.openur.global.exception;
 
+import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.jwt.InvalidJwtException;
@@ -50,8 +51,8 @@ public class ExceptionController {
 		return createResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 
-	@ExceptionHandler({JoinBungException.class})
-	public ResponseEntity<ExceptionDto> handleJoinBungException(JoinBungException e) {
+	@ExceptionHandler({JoinBungException.class, CompleteBungException.class})
+	public ResponseEntity<ExceptionDto> handleJoinBungException(Exception e) {
 		return createResponse(HttpStatus.CONFLICT, e.getMessage());
 	}
 

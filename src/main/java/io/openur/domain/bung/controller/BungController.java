@@ -10,6 +10,7 @@ import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
+import io.openur.global.enums.CompleteBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -146,13 +147,34 @@ public class BungController {
 
     @PatchMapping("/{bungId}/complete")
     @Operation(summary = "벙 완료하기")
-    public ResponseEntity<Response<Void>> completeBung(
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "성공적으로 완료됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"success\"}")
+        )),
+        @ApiResponse(responseCode = "409", description = "특정 사유로 완료가 반려됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"statusCode\":409, \"state\":\"CONFLICT\", \"message\":\"bung is already completed\"}")
+        )),
+        @ApiResponse(responseCode = "409", description = "특정 사유로 완료가 반려됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"statusCode\":409, \"state\":\"CONFLICT\", \"message\":\"bung has not started yet\"}")
+        ))
+    })
+    public ResponseEntity<Response<CompleteBungResultEnum>> completeBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
-    ) {
-        bungService.completeBung(userDetails, bungId);
-        return ResponseEntity.ok().body(Response.<Void>builder()
-            .message("success")
-            .build());
+    ) throws Exception {
+        CompleteBungResultEnum  result = bungService.completeBung(userDetails, bungId);
+        Response<CompleteBungResultEnum> response = Response.<CompleteBungResultEnum>builder()
+            .message(result.toString())
+            .data(result)
+            .build();
+
+        if (result == CompleteBungResultEnum.SUCCESSFULLY_COMPLETED) {
+            return ResponseEntity.ok().body(response);
+        }
+
+        throw new Exception("Unexpected result from completeBung.");
     }
 }

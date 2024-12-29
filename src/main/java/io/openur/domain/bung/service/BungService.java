@@ -5,6 +5,7 @@ import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.JoinBungResultDto;
+import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
@@ -16,9 +17,11 @@ import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.global.enums.CompleteBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.List;
+import javax.naming.CommunicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -109,17 +112,20 @@ public class BungService {
     }
 
     @Transactional
-    public void completeBung(UserDetailsImpl userDetails, String bungId) {
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
+    public CompleteBungResultEnum completeBung(UserDetailsImpl userDetails, String bungId)
+        throws CompleteBungException {
         Bung bung = bungRepository.findBungById(bungId);
         if (bung.isCompleted())
-            throw new IllegalStateException("Bung is already completed");
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
 
         if (bung.getStartDateTime().isAfter(LocalDateTime.now()))
-            throw new IllegalStateException("Bung has not started yet");
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED.toString());
 
         //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
 
         bung.completeBung();
         bungRepository.save(bung);
+        return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }
 }
