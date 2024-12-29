@@ -3,6 +3,7 @@ package io.openur.controller;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -19,6 +20,7 @@ import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
+import io.openur.global.enums.CompleteBungResultEnum;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -360,4 +362,66 @@ public class BungApiTest extends TestSupport {
 			assert response.getData() == JoinBungResultDto.SUCCESSFULLY_JOINED;
 		}
 	}
+
+    @Nested
+    @DisplayName("벙 완료하기")
+    class completeBung {
+
+        @Test
+        @DisplayName("409 Already Completed")
+        void complete_isConflict_alreadyCompleted() throws Exception {
+            String bungId = "a1234567-89ab-cdef-0123-1982ey1kbjas";
+            String token = getTestUserToken("test3@test.com");
+
+            MvcResult result = mockMvc.perform(
+                    patch(PREFIX + "/" + bungId + "/complete")
+                            .header(AUTH_HEADER, token)
+                            .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isConflict()).andReturn();
+
+            ExceptionDto response = parseResponse(
+                    result.getResponse().getContentAsString(),
+                    new TypeReference<>() {
+                    });
+            assert Objects.equals(response.getMessage(),
+                    CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+        }
+
+        @Test
+        @DisplayName("409 Conflict. Bung has not started")
+        void complete_isConflict_hasNotStarted() throws Exception {
+            String bungId = "90477004-1422-4551-acce-04584b34612e";
+            String token = getTestUserToken("test3@test.com");
+            MvcResult result = mockMvc.perform(
+                patch(PREFIX + "/" + bungId + "/complete")
+                            .header(AUTH_HEADER, token)
+                            .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isConflict()).andReturn();
+
+            ExceptionDto response = parseResponse(
+                    result.getResponse().getContentAsString(),
+                    new TypeReference<>() {
+                    });
+            assert Objects.equals(response.getMessage(),
+                    CompleteBungResultEnum.BUNG_HAS_NOT_STARTED.toString());
+        }
+
+        @Test
+        @DisplayName("200 OK.")
+        void complete_isOk() throws Exception {
+            String bungId = "a1234567-89ab-cdef-0123-456789abcdef";
+            String token = getTestUserToken("test2@test.com");
+            MvcResult result = mockMvc.perform(
+                patch(PREFIX + "/" + bungId + "/complete")
+                            .header(AUTH_HEADER, token)
+                            .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            Response<CompleteBungResultEnum> response = parseResponse(
+                    result.getResponse().getContentAsString(),
+                    new TypeReference<>() {
+                    });
+            assert response.getData() == CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
+        }
+    }
 }
