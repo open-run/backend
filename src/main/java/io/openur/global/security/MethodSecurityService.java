@@ -2,6 +2,7 @@ package io.openur.global.security;
 
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,13 @@ public class MethodSecurityService {
 
 	public boolean isOwnerOfBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
 		String bungId) {
-		UserBung userBung = userBungRepository.findByUserIdAndBungId(
-			userDetails.getUser().getUserId(), bungId);
-		return userBung.isOwner();
+		try {
+			UserBung userBung = userBungRepository.findByUserIdAndBungId(
+				userDetails.getUser().getUserId(), bungId);
+			return userBung.isOwner();
+		} catch (NoSuchElementException e) {
+			return false;
+		}
 	}
 
 	public boolean isSelf(@AuthenticationPrincipal UserDetailsImpl userDetails,
