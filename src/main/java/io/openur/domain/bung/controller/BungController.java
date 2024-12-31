@@ -4,7 +4,7 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
-import io.openur.domain.bung.dto.JoinBungResultDto;
+import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
@@ -70,10 +70,10 @@ public class BungController {
     }
 
     @GetMapping("/my-bungs")
-    @Operation(summary = "내가 소유 및 참가했던 벙 목록.\n"
-        // TODO: ordering
-        + " status == PARTICIPATING 이면 시작 시간 오름차순 (가장 임박한 벙 먼저),\n"
-        + " status == (ACCOMPLISHED or null) 이면 시작 시간 내림차순 (가장 최근에 완료된 or 가장 먼 미래의 벙 먼저)")
+    @Operation(summary = """
+        내가 소유 및 참가했던 벙 목록.
+         status == PARTICIPATING 이면 시작 시간 오름차순 (가장 임박한 벙 먼저),
+         status == (ACCOMPLISHED or null) 이면 시작 시간 내림차순 (가장 최근에 완료된 or 가장 먼 미래의 벙 먼저)""")
     public ResponseEntity<PagedResponse<BungInfoWithOwnershipDto>> getMyBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "null : 전부 || true : 소유한 || false : 소유자는 아닌")
@@ -128,17 +128,17 @@ public class BungController {
             examples = @ExampleObject(value = "{\"statusCode\":409,\"state\":\"CONFLICT\",\"message\":\"bung has already started\"}")
         ))
     })
-    public ResponseEntity<Response<JoinBungResultDto>> joinBung(
+    public ResponseEntity<Response<JoinBungResultEnum>> joinBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
     ) throws Exception {
-        JoinBungResultDto result = bungService.joinBung(userDetails, bungId);
-        Response<JoinBungResultDto> response = Response.<JoinBungResultDto>builder()
+        JoinBungResultEnum result = bungService.joinBung(userDetails, bungId);
+        Response<JoinBungResultEnum> response = Response.<JoinBungResultEnum>builder()
             .message(result.toString())
             .data(result)
             .build();
 
-        if (result == JoinBungResultDto.SUCCESSFULLY_JOINED) {
+        if (result == JoinBungResultEnum.SUCCESSFULLY_JOINED) {
             return ResponseEntity.ok().body(response);
         }
 

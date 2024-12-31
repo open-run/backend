@@ -1,6 +1,6 @@
-package io.openur.domain.bung.dto;
+package io.openur.global.enums;
 
-public enum JoinBungResultDto {
+public enum JoinBungResultEnum {
 	SUCCESSFULLY_JOINED("successfully joined"),
 	BUNG_HAS_ALREADY_STARTED("bung has already started"),
 	BUNG_IS_FULL("bung is full"),
@@ -9,7 +9,7 @@ public enum JoinBungResultDto {
 
 	private final String value;
 
-	JoinBungResultDto(String value) {
+	JoinBungResultEnum(String value) {
 		this.value = value;
 	}
 

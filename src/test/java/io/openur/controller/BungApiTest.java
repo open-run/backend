@@ -11,7 +11,7 @@ import io.openur.config.TestSupport;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
-import io.openur.domain.bung.dto.JoinBungResultDto;
+import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
@@ -303,7 +303,7 @@ public class BungApiTest extends TestSupport {
 				new TypeReference<>() {
 				});
 			assert Objects.equals(response.getMessage(),
-				JoinBungResultDto.USER_HAS_ALREADY_JOINED.toString());
+				JoinBungResultEnum.USER_HAS_ALREADY_JOINED.toString());
 		}
 
 		@Test
@@ -322,7 +322,7 @@ public class BungApiTest extends TestSupport {
 				new TypeReference<>() {
 				});
 			assert Objects.equals(response.getMessage(),
-				JoinBungResultDto.BUNG_HAS_ALREADY_STARTED.toString());
+				JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
 		}
 
 		@Test
@@ -340,7 +340,7 @@ public class BungApiTest extends TestSupport {
 				result.getResponse().getContentAsString(),
 				new TypeReference<>() {
 				});
-			assert Objects.equals(response.getMessage(), JoinBungResultDto.BUNG_IS_FULL.toString());
+			assert Objects.equals(response.getMessage(), JoinBungResultEnum.BUNG_IS_FULL.toString());
 		}
 
 		@Test
@@ -355,11 +355,11 @@ public class BungApiTest extends TestSupport {
 					.contentType(MediaType.APPLICATION_JSON)
 			).andExpect(status().isOk()).andReturn();
 
-			Response<JoinBungResultDto> response = parseResponse(
+			Response<JoinBungResultEnum> response = parseResponse(
 				result.getResponse().getContentAsString(),
 				new TypeReference<>() {
 				});
-			assert response.getData() == JoinBungResultDto.SUCCESSFULLY_JOINED;
+			assert response.getData() == JoinBungResultEnum.SUCCESSFULLY_JOINED;
 		}
 	}
 
