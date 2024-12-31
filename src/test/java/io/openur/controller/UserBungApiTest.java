@@ -6,15 +6,19 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.global.dto.ExceptionDto;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -31,7 +35,6 @@ public class UserBungApiTest extends TestSupport {
 
 		@Test
 		@DisplayName("200 Ok. Is bung owner.")
-		@Transactional
 		void kickMember_successTest() throws Exception {
 			String token = getTestUserToken("test1@test.com");
 			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
@@ -59,6 +62,26 @@ public class UserBungApiTest extends TestSupport {
 
 			assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
 				.isInstanceOf(NoSuchElementException.class);
+		}
+
+		@Test
+		@DisplayName("403 Forbidden. Owner is trying to kick self.")
+		void kickMember_isForbidden_ownerKickingSelf() throws Exception {
+			String token = getTestUserToken("test1@test.com");
+			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+			String userIdToKick = "9e1bfc60-f76a-47dc-9147-803653707192";
+
+			MvcResult result = mockMvc.perform(
+				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isForbidden()).andReturn();
+
+			ExceptionDto response = parseResponse(
+				result.getResponse().getContentAsString(), new TypeReference<>() {
+				});
+			assert Objects.equals(response.getMessage(),
+				"Owners cannot remove themselves from bung.");
 		}
 	}
 
