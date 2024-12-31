@@ -83,6 +83,27 @@ public class UserBungApiTest extends TestSupport {
 			assert Objects.equals(response.getMessage(),
 				"Owners cannot remove themselves from bung.");
 		}
+
+		@Test
+		@DisplayName("403 Forbidden. Is not owner nor self.")
+		void kickMember_isForbidden_notOwnerNorSelf() throws Exception {
+			String token = getTestUserToken("test3@test.com");
+			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+			String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+			MvcResult result = mockMvc.perform(
+				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+					.header(AUTH_HEADER, token)
+					.contentType(MediaType.APPLICATION_JSON)
+			).andExpect(status().isForbidden()).andReturn();
+
+			ExceptionDto response = parseResponse(
+				result.getResponse().getContentAsString(), new TypeReference<>() {
+				});
+			assert Objects.equals(response.getMessage(),
+				"Must be the owner of bung or self to remove user from bung.");
+		}
+
 	}
 
 	@Nested
