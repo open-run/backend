@@ -4,7 +4,7 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
-import io.openur.domain.bung.dto.JoinBungResultDto;
+import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
@@ -21,7 +21,6 @@ import io.openur.global.enums.CompleteBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.naming.CommunicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -89,10 +88,10 @@ public class BungService {
     }
 
     @Transactional
-    public JoinBungResultDto joinBung(UserDetailsImpl userDetails, String bungId)
+    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
         throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
-            throw new JoinBungException(JoinBungResultDto.BUNG_HAS_ALREADY_STARTED.toString());
+            throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
         }
 
         BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
@@ -100,15 +99,15 @@ public class BungService {
         if (bungWithMembers.getMemberList().stream().anyMatch(
             user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
-            throw new JoinBungException(JoinBungResultDto.USER_HAS_ALREADY_JOINED.toString());
+            throw new JoinBungException(JoinBungResultEnum.USER_HAS_ALREADY_JOINED.toString());
         }
 
         if (bungWithMembers.getMemberList().size() == bungWithMembers.getMemberNumber()) {
-            throw new JoinBungException(JoinBungResultDto.BUNG_IS_FULL.toString());
+            throw new JoinBungException(JoinBungResultEnum.BUNG_IS_FULL.toString());
         }
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
-        return JoinBungResultDto.SUCCESSFULLY_JOINED;
+        return JoinBungResultEnum.SUCCESSFULLY_JOINED;
     }
 
     @Transactional
