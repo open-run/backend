@@ -1,6 +1,7 @@
 package io.openur.global.exception;
 
 import io.openur.domain.bung.exception.JoinBungException;
+import io.openur.domain.userbung.exception.RemoveUserFromBungException;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.jwt.InvalidJwtException;
 import java.awt.HeadlessException;
@@ -35,7 +36,7 @@ public class ExceptionController {
 			e.getBindingResult().getFieldError().getDefaultMessage());
 	}
 
-	@ExceptionHandler({AccessDeniedException.class})
+	@ExceptionHandler({AccessDeniedException.class, RemoveUserFromBungException.class})
 	public ResponseEntity<ExceptionDto> handleForbiddenException(Exception e) {
 		return createResponse(HttpStatus.FORBIDDEN, e.getMessage());
 	}

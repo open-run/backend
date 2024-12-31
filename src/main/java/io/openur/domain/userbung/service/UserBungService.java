@@ -1,7 +1,9 @@
 package io.openur.domain.userbung.service;
 
+import io.openur.domain.userbung.exception.RemoveUserFromBungException;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.global.security.MethodSecurityService;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserBungService {
 
 	private final UserBungRepositoryImpl userBungRepository;
+	private final MethodSecurityService methodSecurityService;
 
 	@Transactional
 	@PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
@@ -29,10 +32,17 @@ public class UserBungService {
 	}
 
 	@Transactional
-	@PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId) || "
-		+ "@methodSecurityService.isSelf(#userDetails, #userIdToRemove)")
 	public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
 		String userIdToRemove) {
+		Boolean isOwner = methodSecurityService.isOwnerOfBung(userDetails, bungId);
+		Boolean isSelf = methodSecurityService.isSelf(userDetails, userIdToRemove);
+		if (isOwner && isSelf) {
+			throw new RemoveUserFromBungException("Owners cannot remove themselves from bung.");
+		} else if (!isOwner && !isSelf) {
+			throw new RemoveUserFromBungException(
+				"Must be the owner of bung or self to remove user from bung.");
+		}
+
 		UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
 		userBungRepository.removeUserFromBung(userBung);
 	}
