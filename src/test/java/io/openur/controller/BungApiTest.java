@@ -11,7 +11,6 @@ import io.openur.config.TestSupport;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
-import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
@@ -21,8 +20,11 @@ import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.enums.CompleteBungResultEnum;
+import io.openur.global.enums.JoinBungResultEnum;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -164,14 +166,13 @@ public class BungApiTest extends TestSupport {
 			assert !response.getData().isEmpty();
 			assert !response.getData().get(0).getHashtags().isEmpty();
 
-			// TODO: test descending order
-//			List<LocalDateTime> startDateTimes = response.getData().stream()
-//				.map(BungInfoDto::getStartDateTime)
-//				.toList();
-//			List<LocalDateTime> sortedStartDateTimes = new ArrayList<>(startDateTimes);
-//			sortedStartDateTimes.sort(Comparator.reverseOrder());
-//			assert startDateTimes.equals(
-//				sortedStartDateTimes) : "The list is not in descending order of startDateTime";
+            List<LocalDateTime> startDateTimes = response.getData().stream()
+                .map(BungInfoDto::getStartDateTime)
+                .toList();
+            List<LocalDateTime> sortedStartDateTimes = new ArrayList<>(startDateTimes);
+            sortedStartDateTimes.sort(Comparator.reverseOrder());
+            assert startDateTimes.equals(
+                sortedStartDateTimes) : "The list is not in descending order of startDateTime";
 		}
 	}
 
