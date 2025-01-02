@@ -15,10 +15,8 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QHashtagEntity extends EntityPathBase<HashtagEntity> {
 
-    private static final long serialVersionUID = 1136018289L;
-
     public static final QHashtagEntity hashtagEntity = new QHashtagEntity("hashtagEntity");
-
+    private static final long serialVersionUID = 1136018289L;
     public final NumberPath<Long> hashtagId = createNumber("hashtagId", Long.class);
 
     public final StringPath hashtagStr = createString("hashtagStr");

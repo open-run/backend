@@ -10,13 +10,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserBungJpaRepository extends JpaRepository<UserBungEntity, Long> {
 
-	Optional<UserBungEntity> findByUserEntity_UserIdAndBungEntity_BungId(String userId,
-		String bungId);
+    Optional<UserBungEntity> findByUserEntity_UserIdAndBungEntity_BungId(String userId,
+        String bungId);
 
-    Page<UserBungEntity> findAllByUserEntityAndOwnerIsTrueOrderByUserBungIdDesc(UserEntity userEntity, Pageable pageable);
+    Page<UserBungEntity> findAllByUserEntityAndOwnerIsTrueOrderByUserBungIdDesc(UserEntity userEntity,
+        Pageable pageable);
 
-	List<UserBungEntity> findByBungEntity_BungId(String bungId);
+    List<UserBungEntity> findByBungEntity_BungId(String bungId);
 
-	void deleteByBungEntity_BungId(String bungId);
+    void deleteByBungEntity_BungId(String bungId);
 
 }

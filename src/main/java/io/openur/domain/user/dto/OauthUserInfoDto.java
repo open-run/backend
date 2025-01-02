@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class OauthUserInfoDto {
+
     private String email;
     private Provider provider;
 

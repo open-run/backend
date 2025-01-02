@@ -16,12 +16,9 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QBungHashtagEntity extends EntityPathBase<BungHashtagEntity> {
 
-    private static final long serialVersionUID = -1358491567L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QBungHashtagEntity bungHashtagEntity = new QBungHashtagEntity("bungHashtagEntity");
-
+    private static final long serialVersionUID = -1358491567L;
+    private static final PathInits INITS = PathInits.DIRECT2;
     public final io.openur.domain.bung.entity.QBungEntity bungEntity;
 
     public final NumberPath<Long> bungHashtagId = createNumber("bungHashtagId", Long.class);
@@ -46,8 +43,12 @@ public class QBungHashtagEntity extends EntityPathBase<BungHashtagEntity> {
 
     public QBungHashtagEntity(Class<? extends BungHashtagEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.bungEntity = inits.isInitialized("bungEntity") ? new io.openur.domain.bung.entity.QBungEntity(forProperty("bungEntity")) : null;
-        this.hashtagEntity = inits.isInitialized("hashtagEntity") ? new io.openur.domain.hashtag.entity.QHashtagEntity(forProperty("hashtagEntity")) : null;
+        this.bungEntity =
+            inits.isInitialized("bungEntity") ? new io.openur.domain.bung.entity.QBungEntity(forProperty("bungEntity"))
+                : null;
+        this.hashtagEntity =
+            inits.isInitialized("hashtagEntity") ? new io.openur.domain.hashtag.entity.QHashtagEntity(forProperty(
+                "hashtagEntity")) : null;
     }
 
 }

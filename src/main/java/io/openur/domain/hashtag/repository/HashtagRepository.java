@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HashtagRepository {
+
     List<Hashtag> saveAll(List<String> hashtagStrs);
 
     Optional<Hashtag> findByHashtagStr(String hashtagStr);

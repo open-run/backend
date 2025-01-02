@@ -13,21 +13,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class MethodSecurityService {
 
-	private final UserBungRepositoryImpl userBungRepository;
+    private final UserBungRepositoryImpl userBungRepository;
 
-	public boolean isOwnerOfBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
-		String bungId) {
-		try {
-			UserBung userBung = userBungRepository.findByUserIdAndBungId(
-				userDetails.getUser().getUserId(), bungId);
-			return userBung.isOwner();
-		} catch (NoSuchElementException e) {
-			return false;
-		}
-	}
+    public boolean isOwnerOfBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        String bungId) {
+        try {
+            UserBung userBung = userBungRepository.findByUserIdAndBungId(
+                userDetails.getUser().getUserId(), bungId);
+            return userBung.isOwner();
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
 
-	public boolean isSelf(@AuthenticationPrincipal UserDetailsImpl userDetails,
-		String userId) {
-		return userDetails.getUser().getUserId().equals(userId);
-	}
+    public boolean isSelf(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        String userId) {
+        return userDetails.getUser().getUserId().equals(userId);
+    }
 }

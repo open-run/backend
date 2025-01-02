@@ -7,9 +7,10 @@ import lombok.Getter;
 
 @Getter
 public class GetUsersResponseDto {
-    private String userId;
+
     private final String nickname;
     private final String email;
+    private String userId;
     private String runningPace;
     private Integer runningFrequency;
     private Long collabCount;

@@ -24,183 +24,182 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserBungApiTest extends TestSupport {
 
-	@Autowired
-	protected UserBungRepositoryImpl userBungRepository;
+    private static final String PREFIX = "/v1/bungs";
+    @Autowired
+    protected UserBungRepositoryImpl userBungRepository;
 
-	private static final String PREFIX = "/v1/bungs";
+    @Nested
+    @DisplayName("멤버 제거")
+    class kickMemberTest {
 
-	@Nested
-	@DisplayName("멤버 제거")
-	class kickMemberTest {
+        @Test
+        @DisplayName("200 Ok. Is bung owner.")
+        void kickMember_successTest() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-		@Test
-		@DisplayName("200 Ok. Is bung owner.")
-		void kickMember_successTest() throws Exception {
-			String token = getTestUserToken("test1@test.com");
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            mockMvc.perform(
+                delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+        }
 
-			mockMvc.perform(
-				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
-					.header(AUTH_HEADER, token)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isOk());
-		}
+        @Test
+        @DisplayName("200 Ok. Is self.")
+        void kickMember_success_isSelf() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-		@Test
-		@DisplayName("200 Ok. Is self.")
-		void kickMember_success_isSelf() throws Exception {
-			String token = getTestUserToken("test2@test.com");
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            mockMvc.perform(
+                delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
 
-			mockMvc.perform(
-				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
-					.header(AUTH_HEADER, token)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isOk());
+            assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
+                .isInstanceOf(NoSuchElementException.class);
+        }
 
-			assertThatThrownBy(() -> userBungRepository.findByUserIdAndBungId(userIdToKick, bungId))
-				.isInstanceOf(NoSuchElementException.class);
-		}
+        @Test
+        @DisplayName("403 Forbidden. Owner is trying to kick self.")
+        void kickMember_isForbidden_ownerKickingSelf() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String userIdToKick = "9e1bfc60-f76a-47dc-9147-803653707192";
 
-		@Test
-		@DisplayName("403 Forbidden. Owner is trying to kick self.")
-		void kickMember_isForbidden_ownerKickingSelf() throws Exception {
-			String token = getTestUserToken("test1@test.com");
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String userIdToKick = "9e1bfc60-f76a-47dc-9147-803653707192";
+            MvcResult result = mockMvc.perform(
+                delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden()).andReturn();
 
-			MvcResult result = mockMvc.perform(
-				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
-					.header(AUTH_HEADER, token)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isForbidden()).andReturn();
+            ExceptionDto response = parseResponse(
+                result.getResponse().getContentAsString(), new TypeReference<>() {
+                });
+            assert Objects.equals(response.getMessage(),
+                "Owners cannot remove themselves from bung.");
+        }
 
-			ExceptionDto response = parseResponse(
-				result.getResponse().getContentAsString(), new TypeReference<>() {
-				});
-			assert Objects.equals(response.getMessage(),
-				"Owners cannot remove themselves from bung.");
-		}
+        @Test
+        @DisplayName("403 Forbidden. Is not owner nor self.")
+        void kickMember_isForbidden_notOwnerNorSelf() throws Exception {
+            String token = getTestUserToken("test3@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-		@Test
-		@DisplayName("403 Forbidden. Is not owner nor self.")
-		void kickMember_isForbidden_notOwnerNorSelf() throws Exception {
-			String token = getTestUserToken("test3@test.com");
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            MvcResult result = mockMvc.perform(
+                delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden()).andReturn();
 
-			MvcResult result = mockMvc.perform(
-				delete(PREFIX + "/{bungId}/members/{userIdToKick}", bungId, userIdToKick)
-					.header(AUTH_HEADER, token)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isForbidden()).andReturn();
+            ExceptionDto response = parseResponse(
+                result.getResponse().getContentAsString(), new TypeReference<>() {
+                });
+            assert Objects.equals(response.getMessage(),
+                "Must be the owner of bung or self to remove user from bung.");
+        }
 
-			ExceptionDto response = parseResponse(
-				result.getResponse().getContentAsString(), new TypeReference<>() {
-				});
-			assert Objects.equals(response.getMessage(),
-				"Must be the owner of bung or self to remove user from bung.");
-		}
+    }
 
-	}
+    @Nested
+    @DisplayName("벙주 변경")
+    class changeOwnerTest {
 
-	@Nested
-	@DisplayName("벙주 변경")
-	class changeOwnerTest {
+        @Test
+        @DisplayName("200 Ok.")
+        @Transactional
+        void changeOwner_isOkTest() throws Exception {
+            String token = getTestUserToken("test1@test.com");
 
-		@Test
-		@DisplayName("200 Ok.")
-		@Transactional
-		void changeOwner_isOkTest() throws Exception {
-			String token = getTestUserToken("test1@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            String oldOwnerUserId = "9e1bfc60-f76a-47dc-9147-803653707192";
 
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
-			String oldOwnerUserId = "9e1bfc60-f76a-47dc-9147-803653707192";
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
 
-			mockMvc.perform(
-				patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
-					newOwnerUserId)
-					.header(AUTH_HEADER, token)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isOk());
+            UserBung newOwnerBung = userBungRepository.findByUserIdAndBungId(newOwnerUserId,
+                bungId);
+            assertThat(newOwnerBung).isNotNull();
+            assertThat(newOwnerBung.isOwner()).isTrue();
 
-			UserBung newOwnerBung = userBungRepository.findByUserIdAndBungId(newOwnerUserId,
-				bungId);
-			assertThat(newOwnerBung).isNotNull();
-			assertThat(newOwnerBung.isOwner()).isTrue();
+            UserBung oldOwnerBung = userBungRepository.findByUserIdAndBungId(oldOwnerUserId,
+                bungId);
+            assertThat(oldOwnerBung).isNotNull();
+            assertThat(oldOwnerBung.isOwner()).isFalse();
+        }
 
-			UserBung oldOwnerBung = userBungRepository.findByUserIdAndBungId(oldOwnerUserId,
-				bungId);
-			assertThat(oldOwnerBung).isNotNull();
-			assertThat(oldOwnerBung.isOwner()).isFalse();
-		}
+        @Test
+        @DisplayName("403 Forbidden. Authorization Header 없음")
+        @Transactional
+        void changeOwner_isForbidden() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-		@Test
-		@DisplayName("403 Forbidden. Authorization Header 없음")
-		@Transactional
-		void changeOwner_isForbidden() throws Exception {
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden());
+        }
 
-			mockMvc.perform(
-				patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
-					newOwnerUserId)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isForbidden());
-		}
+        @Test
+        @DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
+        @Transactional
+        void changeOwner_isForbidden_notOwner() throws Exception {
+            String notOwnerToken = getTestUserToken("test2@test.com");
 
-		@Test
-		@DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
-		@Transactional
-		void changeOwner_isForbidden_notOwner() throws Exception {
-			String notOwnerToken = getTestUserToken("test2@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, notOwnerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden());
+        }
 
-			mockMvc.perform(
-				patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
-					newOwnerUserId)
-					.header(AUTH_HEADER, notOwnerToken)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isForbidden());
-		}
+        @Test
+        @DisplayName("401 Unauthorized. invalid Authorization Header")
+        @Transactional
+        void changeOwner_isUnauthorized() throws Exception {
+            String invalidToken = "Bearer invalidToken";
 
-		@Test
-		@DisplayName("401 Unauthorized. invalid Authorization Header")
-		@Transactional
-		void changeOwner_isUnauthorized() throws Exception {
-			String invalidToken = "Bearer invalidToken";
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, invalidToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isUnauthorized());
+        }
 
-			mockMvc.perform(
-				patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
-					newOwnerUserId)
-					.header(AUTH_HEADER, invalidToken)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isUnauthorized());
-		}
+        @Test
+        @DisplayName("401 Unauthorized. Unknown user token")
+        @Transactional
+        void changeOwner_isUnauthorized_unknownUser() throws Exception {
+            String unknownUserToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5ZWppbmtlbGx5am9vQGdtYWlsLmNvbSIsImV4cCI6MTcyMzYyNDgxMCwiaWF0IjoxNzIzNjIxMjEwfQ.wH-eJCvEBgFg_QjWr7CdxBpMqlQzGt45DLmrsWju-HU";
 
-		@Test
-		@DisplayName("401 Unauthorized. Unknown user token")
-		@Transactional
-		void changeOwner_isUnauthorized_unknownUser() throws Exception {
-			String unknownUserToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5ZWppbmtlbGx5am9vQGdtYWlsLmNvbSIsImV4cCI6MTcyMzYyNDgxMCwiaWF0IjoxNzIzNjIxMjEwfQ.wH-eJCvEBgFg_QjWr7CdxBpMqlQzGt45DLmrsWju-HU";
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
-			String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-			String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
-
-			mockMvc.perform(
-				patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
-					newOwnerUserId)
-					.header(AUTH_HEADER, unknownUserToken)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isUnauthorized());
-		}
-	}
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/change-owner?newOwnerUserId={newOwnerUserId}", bungId,
+                    newOwnerUserId)
+                    .header(AUTH_HEADER, unknownUserToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isUnauthorized());
+        }
+    }
 }

@@ -19,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RequiredArgsConstructor
 public abstract class LoginService {
+
     private final UserRepositoryImpl userRepository;
     private final RestTemplate restTemplate;
 
@@ -35,7 +36,7 @@ public abstract class LoginService {
         String redirectUri,
         String tokenUri,
         String clientSecret
-        ) throws JsonProcessingException {
+    ) throws JsonProcessingException {
         URI uri = UriComponentsBuilder.fromUriString(tokenUri).encode().build().toUri();
 
         HttpHeaders headers = new HttpHeaders();
@@ -71,8 +72,7 @@ public abstract class LoginService {
             // 없으면 회원가입
             User newUser = new User(email, oauthUserInfoDto.getProvider());
             return userRepository.save(newUser);
-        }
-        else {
+        } else {
             return user;
         }
     }

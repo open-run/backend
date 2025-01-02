@@ -20,18 +20,18 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 @SpringBootTest(properties = {"spring.config.location=classpath:application-test.properties"})
 public class TestSupport {
+
+    protected final static String AUTH_HEADER = "Authorization";
+    @Autowired
+    protected JwtUtil jwtUtil;
+    protected MockMvc mockMvc;
     @Autowired
     private WebApplicationContext context;
     @Autowired
-    protected JwtUtil jwtUtil;
-    @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    protected final static String AUTH_HEADER = "Authorization";
-    protected MockMvc mockMvc;
-
-    /** If using RestDocs for extended description of API documents,
-     *  Add RestDocumentation Extension
+    /**
+     * If using RestDocs for extended description of API documents, Add RestDocumentation Extension
      */
     @BeforeEach
     void setMockMvc() {

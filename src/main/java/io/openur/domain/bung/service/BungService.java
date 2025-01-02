@@ -4,7 +4,6 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
-import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
@@ -18,6 +17,7 @@ import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.enums.CompleteBungResultEnum;
+import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BungService {
+
     private final BungRepositoryImpl bungRepository;
     private final UserRepositoryImpl userRepository;
     private final UserBungRepositoryImpl userBungRepository;
@@ -59,7 +60,8 @@ public class BungService {
         return new BungInfoDto(bung, dto.getHashtags());
     }
 
-    public BungInfoWithMemberListDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails, String bungId) {
+    public BungInfoWithMemberListDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        String bungId) {
         return userBungRepository.findBungWithUsersById(bungId);
     }
 
@@ -116,11 +118,13 @@ public class BungService {
     public CompleteBungResultEnum completeBung(UserDetailsImpl userDetails, String bungId)
         throws CompleteBungException {
         Bung bung = bungRepository.findBungById(bungId);
-        if (bung.isCompleted())
+        if (bung.isCompleted()) {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+        }
 
-        if (bung.getStartDateTime().isAfter(LocalDateTime.now()))
+        if (bung.getStartDateTime().isAfter(LocalDateTime.now())) {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED.toString());
+        }
 
         //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
 

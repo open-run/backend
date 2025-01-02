@@ -21,31 +21,31 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "user-bung-controller", description = "특정 벙의 멤버와 관련된 액션들")
 public class UserBungController {
 
-	private final UserBungService userBungService;
+    private final UserBungService userBungService;
 
-	@PatchMapping("/{bungId}/change-owner")
-	@Operation(summary = "벙주 변경(벙주만 가능)")
-	public ResponseEntity<Response<Void>> changeOwner(
-		@AuthenticationPrincipal UserDetailsImpl userDetails,
-		@PathVariable String bungId,
-		@RequestParam String newOwnerUserId
-	) {
-		userBungService.changeOwner(userDetails, bungId, newOwnerUserId);
-		return ResponseEntity.ok().body(Response.<Void>builder()
-			.message("Owner changed successfully")
-			.build());
-	}
+    @PatchMapping("/{bungId}/change-owner")
+    @Operation(summary = "벙주 변경(벙주만 가능)")
+    public ResponseEntity<Response<Void>> changeOwner(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @RequestParam String newOwnerUserId
+    ) {
+        userBungService.changeOwner(userDetails, bungId, newOwnerUserId);
+        return ResponseEntity.ok().body(Response.<Void>builder()
+            .message("Owner changed successfully")
+            .build());
+    }
 
-	@DeleteMapping("/{bungId}/members/{userIdToRemove}")
-	@Operation(summary = "멤버 삭제하기(벙주와 본인만 가능)")
-	public ResponseEntity<Response<Void>> kickMember(
-		@AuthenticationPrincipal UserDetailsImpl userDetails,
-		@PathVariable String bungId,
-		@PathVariable String userIdToRemove
-	) {
-		userBungService.removeUserFromBung(userDetails, bungId, userIdToRemove);
-		return ResponseEntity.ok().body(Response.<Void>builder()
-			.message("Member deleted successfully")
-			.build());
-	}
+    @DeleteMapping("/{bungId}/members/{userIdToRemove}")
+    @Operation(summary = "멤버 삭제하기(벙주와 본인만 가능)")
+    public ResponseEntity<Response<Void>> kickMember(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @PathVariable String userIdToRemove
+    ) {
+        userBungService.removeUserFromBung(userDetails, bungId, userIdToRemove);
+        return ResponseEntity.ok().body(Response.<Void>builder()
+            .message("Member deleted successfully")
+            .build());
+    }
 }

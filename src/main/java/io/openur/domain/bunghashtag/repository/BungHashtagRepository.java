@@ -5,6 +5,7 @@ import io.openur.domain.hashtag.model.Hashtag;
 import java.util.List;
 
 public interface BungHashtagRepository {
+
     void bulkInsertHashtags(Bung bung, List<Hashtag> hashtags);
 
     List<Hashtag> findHashtagsByBungId(String bungId);

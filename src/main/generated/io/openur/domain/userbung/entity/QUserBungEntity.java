@@ -16,17 +16,15 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QUserBungEntity extends EntityPathBase<UserBungEntity> {
 
-    private static final long serialVersionUID = 1570483417L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QUserBungEntity userBungEntity = new QUserBungEntity("userBungEntity");
-
+    private static final long serialVersionUID = 1570483417L;
+    private static final PathInits INITS = PathInits.DIRECT2;
     public final io.openur.domain.bung.entity.QBungEntity bungEntity;
 
     public final BooleanPath isOwner = createBoolean("isOwner");
 
-    public final DateTimePath<java.time.LocalDateTime> modifiedAt = createDateTime("modifiedAt", java.time.LocalDateTime.class);
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = createDateTime("modifiedAt",
+        java.time.LocalDateTime.class);
 
     public final BooleanPath participationStatus = createBoolean("participationStatus");
 
@@ -52,8 +50,12 @@ public class QUserBungEntity extends EntityPathBase<UserBungEntity> {
 
     public QUserBungEntity(Class<? extends UserBungEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.bungEntity = inits.isInitialized("bungEntity") ? new io.openur.domain.bung.entity.QBungEntity(forProperty("bungEntity")) : null;
-        this.userEntity = inits.isInitialized("userEntity") ? new io.openur.domain.user.entity.QUserEntity(forProperty("userEntity")) : null;
+        this.bungEntity =
+            inits.isInitialized("bungEntity") ? new io.openur.domain.bung.entity.QBungEntity(forProperty("bungEntity"))
+                : null;
+        this.userEntity =
+            inits.isInitialized("userEntity") ? new io.openur.domain.user.entity.QUserEntity(forProperty("userEntity"))
+                : null;
     }
 
 }

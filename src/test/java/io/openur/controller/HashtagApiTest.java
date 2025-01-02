@@ -21,29 +21,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class HashtagApiTest extends TestSupport {
 
-	private static final String PREFIX = "/v1/bungs";
+    private static final String PREFIX = "/v1/bungs";
 
-	@Test
-	@DisplayName("기존 해시태그 조회")
-	void getHashtagsTest() throws Exception {
-		String token = getTestUserToken("test1@test.com");
-		String uriPath = PREFIX + "/hashtags?tag=";
-		Map<String, List<String>> requestAndResponse = Map.of(
-			"런", Arrays.asList("펀런", "런린이"),
-			"고수", List.of("고수만"),
-			"급벙", new ArrayList<>()
-		);
+    @Test
+    @DisplayName("기존 해시태그 조회")
+    void getHashtagsTest() throws Exception {
+        String token = getTestUserToken("test1@test.com");
+        String uriPath = PREFIX + "/hashtags?tag=";
+        Map<String, List<String>> requestAndResponse = Map.of(
+            "런", Arrays.asList("펀런", "런린이"),
+            "고수", List.of("고수만"),
+            "급벙", new ArrayList<>()
+        );
 
-		for (Entry<String, List<String>> entry : requestAndResponse.entrySet()) {
-			MvcResult result = mockMvc.perform(
-				get(uriPath + entry.getKey())
-					.header(AUTH_HEADER, token)
-					.contentType(MediaType.APPLICATION_JSON)
-			).andExpect(status().isOk()).andReturn();
+        for (Entry<String, List<String>> entry : requestAndResponse.entrySet()) {
+            MvcResult result = mockMvc.perform(
+                get(uriPath + entry.getKey())
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
 
-			Response<List<String>> response = parseResponse(
-				result.getResponse().getContentAsString(), new TypeReference<>() {});
-			assert response.getData().containsAll(entry.getValue());
-		}
-	}
+            Response<List<String>> response = parseResponse(
+                result.getResponse().getContentAsString(), new TypeReference<>() {
+                });
+            assert response.getData().containsAll(entry.getValue());
+        }
+    }
 }

@@ -2,17 +2,18 @@ package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
+
     private final UserJpaRepository userJpaRepository;
 
     @PersistenceContext
@@ -70,7 +71,7 @@ public class UserRepositoryImpl implements UserRepository {
             if (userEntity != null) {
                 userEntity.setFeedback(userEntity.getFeedback() + 1);
                 entityManager.merge(userEntity);
-            }else {
+            } else {
                 notFoundUserIds.add(userId); // 조회되지 않은 userId를 리스트에 추가
             }
         }

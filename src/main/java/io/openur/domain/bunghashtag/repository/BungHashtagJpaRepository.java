@@ -1,10 +1,9 @@
 package io.openur.domain.bunghashtag.repository;
 
-import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bung.entity.BungEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BungHashtagJpaRepository extends JpaRepository<BungHashtagEntity, Long> {
 

@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserBung {
+
     private Long userBungId;
     private User user;
     private Bung bung;
@@ -31,14 +32,6 @@ public class UserBung {
         return userBung;
     }
 
-    public void disableOwnerBung() {
-        this.isOwner = false;
-    }
-
-    public void enableOwnerBung() {
-        this.isOwner = true;
-    }
-
     public static UserBung from(UserBungEntity userBungEntity) {
         return new UserBung(
             userBungEntity.getUserBungId(),
@@ -48,6 +41,14 @@ public class UserBung {
             userBungEntity.getModifiedAt(),
             userBungEntity.isOwner()
         );
+    }
+
+    public void disableOwnerBung() {
+        this.isOwner = false;
+    }
+
+    public void enableOwnerBung() {
+        this.isOwner = true;
     }
 
     public UserBungEntity toEntity() {

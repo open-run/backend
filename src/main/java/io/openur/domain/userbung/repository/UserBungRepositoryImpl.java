@@ -17,7 +17,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.BungStatus;
-import io.openur.domain.hashtag.entity.QHashtagEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
@@ -199,7 +198,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
         // 행사가 시작한, 즉 시작은 지금보다 나중이지만, 종료 시간이 지금보다 과거여서는 안됌
         if (PARTICIPATING.equals(status)) {
-            return bungEntity.startDateTime.loe(LocalDateTime.now()).and(bungEntity.endDateTime.gt(LocalDateTime.now()));
+            return bungEntity.startDateTime.loe(LocalDateTime.now())
+                .and(bungEntity.endDateTime.gt(LocalDateTime.now()));
         }
 
         // 이미 행사가 성공적으로 끝났을 것인
@@ -209,7 +209,9 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     private OrderSpecifier withStatusOrdering(BungStatus status) {
 
         // 완료된 벙을 볼 경우는 최근 끝난것부터 내림차순
-        if(ACCOMPLISHED.equals(status)) return bungEntity.endDateTime.desc();
+        if (ACCOMPLISHED.equals(status)) {
+            return bungEntity.endDateTime.desc();
+        }
 
         // 진행중 및 예정인 경우는 시작 시간 오름차순 ( 임박순 )
         return bungEntity.startDateTime.asc();

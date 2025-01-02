@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface HashtagJpaRepository extends JpaRepository<HashtagEntity, Long> {
+
     Optional<HashtagEntity> findByHashtagStr(String hashtagStr);
 
     List<HashtagEntity> findByHashtagStrIn(List<String> hashtagStrs);

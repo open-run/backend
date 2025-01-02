@@ -4,8 +4,10 @@ import io.openur.domain.userbung.model.UserBung;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter @NoArgsConstructor
+@Getter
+@NoArgsConstructor
 public class BungInfoWithOwnershipDto extends BungInfoDto {
+
     private boolean hasOwnership;
 
     public BungInfoWithOwnershipDto(UserBung userBung) {

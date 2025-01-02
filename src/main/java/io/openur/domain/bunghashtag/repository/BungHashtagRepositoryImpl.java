@@ -3,8 +3,8 @@ package io.openur.domain.bunghashtag.repository;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.model.Hashtag;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class BungHashtagRepositoryImpl implements BungHashtagRepository {
+
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
 
     @PersistenceContext
@@ -30,19 +31,19 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
     @Override
     public List<Hashtag> findHashtagsByBungId(String bungId) {
         return bungHashtagJpaRepository.findByBungEntity_BungId(bungId).stream()
-                .map(Hashtag::from).toList();
+            .map(Hashtag::from).toList();
     }
 
     @Override
     public List<Bung> findBungByHashtag(String hashtagStr) {
         return bungHashtagJpaRepository.findBungEntityByHashtagEntity_HashtagStr(hashtagStr)
-                .stream().map(Bung::from).toList();
+            .stream().map(Bung::from).toList();
     }
 
     @Override
     public List<Bung> findBungByHashtags(List<String> hashtagStrs) {
         return bungHashtagJpaRepository.findBungEntityByHashtagEntity_HashtagStrIn(hashtagStrs)
-                .stream().map(Bung::from).toList();
+            .stream().map(Bung::from).toList();
     }
 
     @Override

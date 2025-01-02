@@ -10,11 +10,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class HashtagRepositoryImpl implements HashtagRepository {
+
     private final HashtagJpaRepository hashtagJpaRepository;
 
     /**
-     * Saves new hashtag strings into the database and returns all hashtag elements with their ID
-     * values.
+     * Saves new hashtag strings into the database and returns all hashtag elements with their ID values.
      *
      * @param hashtagStrs List of hashtag strings to save.
      * @return List of all hashtags with their ID values.
@@ -36,8 +36,8 @@ public class HashtagRepositoryImpl implements HashtagRepository {
 
         List<Hashtag> saved = hashtagJpaRepository.saveAll(
                 toSave.stream()
-                .map(Hashtag::toEntity)
-                .toList())
+                    .map(Hashtag::toEntity)
+                    .toList())
             .stream()
             .map(Hashtag::from)
             .toList();
