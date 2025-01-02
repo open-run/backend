@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class BungHashtag {
+
     private Long bungHashtagId;
     private Bung bung;
     private Hashtag hashtag;
@@ -20,15 +21,14 @@ public class BungHashtag {
 
     public static BungHashtag from(final BungHashtagEntity bungHashtagEntity) {
         return new BungHashtag(bungHashtagEntity.getBungHashtagId(),
-                Bung.from(bungHashtagEntity.getBungEntity()),
-                Hashtag.from(bungHashtagEntity.getHashtagEntity()));
+            Bung.from(bungHashtagEntity.getBungEntity()),
+            Hashtag.from(bungHashtagEntity.getHashtagEntity()));
     }
 
     public BungHashtagEntity toEntity() {
         return new BungHashtagEntity(this.bungHashtagId, this.bung.toEntity(),
-                this.hashtag.toEntity());
+            this.hashtag.toEntity());
     }
-
 
 
 }

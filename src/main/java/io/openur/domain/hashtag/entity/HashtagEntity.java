@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HashtagEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long hashtagId;

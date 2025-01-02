@@ -7,7 +7,8 @@ import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
 
-@Getter @ToString
+@Getter
+@ToString
 public class CreateBungDto {
 
     @NotBlank

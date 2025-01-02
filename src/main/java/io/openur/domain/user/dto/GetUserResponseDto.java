@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class GetUserResponseDto {
+
     private String userId;
     private String nickname;
     private String email;

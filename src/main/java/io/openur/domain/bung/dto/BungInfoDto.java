@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BungInfoDto {
+
     private String bungId;
     private String name;
     private String description;

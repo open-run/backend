@@ -1,4 +1,5 @@
 package io.openur.domain.user.service;
+
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
+
     private final UserRepositoryImpl userRepository;
     private final UserBungRepositoryImpl userBungRepositoryImpl;
 
@@ -31,7 +33,7 @@ public class UserService {
         return userRepository.existsByNickname(nickname);
     }
 
-    public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails){
+    public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         String email = userDetails.getUser().getEmail();
         User user = userRepository.findByEmail(email);
         return new GetUserResponseDto(user);
@@ -56,8 +58,10 @@ public class UserService {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
         userRepository.deleteUserInfo(user);
     }
+
     @Transactional
-    public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails, PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
+    public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         String email = userDetails.getUser().getEmail();
         User user = userRepository.findByEmail(email);
         user.update(patchUserSurveyRequestDto);

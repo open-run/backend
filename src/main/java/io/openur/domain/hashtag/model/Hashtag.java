@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class Hashtag {
+
     private Long hashtagId;
     private String hashtagStr;
 
@@ -17,7 +18,7 @@ public class Hashtag {
 
     public static Hashtag from(final BungHashtagEntity bungHashtagEntity) {
         return new Hashtag(bungHashtagEntity.getHashtagEntity().getHashtagId(),
-                bungHashtagEntity.getHashtagEntity().getHashtagStr());
+            bungHashtagEntity.getHashtagEntity().getHashtagStr());
     }
 
     public static Hashtag from(final HashtagEntity hashtagEntity) {

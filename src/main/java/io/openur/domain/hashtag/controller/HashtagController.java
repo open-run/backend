@@ -16,17 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class HashtagController {
 
-	private final HashtagService hashtagService;
+    private final HashtagService hashtagService;
 
-	@GetMapping("/hashtags")
-	@Operation(summary = "입력받은 문자열이 포함된 기존 해시태그 리스트 불러오기")
-	public ResponseEntity<Response<List<String>>> getHashtags(
-		@RequestParam String tag
-	) {
-		List<String> hashtags = hashtagService.getHashtagList(tag);
-		return ResponseEntity.ok().body(Response.<List<String>>builder()
-			.message("success")
-			.data(hashtags)
-			.build());
-	}
+    @GetMapping("/hashtags")
+    @Operation(summary = "입력받은 문자열이 포함된 기존 해시태그 리스트 불러오기")
+    public ResponseEntity<Response<List<String>>> getHashtags(
+        @RequestParam String tag
+    ) {
+        List<String> hashtags = hashtagService.getHashtagList(tag);
+        return ResponseEntity.ok().body(Response.<List<String>>builder()
+            .message("success")
+            .data(hashtags)
+            .build());
+    }
 }

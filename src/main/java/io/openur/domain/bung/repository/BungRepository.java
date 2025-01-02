@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BungRepository {
+
     Page<Bung> findBungsWithStatus(
         User user, boolean isAvailableOnly, Pageable pageable);
 

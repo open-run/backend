@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BaseController {
 
-	@GetMapping("/health")
-	@Operation(summary = "서버 상태 확인용 API")
-	public ResponseEntity<Response<String>> health() {
-		return ResponseEntity.ok().body(Response.<String>builder()
-			.message("success")
-			.data("ok")
-			.build());
-	}
+    @GetMapping("/health")
+    @Operation(summary = "서버 상태 확인용 API")
+    public ResponseEntity<Response<String>> health() {
+        return ResponseEntity.ok().body(Response.<String>builder()
+            .message("success")
+            .data("ok")
+            .build());
+    }
 }

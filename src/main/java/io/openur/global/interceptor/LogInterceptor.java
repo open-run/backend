@@ -8,6 +8,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Slf4j
 public class LogInterceptor implements HandlerInterceptor {
+
     @Override
     public boolean preHandle(
         HttpServletRequest request, HttpServletResponse response, Object handler)

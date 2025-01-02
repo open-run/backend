@@ -12,12 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class HashtagService {
 
-	private final HashtagRepositoryImpl hashtagRepository;
+    private final HashtagRepositoryImpl hashtagRepository;
 
-	public List<String> getHashtagList(String substring) {
-		return hashtagRepository.findByHashtagStrContaining(substring)
-			.stream()
-			.map(Hashtag::getHashtagStr)
-			.toList();
-	}
+    public List<String> getHashtagList(String substring) {
+        return hashtagRepository.findByHashtagStrContaining(substring)
+            .stream()
+            .map(Hashtag::getHashtagStr)
+            .toList();
+    }
 }

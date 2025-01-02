@@ -13,12 +13,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BungInfoWithMemberListDto extends BungInfoDto {
+
     private List<UserBungInfoDto> memberList;
 
     public BungInfoWithMemberListDto(
-		Entry<BungEntity, List<UserBungEntity>> entrySet
-	) {
-		super(Bung.from(entrySet.getKey()));
+        Entry<BungEntity, List<UserBungEntity>> entrySet
+    ) {
+        super(Bung.from(entrySet.getKey()));
 
         this.memberList =
             entrySet.getValue()

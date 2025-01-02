@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j(topic = "Kakao Login")
 @Service
 public class KakaoService extends LoginService {
+
     private final JwtUtil jwtUtil;
 
     // TODO: Properties Configuration으로 묶기
@@ -36,8 +37,8 @@ public class KakaoService extends LoginService {
         JwtUtil jwtUtil
     ) {
         super(userRepository, restTemplate);
-		this.jwtUtil = jwtUtil;
-	}
+        this.jwtUtil = jwtUtil;
+    }
 
     // https://kauth.kakao.com/oauth/authorize?client_id={clientId}&redirect_uri=http://localhost:8080/v1/users/login/kakao&response_type=code
     public GetUsersLoginDto login(String code, String state) throws JsonProcessingException {

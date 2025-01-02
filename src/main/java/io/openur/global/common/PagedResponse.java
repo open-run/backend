@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PagedResponse<T> {
+
     private String message;
     private List<T> data;
     private int totalPages;

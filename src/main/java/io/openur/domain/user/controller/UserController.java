@@ -1,7 +1,6 @@
 package io.openur.domain.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.openur.domain.user.dto.GetFeedbackDto;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
@@ -21,14 +20,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,8 +39,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -157,31 +152,18 @@ public class UserController {
 
     @GetMapping("/feedback")
     @Operation(summary = "벙 참가자들 피드백(좋아요) 증가")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "피드백이 성공적으로 증가됨",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        examples =
-                                                @ExampleObject(
-                                                        value =
-                                                                "{\"message\":\"Feedback increased successfully\"}"))),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "일부 유저 ID를 찾을 수 없음",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        examples =
-                                                @ExampleObject(
-                                                        value =
-                                                                "{\"statusCode\":404,\"state\":\"NOT FOUND\",\"message\":\"Some user IDs were not found: [userId1, userId2]\"}")))
-            })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "피드백이 성공적으로 증가됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"Feedback increased successfully\"}")
+        )),
+        @ApiResponse(responseCode = "404", description = "일부 유저 ID를 찾을 수 없음", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"statusCode\":404,\"state\":\"NOT FOUND\",\"message\":\"Some user IDs were not found: [userId1, userId2]\"}")
+        ))
+    })
     public ResponseEntity<Response<List<String>>> increaseFeedback(
-            @RequestBody GetFeedbackDto feedbackRequestDto) {
+        @RequestBody GetFeedbackDto feedbackRequestDto) {
         List<String> notFoundUserIds = userService.increaseFeedback(feedbackRequestDto.getTargetUserIds());
 
         if (!notFoundUserIds.isEmpty()) {

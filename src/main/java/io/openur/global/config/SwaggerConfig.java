@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
+
     public OpenApiCustomizer buildSecurityOpenApi() {
         Server authenticated = new Server();
         authenticated.url("/").setDescription("Swagger for Authenticated");

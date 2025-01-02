@@ -16,11 +16,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity @Getter
+@Entity
+@Getter
 @Table(name = "tb_bungs")
 @NoArgsConstructor
 @AllArgsConstructor
-public class BungEntity  {
+public class BungEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String bungId;

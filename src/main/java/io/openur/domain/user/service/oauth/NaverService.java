@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j(topic = "Naver Login")
 @Service
 public class NaverService extends LoginService {
+
     private final JwtUtil jwtUtil;
 
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")

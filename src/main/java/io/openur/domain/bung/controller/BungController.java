@@ -4,13 +4,13 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
-import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
 import io.openur.global.enums.CompleteBungResultEnum;
+import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/bungs")
 @RequiredArgsConstructor
 public class BungController {
+
     private final BungService bungService;
 
     @PostMapping()
@@ -49,8 +50,8 @@ public class BungController {
         BungInfoDto bung = bungService.createBung(userDetails, requestDto);
         return ResponseEntity.created(UtilController.createUri(bung.getBungId()))
             .body(Response.<Void>builder()
-            .message("success")
-            .build());
+                .message("success")
+                .build());
     }
 
     @GetMapping()
@@ -165,7 +166,7 @@ public class BungController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
     ) throws Exception {
-        CompleteBungResultEnum  result = bungService.completeBung(userDetails, bungId);
+        CompleteBungResultEnum result = bungService.completeBung(userDetails, bungId);
         Response<CompleteBungResultEnum> response = Response.<CompleteBungResultEnum>builder()
             .message(result.toString())
             .data(result)

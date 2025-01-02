@@ -1,8 +1,7 @@
 package io.openur.domain.user.exception;
 
-import lombok.Getter;
-
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public class UserNotFoundException extends RuntimeException {

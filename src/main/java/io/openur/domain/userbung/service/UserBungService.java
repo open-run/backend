@@ -15,35 +15,35 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserBungService {
 
-	private final UserBungRepositoryImpl userBungRepository;
-	private final MethodSecurityService methodSecurityService;
+    private final UserBungRepositoryImpl userBungRepository;
+    private final MethodSecurityService methodSecurityService;
 
-	@Transactional
-	@PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-	public void changeOwner(UserDetailsImpl userDetails, String bungId, String newOwnerUserId) {
-		UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
+    @Transactional
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
+    public void changeOwner(UserDetailsImpl userDetails, String bungId, String newOwnerUserId) {
+        UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
 
-		currentOwner.disableOwnerBung();
-		userBungRepository.save(currentOwner);
+        currentOwner.disableOwnerBung();
+        userBungRepository.save(currentOwner);
 
-		UserBung newOwner = userBungRepository.findByUserIdAndBungId(newOwnerUserId, bungId);
-		newOwner.enableOwnerBung();
-		userBungRepository.save(newOwner);
-	}
+        UserBung newOwner = userBungRepository.findByUserIdAndBungId(newOwnerUserId, bungId);
+        newOwner.enableOwnerBung();
+        userBungRepository.save(newOwner);
+    }
 
-	@Transactional
-	public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
-		String userIdToRemove) {
-		Boolean isOwner = methodSecurityService.isOwnerOfBung(userDetails, bungId);
-		Boolean isSelf = methodSecurityService.isSelf(userDetails, userIdToRemove);
-		if (isOwner && isSelf) {
-			throw new RemoveUserFromBungException("Owners cannot remove themselves from bung.");
-		} else if (!isOwner && !isSelf) {
-			throw new RemoveUserFromBungException(
-				"Must be the owner of bung or self to remove user from bung.");
-		}
+    @Transactional
+    public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
+        String userIdToRemove) {
+        Boolean isOwner = methodSecurityService.isOwnerOfBung(userDetails, bungId);
+        Boolean isSelf = methodSecurityService.isSelf(userDetails, userIdToRemove);
+        if (isOwner && isSelf) {
+            throw new RemoveUserFromBungException("Owners cannot remove themselves from bung.");
+        } else if (!isOwner && !isSelf) {
+            throw new RemoveUserFromBungException(
+                "Must be the owner of bung or self to remove user from bung.");
+        }
 
-		UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
-		userBungRepository.removeUserFromBung(userBung);
-	}
+        UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
+        userBungRepository.removeUserFromBung(userBung);
+    }
 }

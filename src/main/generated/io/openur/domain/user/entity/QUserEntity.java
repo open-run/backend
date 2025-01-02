@@ -15,25 +15,26 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QUserEntity extends EntityPathBase<UserEntity> {
 
-    private static final long serialVersionUID = -1401535967L;
-
     public static final QUserEntity userEntity = new QUserEntity("userEntity");
-
+    private static final long serialVersionUID = -1401535967L;
     public final BooleanPath blacklisted = createBoolean("blacklisted");
 
     public final StringPath blockchainAddress = createString("blockchainAddress");
 
-    public final DateTimePath<java.time.LocalDateTime> createdDate = createDateTime("createdDate", java.time.LocalDateTime.class);
+    public final DateTimePath<java.time.LocalDateTime> createdDate = createDateTime("createdDate",
+        java.time.LocalDateTime.class);
 
     public final StringPath email = createString("email");
 
     public final BooleanPath identityAuthenticated = createBoolean("identityAuthenticated");
 
-    public final DateTimePath<java.time.LocalDateTime> lastLoginDate = createDateTime("lastLoginDate", java.time.LocalDateTime.class);
+    public final DateTimePath<java.time.LocalDateTime> lastLoginDate = createDateTime("lastLoginDate",
+        java.time.LocalDateTime.class);
 
     public final StringPath nickname = createString("nickname");
 
-    public final EnumPath<io.openur.domain.user.model.Provider> provider = createEnum("provider", io.openur.domain.user.model.Provider.class);
+    public final EnumPath<io.openur.domain.user.model.Provider> provider = createEnum("provider",
+        io.openur.domain.user.model.Provider.class);
 
     public final NumberPath<Integer> runningFrequency = createNumber("runningFrequency", Integer.class);
 

@@ -15,10 +15,8 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QBungEntity extends EntityPathBase<BungEntity> {
 
-    private static final long serialVersionUID = -2143999453L;
-
     public static final QBungEntity bungEntity = new QBungEntity("bungEntity");
-
+    private static final long serialVersionUID = -2143999453L;
     public final StringPath afterRunDescription = createString("afterRunDescription");
 
     public final StringPath bungId = createString("bungId");
@@ -27,7 +25,8 @@ public class QBungEntity extends EntityPathBase<BungEntity> {
 
     public final NumberPath<Float> distance = createNumber("distance", Float.class);
 
-    public final DateTimePath<java.time.LocalDateTime> endDateTime = createDateTime("endDateTime", java.time.LocalDateTime.class);
+    public final DateTimePath<java.time.LocalDateTime> endDateTime = createDateTime("endDateTime",
+        java.time.LocalDateTime.class);
 
     public final BooleanPath hasAfterRun = createBoolean("hasAfterRun");
 
@@ -39,7 +38,8 @@ public class QBungEntity extends EntityPathBase<BungEntity> {
 
     public final StringPath pace = createString("pace");
 
-    public final DateTimePath<java.time.LocalDateTime> startDateTime = createDateTime("startDateTime", java.time.LocalDateTime.class);
+    public final DateTimePath<java.time.LocalDateTime> startDateTime = createDateTime("startDateTime",
+        java.time.LocalDateTime.class);
 
     public QBungEntity(String variable) {
         super(BungEntity.class, forVariable(variable));

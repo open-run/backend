@@ -15,6 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class User {
+
     private String userId;
     private String nickname;
     private String email;
@@ -46,7 +47,7 @@ public class User {
         this.feedback = 0;
     }
 
-    public static User from(final UserEntity userEntity){
+    public static User from(final UserEntity userEntity) {
         return new User(
             userEntity.getUserId(),
             userEntity.getNickname(),
@@ -63,7 +64,7 @@ public class User {
         );
     }
 
-    public UserEntity toEntity(){
+    public UserEntity toEntity() {
         return new UserEntity(
             userId,
             nickname,
@@ -85,7 +86,8 @@ public class User {
     public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         applyIfNotNull(patchUserSurveyRequestDto.getNickname(), newNickname -> this.nickname = newNickname);
         applyIfNotNull(patchUserSurveyRequestDto.getRunningPace(), newRunningPace -> this.runningPace = newRunningPace);
-        applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(), newRunningFrequency -> this.runningFrequency = newRunningFrequency);
+        applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(),
+            newRunningFrequency -> this.runningFrequency = newRunningFrequency);
     }
 
     private <T> void applyIfNotNull(T value, Consumer<T> setter) {
