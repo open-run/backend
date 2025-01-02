@@ -6,8 +6,7 @@ import io.openur.domain.userbung.exception.RemoveUserFromBungException;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.jwt.InvalidJwtException;
-import java.awt.HeadlessException;
-import java.util.NoSuchElementException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +14,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.awt.HeadlessException;
+import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class ExceptionController {
@@ -25,8 +27,12 @@ public class ExceptionController {
 		return createResponse(HttpStatus.BAD_REQUEST, e.getMessage());
 	}
 
-	@ExceptionHandler({NullPointerException.class, NoSuchElementException.class})
-	public ResponseEntity<ExceptionDto> handleNotFoundException(Exception ex) {
+    @ExceptionHandler({
+        NullPointerException.class,
+        NoSuchElementException.class,
+        UserNotFoundException.class
+    })
+    public ResponseEntity<ExceptionDto> handleNotFoundException(Exception ex) {
 		return createResponse(HttpStatus.NOT_FOUND, ex.getMessage());
 	}
 
@@ -57,13 +63,7 @@ public class ExceptionController {
 	public ResponseEntity<ExceptionDto> handleJoinBungException(Exception e) {
 		return createResponse(HttpStatus.CONFLICT, e.getMessage());
 	}
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ExceptionDto> handleUserNotFoundException(UserNotFoundException e) {
-        return createResponse(HttpStatus.CONFLICT,
-            e.getMessage() + ": " + String.join(", ", e.getNotFoundUserIds()));
-    }
-
+	
 	private ResponseEntity<ExceptionDto> createResponse(HttpStatus status, String message) {
 		return ResponseEntity.status(status.value())
 			.body(ExceptionDto.builder()
