@@ -23,6 +23,7 @@ public class UserBungService {
     public void changeOwner(UserDetailsImpl userDetails, String bungId, String newOwnerUserId) {
         UserBung currentOwner = userBungRepository.findCurrentOwner(bungId);
 
+        // TODO: 벙주 넘겨받을 유저에게 알람, 수락 시 변경
         currentOwner.disableOwnerBung();
         userBungRepository.save(currentOwner);
 

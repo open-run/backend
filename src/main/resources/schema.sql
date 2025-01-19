@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS tb_challenges
     challenge_name              VARCHAR(255)                                              NOT NULL,
     challenge_type              ENUM ('tuto','normal','hidden')                           NOT NULL DEFAULT 'normal',
     description                 TEXT                                                      NULL,
+-- TODO: reward 관련 column 정말 필요한지? 논의 필요
     reward_type ENUM ('head','accessory','face','shoes','top_and_bottom') NOT NULL,
     reward_percentage           DECIMAL(5, 2)                                             NOT NULL DEFAULT 25,
     completed_type              ENUM ('date', 'count', 'place', 'wearing')                NOT NULL,
@@ -88,6 +89,7 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
     FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id),
     completed_date TIMESTAMP DEFAULT NULL,
     nft_completed  BOOLEAN   DEFAULT FALSE NOT NULL,
+-- TODO: 유저가 받은 nft 정보 추가
     current_count  BIGINT(20)              NULL
 );
 
