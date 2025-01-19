@@ -7,6 +7,8 @@ public interface ChallengeRepository {
 
     Challenge save(Challenge challenge);
 
+    Boolean existsById(Long challengeId);
+
     Challenge findById(Long challengeId);
 
     List<Challenge> findAll();

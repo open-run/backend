@@ -1,0 +1,17 @@
+{
+  "challenges": [
+    {
+      "challengeId": 1,
+      "challengeName": "Complete bung 1 time",
+      "challengeType": "tuto",
+      "description": "성공적으로 벙을 1회 완료한다.",
+      "rewardType": "face",
+      "rewardPercentage": 0.25,
+      "completedType": "count",
+      "completedConditionCount": 1,
+      "completedConditionDate": null,
+      "completedConditionPlace": null,
+      "completedConditionWearing": null
+    }
+  ]
+} 

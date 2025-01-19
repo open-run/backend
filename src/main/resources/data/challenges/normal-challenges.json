@@ -1,0 +1,17 @@
+{
+  "challenges": [
+    {
+      "challengeId": 1001,
+      "challengeName": "Complete bung 5 times",
+      "challengeType": "normal",
+      "description": "성공적으로 벙을 5회 완료한다.",
+      "rewardType": "top_and_bottom",
+      "rewardPercentage": 0.5,
+      "completedType": "count",
+      "completedConditionCount": 5,
+      "completedConditionDate": null,
+      "completedConditionPlace": null,
+      "completedConditionWearing": null
+    }
+  ]
+} 

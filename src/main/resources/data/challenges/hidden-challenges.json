@@ -1,0 +1,17 @@
+{
+  "challenges": [
+    {
+      "challengeId": 2001,
+      "challengeName": "Secret Achievement",
+      "challengeType": "hidden",
+      "description": "??????????",
+      "rewardType": "shoes",
+      "rewardPercentage": 1.0,
+      "completedType": "count",
+      "completedConditionCount": 1,
+      "completedConditionDate": null,
+      "completedConditionPlace": null,
+      "completedConditionWearing": null
+    }
+  ]
+} 

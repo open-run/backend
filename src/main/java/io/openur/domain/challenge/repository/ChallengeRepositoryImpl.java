@@ -19,6 +19,11 @@ public class ChallengeRepositoryImpl implements ChallengeRepository {
     }
 
     @Override
+    public Boolean existsById(Long challengeId) {
+        return challengeJpaRepository.existsById(challengeId);
+    }
+
+    @Override
     public Challenge findById(Long challengeId) {
         ChallengeEntity challengeEntity = challengeJpaRepository.findById(challengeId)
             .orElseThrow(() -> new NoSuchElementException("Challenge not found"));
