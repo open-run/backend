@@ -6,6 +6,7 @@ import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
@@ -15,7 +16,9 @@ public class UserChallenge {
     private User user;
     private Challenge challenge;
     private LocalDateTime completedDate;
+    @Setter
     private Boolean nftCompleted;
+    @Setter
     private Long currentCount;
 
     public static UserChallenge from(final UserChallengeEntity userChallengeEntity) {
@@ -39,4 +42,4 @@ public class UserChallenge {
             this.currentCount
         );
     }
-} 
+}

@@ -1,9 +1,8 @@
 package io.openur.domain.userchallenge.repository;
 
-import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -14,8 +13,13 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     private final UserChallengeJpaRepository userChallengeJpaRepository;
 
     @Override
-    public UserChallenge save(UserChallenge userChallenge) {
-        return UserChallenge.from(userChallengeJpaRepository.save(userChallenge.toEntity()));
+    public List<UserChallenge> saveAll(List<UserChallenge> userChallenges) {
+        return userChallengeJpaRepository.saveAll(userChallenges.stream()
+            .map(UserChallenge::toEntity)
+            .toList())
+            .stream()
+            .map(UserChallenge::from)
+            .toList();
     }
 
     @Override
@@ -26,11 +30,10 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public UserChallenge findByUserIdAndChallengeId(String userId, Long challengeId) {
-        UserChallengeEntity entity = userChallengeJpaRepository
+    public Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId) {
+        return userChallengeJpaRepository
             .findByUserEntity_UserIdAndChallengeEntity_ChallengeId(userId, challengeId)
-            .orElseThrow(() -> new NoSuchElementException("UserChallenge not found"));
-        return UserChallenge.from(entity);
+            .map(UserChallenge::from);
     }
 
     @Override

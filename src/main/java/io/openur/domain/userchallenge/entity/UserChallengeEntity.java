@@ -35,7 +35,6 @@ public class UserChallengeEntity {
     @JoinColumn(name = "challenge_id", nullable = false)
     private ChallengeEntity challengeEntity;
 
-    @Column(nullable = false)
     private LocalDateTime completedDate;
 
     @Column(nullable = false)

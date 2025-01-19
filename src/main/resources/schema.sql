@@ -86,8 +86,8 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
     challenge_id      BIGINT(20)                            NOT NULL,
     FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
     FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id),
-    completed_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    nft_completed  BOOLEAN   DEFAULT FALSE             NOT NULL,
-    current_count  BIGINT(20)                          NULL
+    completed_date TIMESTAMP DEFAULT NULL,
+    nft_completed  BOOLEAN   DEFAULT FALSE NOT NULL,
+    current_count  BIGINT(20)              NULL
 );
 

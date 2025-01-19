@@ -2,14 +2,15 @@ package io.openur.domain.userchallenge.repository;
 
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
+import java.util.Optional;
 
 public interface UserChallengeRepository {
 
-    UserChallenge save(UserChallenge userChallenge);
+    List<UserChallenge> saveAll(List<UserChallenge> userChallenges);
 
     List<UserChallenge> findByUserId(String userId);
 
-    UserChallenge findByUserIdAndChallengeId(String userId, Long challengeId);
+    Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId);
 
     boolean existsByUserIdAndChallengeId(String userId, Long challengeId);
 

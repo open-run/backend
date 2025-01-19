@@ -7,6 +7,7 @@ import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.event.BungEventPublishers;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
@@ -17,6 +18,7 @@ import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.userbung.dto.UserBungInfoDto;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.enums.CompleteBungResultEnum;
@@ -42,6 +44,7 @@ public class BungService {
     private final UserBungRepositoryImpl userBungRepository;
     private final HashtagRepositoryImpl hashtagRepository;
     private final BungHashtagRepositoryImpl bungHashtagRepository;
+    private final BungEventPublishers bungEventPublishers;
 
     private Bung saveNewBung(UserDetailsImpl userDetails, CreateBungDto dto) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
@@ -146,7 +149,10 @@ public class BungService {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED.toString());
         }
 
-        //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
+        List<UserBungInfoDto> memberList = userBungRepository.findBungWithUsersById(bungId).getMemberList();
+        //TODO: 참가자 별 participationStatus update 및 `participationStatus = true` 인 memberList 만
+        // bungEventPublishers.bungIsComplete 에 전달하도록 변경 필요.
+        bungEventPublishers.bungIsComplete(bung, memberList.stream().map(UserBungInfoDto::getUserId).toList());
 
         bung.completeBung();
         bungRepository.save(bung);
