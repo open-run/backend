@@ -8,10 +8,18 @@ import lombok.Getter;
 public class ChallengeCompletionDto {
     private List<String> userIds;
     private String location;
-    private LocalDateTime completionDate;
+    private final LocalDateTime completionDate = LocalDateTime.now();
 
     // TODO: 어떻게 넘어갈지를 모르겠네...?
     private String outfitInfos;
+
+    public ChallengeCompletionDto(
+        List<String> userIds, String location, String outfitInfos)
+    {
+        this.userIds = userIds;
+        this.location = location;
+        this.outfitInfos = outfitInfos;
+    }
 
     @Getter
     public static class ofLocation {

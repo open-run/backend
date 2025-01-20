@@ -1,4 +1,4 @@
-package io.openur.global.common;
+package io.openur.domain.challenge.events;
 
 import io.openur.domain.challenge.dto.ChallengeCompletionDto;
 import io.openur.domain.challenge.dto.ChallengeCompletionDto.ofCount;

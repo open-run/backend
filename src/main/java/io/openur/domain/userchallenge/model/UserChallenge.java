@@ -15,6 +15,7 @@ public class UserChallenge {
     private Long userChallengeId;
     private User user;
     private Challenge challenge;
+    @Setter
     private LocalDateTime completedDate;
     @Setter
     private Boolean nftCompleted;

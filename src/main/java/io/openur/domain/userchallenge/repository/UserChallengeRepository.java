@@ -10,6 +10,8 @@ public interface UserChallengeRepository {
 
     List<UserChallenge> findByUserId(String userId);
 
+    void bulkUpdateChallengeProgress(List<String> userIds);
+
     Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId);
 
     boolean existsByUserIdAndChallengeId(String userId, Long challengeId);
