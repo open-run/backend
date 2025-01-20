@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS tb_challenges
     challenge_name              VARCHAR(255)                                              NOT NULL,
     challenge_type              ENUM ('tuto','normal','hidden')                           NOT NULL DEFAULT 'normal',
     description                 TEXT                                                      NULL,
-    reward_type                 ENUM ('head','accessory','face','shoes','top and bottom') NOT NULL,
+    reward_type                 ENUM ('head','accessory','face','shoes','top_and_bottom') NOT NULL,
     reward_percentage           DECIMAL(5, 2)                                             NOT NULL DEFAULT 25,
     completed_type              ENUM ('date', 'count', 'place', 'wearing')                NOT NULL,
     completed_condition_count   BIGINT(20)                                                NULL,
@@ -86,8 +86,8 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
     challenge_id      BIGINT(20)                            NOT NULL,
     FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
     FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id),
-    completedDate     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    nftCompleted      BOOLEAN     DEFAULT FALSE             NOT NULL,
-    currentCount      BIGINT(20)                            NULL
+    completed_date TIMESTAMP DEFAULT NULL,
+    nft_completed  BOOLEAN   DEFAULT FALSE NOT NULL,
+    current_count  BIGINT(20)              NULL
 );
 
