@@ -4,6 +4,7 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
@@ -144,6 +145,19 @@ public class BungController {
         }
 
         throw new Exception("Unexcepted result from joinBung.");
+    }
+
+    @PatchMapping("/{bungId}")
+    @Operation(summary = "벙 수정하기")
+    public ResponseEntity<Response<Void>> editBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @RequestBody EditBungDto editBungDto
+    ) {
+        bungService.editBung(userDetails, bungId, editBungDto);
+        return ResponseEntity.ok().body(Response.<Void>builder()
+            .message("success")
+            .build());
     }
 
     @PatchMapping("/{bungId}/complete")
