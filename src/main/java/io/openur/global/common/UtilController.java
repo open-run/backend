@@ -1,7 +1,9 @@
 package io.openur.global.common;
 
-import java.net.URI;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.function.Consumer;
 
 public class UtilController {
 
@@ -10,5 +12,11 @@ public class UtilController {
             .path("/{id}")
             .buildAndExpand(todoId)
             .toUri();
+    }
+
+    public static <T> void applyIfNotNull(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 }
