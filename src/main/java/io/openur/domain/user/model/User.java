@@ -1,13 +1,15 @@
 package io.openur.domain.user.model;
 
+import static io.openur.global.common.UtilController.applyIfNotNull;
 
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.entity.UserEntity;
-import java.time.LocalDateTime;
-import java.util.UUID;
-import java.util.function.Consumer;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 // QUESTION: What is the purpose of this class? Separate setter from UserEntity?
 // Answer: Service에서 UserEntity 객체의 getter/setter를 직접적으로 사용하지 않기 위해
@@ -88,11 +90,5 @@ public class User {
         applyIfNotNull(patchUserSurveyRequestDto.getRunningPace(), newRunningPace -> this.runningPace = newRunningPace);
         applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(),
             newRunningFrequency -> this.runningFrequency = newRunningFrequency);
-    }
-
-    private <T> void applyIfNotNull(T value, Consumer<T> setter) {
-        if (value != null) {
-            setter.accept(value);
-        }
     }
 }
