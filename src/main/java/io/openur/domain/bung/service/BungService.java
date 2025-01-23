@@ -4,6 +4,7 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
@@ -19,15 +20,18 @@ import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.enums.CompleteBungResultEnum;
 import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
-import java.time.LocalDateTime;
-import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -111,6 +115,14 @@ public class BungService {
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
         return JoinBungResultEnum.SUCCESSFULLY_JOINED;
+    }
+
+    @Transactional
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
+    public void editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
+        Bung bung = bungRepository.findBungById(bungId);
+        bung.update(editBungDto);
+        bungRepository.save(bung);
     }
 
     @Transactional
