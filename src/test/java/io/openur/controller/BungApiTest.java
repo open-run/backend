@@ -371,6 +371,31 @@ public class BungApiTest extends TestSupport {
     @Nested
     @DisplayName("벙 수정하기")
     class editBungTest {
+        @Test
+        @DisplayName("200 Ok. No elements.")
+        void editBung_isOk_noElements() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String ownerToken = getTestUserToken("test1@test.com");
+            mockMvc.perform(
+                patch(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, ownerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(new HashMap<>()))
+            ).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("403 Forbidden. Not owner of the bung")
+        void editBung_isForbidden_notOwner() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String notOwnerToken = getTestUserToken("test2@test.com");
+            mockMvc.perform(
+                patch(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, notOwnerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(new HashMap<>()))
+            ).andExpect(status().isForbidden());
+        }
 
         @Test
         @DisplayName("200 Ok. All elements.")
