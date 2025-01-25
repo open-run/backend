@@ -56,6 +56,12 @@ public class BungService {
         bungHashtagRepository.bulkInsertHashtags(bung, hashtags);
     }
 
+    private void updateHashtags(Bung bung, List<String> hashtagStrList) {
+        List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagStrList);
+        bungHashtagRepository.updateHashtags(bung, hashtags);
+    }
+
+
     @Transactional
     public BungInfoDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
         CreateBungDto dto) {
@@ -122,6 +128,7 @@ public class BungService {
     public void editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
         Bung bung = bungRepository.findBungById(bungId);
         bung.update(editBungDto);
+        updateHashtags(bung, editBungDto.getHashtags());
         bungRepository.save(bung);
     }
 
