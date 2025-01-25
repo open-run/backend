@@ -2,10 +2,8 @@ package io.openur.domain.bung.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-
-import lombok.Getter;
-
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public class EditBungDto {

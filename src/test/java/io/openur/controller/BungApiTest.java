@@ -1,6 +1,7 @@
 package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -80,7 +81,7 @@ public class BungApiTest extends TestSupport {
         ).andExpect(status().isCreated()).andReturn();
 
         String location = result.getResponse().getHeader("Location");
-        assert location != null;
+        assertNotNull(location, "Location header must not be null");
 
         String bungId = location.substring(location.lastIndexOf('/') + 1);
         Optional<BungEntity> bungEntity = bungJpaRepository.findById(bungId);
@@ -390,14 +391,13 @@ public class BungApiTest extends TestSupport {
             List<String> hashtags = Arrays.asList("LSD", "음악있음", "고수만");
             editBungData.put("hashtags", hashtags);
 
-            MvcResult result =
-                mockMvc.perform(
-                        patch(PREFIX + "/" + bungId)
-                            .header(AUTH_HEADER, ownerToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonify(editBungData)))
-                    .andExpect(status().isOk())
-                    .andReturn();
+            mockMvc.perform(
+                    patch(PREFIX + "/" + bungId)
+                        .header(AUTH_HEADER, ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonify(editBungData)))
+                .andExpect(status().isOk())
+                .andReturn();
 
             BungEntity bungEntity = bungJpaRepository.findById(bungId).orElseThrow();
             assertThat(bungEntity.getName()).isEqualTo(editBungData.get("name"));

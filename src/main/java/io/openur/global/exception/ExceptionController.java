@@ -8,6 +8,7 @@ import io.openur.global.dto.ExceptionDto;
 import io.openur.global.jwt.InvalidJwtException;
 import java.awt.HeadlessException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -38,8 +39,10 @@ public class ExceptionController {
     public ResponseEntity<ExceptionDto> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException e
     ) {
-        return createResponse(HttpStatus.BAD_REQUEST,
-            e.getBindingResult().getFieldError().getDefaultMessage());
+        String message = Optional.ofNullable(e.getBindingResult().getFieldError())
+            .map(fieldError -> fieldError.getDefaultMessage())
+            .orElse("Method argument not valid");
+        return createResponse(HttpStatus.BAD_REQUEST, message);
     }
 
     @ExceptionHandler({AccessDeniedException.class, RemoveUserFromBungException.class})
