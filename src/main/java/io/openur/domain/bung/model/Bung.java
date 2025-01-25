@@ -7,13 +7,11 @@ import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.hashtag.entity.HashtagEntity;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
@@ -93,8 +91,8 @@ public class Bung {
         applyIfNotNull(dto.getMemberNumber(), newNumber -> this.memberNumber = newNumber);
         applyIfNotNull(dto.getHasAfterRun(), newAfterRun -> this.hasAfterRun = newAfterRun);
         applyIfNotNull(
-                dto.getAfterRunDescription(),
-                newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
+            dto.getAfterRunDescription(),
+            newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
     }
 
     public BungEntity toEntity() {

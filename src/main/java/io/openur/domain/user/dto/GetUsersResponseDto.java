@@ -10,10 +10,10 @@ public class GetUsersResponseDto {
 
     private final String nickname;
     private final String email;
-    private String userId;
-    private String runningPace;
-    private Integer runningFrequency;
-    private Long collabCount;
+    private final String userId;
+    private final String runningPace;
+    private final Integer runningFrequency;
+    private final Long collabCount;
 
     public GetUsersResponseDto(Tuple userCounts) {
         User user = User.from(userCounts.get(0, UserEntity.class));

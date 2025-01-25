@@ -1,9 +1,8 @@
 package io.openur.global.common;
 
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.net.URI;
 import java.util.function.Consumer;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class UtilController {
 
