@@ -1,5 +1,7 @@
 package io.openur.domain.bung.service;
 
+import static io.openur.global.common.UtilController.applyIfNotNull;
+
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
@@ -54,8 +56,10 @@ public class BungService {
     }
 
     private void updateHashtags(Bung bung, List<String> hashtagStrList) {
-        List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagStrList);
-        bungHashtagRepository.updateHashtags(bung, hashtags);
+        applyIfNotNull(hashtagStrList, hashtagsStr -> {
+            List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
+            bungHashtagRepository.updateHashtags(bung, hashtags);
+        });
     }
 
 
