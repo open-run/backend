@@ -39,7 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
+@Transactional(readOnly = true)
 public class BungApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/bungs";
@@ -273,6 +273,7 @@ public class BungApiTest extends TestSupport {
 
         @Test
         @DisplayName("200 Ok.")
+        @Transactional
         void deleteBung_isOk() throws Exception {
             String token = getTestUserToken("test1@test.com");
             mockMvc.perform(
@@ -367,8 +368,57 @@ public class BungApiTest extends TestSupport {
     }
 
     @Nested
+    @DisplayName("벙 수정하기")
+    class editBungTest {
+
+        @Test
+        @DisplayName("200 Ok. All elements.")
+        void edit_isOk() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String ownerToken = getTestUserToken("test1@test.com");
+            List<String> previousHashtags =
+                bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                    .map(Hashtag::getHashtagStr)
+                    .toList();
+
+            var editBungData = new HashMap<>();
+            editBungData.put("name", "새로운 이름");
+            editBungData.put("description", "새로운 설명");
+            editBungData.put("memberNumber", 5);
+            editBungData.put("hasAfterRun", true);
+            editBungData.put("afterRunDescription", "단백질 보충 가시죠! 고기고기");
+            List<String> hashtags = Arrays.asList("LSD", "음악있음", "고수만");
+            editBungData.put("hashtags", hashtags);
+
+            MvcResult result =
+                mockMvc.perform(
+                        patch(PREFIX + "/" + bungId)
+                            .header(AUTH_HEADER, ownerToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonify(editBungData)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            BungEntity bungEntity = bungJpaRepository.findById(bungId).orElseThrow();
+            assertThat(bungEntity.getName()).isEqualTo(editBungData.get("name"));
+            assertThat(bungEntity.getDescription()).isEqualTo(editBungData.get("description"));
+            assertThat(bungEntity.getMemberNumber()).isEqualTo(editBungData.get("memberNumber"));
+            assertThat(bungEntity.getHasAfterRun()).isEqualTo(editBungData.get("hasAfterRun"));
+            assertThat(bungEntity.getAfterRunDescription())
+                .isEqualTo(editBungData.get("afterRunDescription"));
+
+            assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
+            assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                .map(Hashtag::getHashtagStr).toList().stream().noneMatch(previousHashtags::contains);
+            assert hashtagRepository.findByHashtagStrIn(hashtags).stream()
+                .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
+        }
+    }
+
+    @Nested
     @DisplayName("벙 완료하기")
-    class completeBung {
+    class completeBungTest {
 
         @Test
         @DisplayName("409 Already Completed")
