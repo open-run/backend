@@ -31,13 +31,17 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String userId;
+
     private String nickname;
+
     private String email;
+
     private Boolean identityAuthenticated;
+
     @Enumerated(EnumType.STRING)
     private Provider provider;
-    private Boolean blacklisted;
 
+    private Boolean blacklisted;
 
     @CreatedDate
     @Column(updatable = false)
@@ -47,10 +51,13 @@ public class UserEntity {
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime lastLoginDate;
+
     // TODO: blockchain address 생성 및 기본 아바타 추가 기능
     private String blockchainAddress;
 
     private String runningPace;
+
     private Integer runningFrequency;
+
     private Integer feedback;
 }
