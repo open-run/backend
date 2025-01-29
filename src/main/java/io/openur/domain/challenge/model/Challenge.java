@@ -1,12 +1,15 @@
 package io.openur.domain.challenge.model;
+
 import io.openur.domain.challenge.entity.ChallengeEntity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 @Getter
 @AllArgsConstructor
 public class Challenge {
+
     private Long challengeId;
     private String challengeName;
     private ChallengeType challengeType;
@@ -18,6 +21,7 @@ public class Challenge {
     private LocalDateTime completedConditionDate;
     private String completedConditionPlace;
     private Boolean completedConditionWearing;
+
     public static Challenge from(final ChallengeEntity challengeEntity) {
         return new Challenge(
             challengeEntity.getChallengeId(),
@@ -33,6 +37,7 @@ public class Challenge {
             challengeEntity.getCompletedConditionWearing()
         );
     }
+
     public ChallengeEntity toEntity() {
         return new ChallengeEntity(
             this.challengeId,

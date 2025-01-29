@@ -1,23 +1,21 @@
 package io.openur.domain.challenge.repository;
+
 import io.openur.domain.challenge.entity.ChallengeEntity;
 import io.openur.domain.challenge.model.Challenge;
 import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 @Repository
 @RequiredArgsConstructor
 public class ChallengeRepositoryImpl implements ChallengeRepository {
+
     private final ChallengeJpaRepository challengeJpaRepository;
 
     @Override
     public Challenge save(Challenge challenge) {
         return Challenge.from(challengeJpaRepository.save(challenge.toEntity()));
-    }
-
-    @Override
-    public Boolean existsById(Long challengeId) {
-        return challengeJpaRepository.existsById(challengeId);
     }
 
     @Override
@@ -38,4 +36,4 @@ public class ChallengeRepositoryImpl implements ChallengeRepository {
     public void delete(Challenge challenge) {
         challengeJpaRepository.delete(challenge.toEntity());
     }
-}
+} 

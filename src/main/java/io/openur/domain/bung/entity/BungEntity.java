@@ -26,18 +26,29 @@ public class BungEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String bungId;
+
     private String name;
+
     private String description;
+
     private String location;
+
     @Column(name = "start_datetime")
     private LocalDateTime startDateTime;
+
     @Column(name = "end_datetime")
     private LocalDateTime endDateTime;
+
     private Float distance;
+
     private String pace;
+
     private Integer memberNumber;
+
     private Boolean hasAfterRun;
+
     private String afterRunDescription;
+
     @Column(name = "is_completed")
     private boolean completed;
 

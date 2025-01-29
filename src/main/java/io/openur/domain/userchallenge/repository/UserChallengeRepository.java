@@ -15,4 +15,4 @@ public interface UserChallengeRepository {
     boolean existsByUserIdAndChallengeId(String userId, Long challengeId);
 
     void delete(UserChallenge userChallenge);
-}
+} 
