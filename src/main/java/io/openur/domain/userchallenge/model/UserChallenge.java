@@ -15,9 +15,10 @@ public class UserChallenge {
     private Long userChallengeId;
     private User user;
     private Challenge challenge;
+    @Setter
     private LocalDateTime completedDate;
     @Setter
-    private Boolean nftCompleted;
+    private Boolean nftCompleted;  // TODO: 단순 boolean 말고 NFT index 정보를 갖게 하는것도?
     @Setter
     private Long currentCount;
 

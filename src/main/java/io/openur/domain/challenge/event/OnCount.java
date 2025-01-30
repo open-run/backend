@@ -1,12 +1,12 @@
 package io.openur.domain.challenge.event;
 
-import java.util.List;
+import io.openur.domain.userchallenge.model.UserChallenge;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
 public class OnCount {
-    private final List<String> userIds;
-    private final Long completedConditionCount;
+    private final List<UserChallenge> userChallenges;
 }

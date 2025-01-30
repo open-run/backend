@@ -10,10 +10,12 @@ import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
+import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.userbung.dto.UserBungInfoDto;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.enums.CompleteBungResultEnum;
@@ -39,6 +41,7 @@ public class BungService {
     private final UserBungRepositoryImpl userBungRepository;
     private final HashtagRepositoryImpl hashtagRepository;
     private final BungHashtagRepositoryImpl bungHashtagRepository;
+    private final ChallengeEventsPublisher challengeEventsPublisher;
 
     private Bung saveNewBung(UserDetailsImpl userDetails, CreateBungDto dto) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
@@ -127,6 +130,12 @@ public class BungService {
         }
 
         //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
+        List<String> memberIds = userBungRepository.findBungWithUsersById(bungId)
+            .getMemberList()
+            .stream()
+            .map(UserBungInfoDto::getUserId)
+            .toList();
+        challengeEventsPublisher.bungIsComplete(bung, memberIds);
 
         bung.completeBung();
         bungRepository.save(bung);
