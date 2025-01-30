@@ -1,13 +1,12 @@
 package io.openur.domain.challenge.event;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import io.openur.domain.userchallenge.model.UserChallenge;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
 public class OnDate {
-    private final List<String> userIds;
-    private final LocalDateTime completedConditionDate;
+    private final List<UserChallenge> userChallenges;
 }

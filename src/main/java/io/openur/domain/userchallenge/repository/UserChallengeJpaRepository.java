@@ -9,6 +9,9 @@ public interface UserChallengeJpaRepository extends JpaRepository<UserChallengeE
 
     List<UserChallengeEntity> findByUserEntity_UserId(String userId);
 
+    Optional<UserChallengeEntity> findByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(List<String> userIds,
+        List<Long> challengeIds);
+
     Optional<UserChallengeEntity> findByUserEntity_UserIdAndChallengeEntity_ChallengeId(String userId,
         Long challengeId);
 

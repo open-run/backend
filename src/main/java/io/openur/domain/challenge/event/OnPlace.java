@@ -1,12 +1,13 @@
 package io.openur.domain.challenge.event;
 
-import java.util.List;
+import io.openur.domain.userchallenge.model.UserChallenge;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
 public class OnPlace {
-    private final List<String> userIds;
-    private final String placeId;
+    private final List<UserChallenge> userChallenges;
+    private final String location;
 }

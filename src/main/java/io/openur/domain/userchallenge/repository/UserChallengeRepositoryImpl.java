@@ -1,21 +1,69 @@
 package io.openur.domain.userchallenge.repository;
 
+import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.userchallenge.model.UserChallenge;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
 public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     private final UserChallengeJpaRepository userChallengeJpaRepository;
+    private final JPAQueryFactory queryFactory;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public UserChallenge save(UserChallenge userChallenge) {
         return UserChallenge.from(
             userChallengeJpaRepository.save(userChallenge.toEntity()));
+    }
+
+
+    @Override
+    @Transactional
+    public void bulkIncrementCount(List<Long> userChallengeIds) {
+        if (userChallengeIds.isEmpty()) {
+            return;
+        }
+
+        queryFactory
+            .update(userChallengeEntity)
+            .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
+            .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
+            .execute();
+
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+
+    @Override
+    @Transactional
+    public void bulkUpdateCompletedChallenges(List<Long> userChallengeIds) {
+        if (userChallengeIds.isEmpty()) {
+            return;
+        }
+
+        queryFactory
+            .update(userChallengeEntity)        
+            .set(userChallengeEntity.completedDate, LocalDateTime.now())
+            .set(userChallengeEntity.nftCompleted, true)
+            .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
+            .execute();
+
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override
@@ -27,21 +75,30 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId){
-            return userChallengeJpaRepository
-                .findByUserEntity_UserIdAndChallengeEntity_ChallengeId(userId,
-                    challengeId).map(UserChallenge::from);
-        }
+    public List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds) {
+        return userChallengeJpaRepository.findByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(userIds,
+                challengeIds)
+            .stream()
+            .map(UserChallenge::from)
+            .toList();
+    }
 
     @Override
-    public boolean existsByUserIdAndChallengeId (String userId, Long
-    challengeId){
+    public Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId) {
+        return userChallengeJpaRepository
+            .findByUserEntity_UserIdAndChallengeEntity_ChallengeId(userId,
+                challengeId).map(UserChallenge::from);
+    }
+
+    @Override
+    public boolean existsByUserIdAndChallengeId(String userId, Long
+        challengeId) {
         return userChallengeJpaRepository.existsByUserEntity_UserIdAndChallengeEntity_ChallengeId(
             userId, challengeId);
     }
 
     @Override
-    public void delete (UserChallenge userChallenge){
+    public void delete(UserChallenge userChallenge) {
         userChallengeJpaRepository.delete(userChallenge.toEntity());
     }
 }
