@@ -62,8 +62,7 @@ public class UserController {
                 .body(Response.<GetUsersLoginDto>builder()
                     .message("success")
                     .data(loginService.login(code, state))
-                    .build()
-                );
+                    .build());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -75,10 +74,11 @@ public class UserController {
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         GetUserResponseDto getUserResponseDto = userService.getUserEmail(userDetails);
-        return ResponseEntity.ok().body(Response.<GetUserResponseDto>builder()
-            .message("success")
-            .data(getUserResponseDto)
-            .build());
+        return ResponseEntity.ok()
+            .body(Response.<GetUserResponseDto>builder()
+                .message("success")
+                .data(getUserResponseDto)
+                .build());
     }
 
     @GetMapping("/nickname")
@@ -88,26 +88,27 @@ public class UserController {
         @RequestParam String nickname
     ) {
         List<GetUserResponseDto> users = userService.searchByNickname(nickname);
-        return ResponseEntity.ok().body(Response.<List<GetUserResponseDto>>builder()
-            .message("success")
-            .data(users)
-            .build());
+        return ResponseEntity.ok()
+            .body(Response.<List<GetUserResponseDto>>builder()
+                .message("success")
+                .data(users)
+                .build());
     }
 
     @GetMapping("/nickname/exist")
     @Operation(summary = "닉네임 중복 체크")
     public ResponseEntity<Response<Boolean>> existNickname(
-        @RequestParam(name = "nickname")
-        @NotBlank(message = "닉네임을 입력해주세요.")
-        @Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하이여야 합니다.")
-        @Pattern(regexp = "^[가-힣a-zA-Z0-9]*$", message = "허용하지 않는 문자가 포함되어 있습니다.")
-        String nickname
+        @RequestParam(name = "nickname") 
+        @NotBlank(message = "닉네임을 입력해주세요.") 
+        @Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하이여야 합니다.") 
+        @Pattern(regexp = "^[가-힣a-zA-Z0-9]*$", message = "허용하지 않는 문자가 포함되어 있습니다.") String nickname
     ) {
         boolean isExist = userService.existNickname(nickname);
-        return ResponseEntity.ok().body(Response.<Boolean>builder()
-            .message("success")
-            .data(isExist)
-            .build());
+        return ResponseEntity.ok()
+            .body(Response.<Boolean>builder()
+                .message("success")
+                .data(isExist)
+                .build());
     }
 
     @GetMapping("/suggestion")
@@ -147,18 +148,20 @@ public class UserController {
     ) {
         userService.deleteUserInfo(userDetails);
         return ResponseEntity.ok()
-            .body(Response.<Void>builder().message("success").build());
+            .body(Response.<Void>builder()
+                .message("success")
+                .build());
     }
 
-    @GetMapping("/feedback")
+    @PatchMapping("/feedback")
     @Operation(summary = "벙 참가자들 피드백(좋아요) 증가")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "피드백이 성공적으로 증가됨", content = @Content(
-            mediaType = "application/json",
+            mediaType = "application/json", 
             examples = @ExampleObject(value = "{\"message\":\"Feedback increased successfully\"}")
         )),
         @ApiResponse(responseCode = "404", description = "일부 유저 ID를 찾을 수 없음", content = @Content(
-            mediaType = "application/json",
+            mediaType = "application/json", 
             examples = @ExampleObject(value = "{\"statusCode\":404,\"state\":\"NOT FOUND\",\"message\":\"Some user IDs were not found: [userId1, userId2]\"}")
         ))
     })
