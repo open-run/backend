@@ -1,10 +1,17 @@
 package io.openur.domain.bung.service;
 
+import static io.openur.global.common.UtilController.applyIfNotNull;
+
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.CompleteBungResultEnum;
+import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
+import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
@@ -16,8 +23,6 @@ import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
-import io.openur.global.enums.CompleteBungResultEnum;
-import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,6 +57,13 @@ public class BungService {
         bungHashtagRepository.bulkInsertHashtags(bung, hashtags);
     }
 
+    private void updateHashtags(Bung bung, List<String> hashtagStrList) {
+        applyIfNotNull(hashtagStrList, hashtagsStr -> {
+            List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
+            bungHashtagRepository.updateHashtags(bung, hashtags);
+        });
+    }
+
     @Transactional
     public BungInfoDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
         CreateBungDto dto) {
@@ -72,8 +84,11 @@ public class BungService {
         bungRepository.deleteByBungId(bungId);
     }
 
-    public Page<BungInfoDto> getBungLists(UserDetailsImpl userDetails,
-        boolean isAvailableOnly, Pageable pageable) {
+    public Page<BungInfoDto> getBungLists(
+        UserDetailsImpl userDetails,
+        boolean isAvailableOnly,
+        Pageable pageable
+    ) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         return bungRepository
@@ -81,8 +96,12 @@ public class BungService {
             .map(BungInfoDto::new);
     }
 
-    public Page<BungInfoWithOwnershipDto> getMyBungLists(UserDetailsImpl userDetails,
-        Boolean isOwned, BungStatus status, Pageable pageable) {
+    public Page<BungInfoWithOwnershipDto> getMyBungLists(
+        UserDetailsImpl userDetails,
+        Boolean isOwned,
+        BungStatus status,
+        Pageable pageable
+    ) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         return userBungRepository
@@ -91,8 +110,7 @@ public class BungService {
     }
 
     @Transactional
-    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
-        throws JoinBungException {
+    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId) throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
             throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
         }
@@ -100,7 +118,7 @@ public class BungService {
         BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
             bungId);
         if (bungWithMembers.getMemberList().stream().anyMatch(
-            user -> user.getUserId().equals(userDetails.getUser().getUserId())
+                user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
             throw new JoinBungException(JoinBungResultEnum.USER_HAS_ALREADY_JOINED.toString());
         }
@@ -115,8 +133,29 @@ public class BungService {
 
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-    public CompleteBungResultEnum completeBung(UserDetailsImpl userDetails, String bungId)
-        throws CompleteBungException {
+    public EditBungResultEnum editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
+        Bung bung = bungRepository.findBungById(bungId);
+
+        if (bung.isCompleted()) {
+            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+        }
+
+        if (bung.getStartDateTime().isBefore(LocalDateTime.now())) {
+            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
+        }
+
+        bung.update(editBungDto);
+        updateHashtags(bung, editBungDto.getHashtags());
+        bungRepository.save(bung);
+        return EditBungResultEnum.SUCCESSFULLY_EDITED;
+    }
+
+    @Transactional
+    @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
+    public CompleteBungResultEnum completeBung(
+        UserDetailsImpl userDetails,
+        String bungId
+    ) throws CompleteBungException {
         Bung bung = bungRepository.findBungById(bungId);
         if (bung.isCompleted()) {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());

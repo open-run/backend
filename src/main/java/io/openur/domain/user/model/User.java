@@ -1,11 +1,11 @@
 package io.openur.domain.user.model;
 
+import static io.openur.global.common.UtilController.applyIfNotNull;
 
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.entity.UserEntity;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -88,11 +88,5 @@ public class User {
         applyIfNotNull(patchUserSurveyRequestDto.getRunningPace(), newRunningPace -> this.runningPace = newRunningPace);
         applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(),
             newRunningFrequency -> this.runningFrequency = newRunningFrequency);
-    }
-
-    private <T> void applyIfNotNull(T value, Consumer<T> setter) {
-        if (value != null) {
-            setter.accept(value);
-        }
     }
 }

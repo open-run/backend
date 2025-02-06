@@ -1,7 +1,10 @@
 package io.openur.domain.bung.model;
 
+import static io.openur.global.common.UtilController.applyIfNotNull;
+
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
@@ -80,6 +83,16 @@ public class Bung {
                 .toList();
         }
         return bung;
+    }
+
+    public void update(EditBungDto dto) {
+        applyIfNotNull(dto.getName(), newName -> this.name = newName);
+        applyIfNotNull(dto.getDescription(), newDesc -> this.description = newDesc);
+        applyIfNotNull(dto.getMemberNumber(), newNumber -> this.memberNumber = newNumber);
+        applyIfNotNull(dto.getHasAfterRun(), newAfterRun -> this.hasAfterRun = newAfterRun);
+        applyIfNotNull(
+            dto.getAfterRunDescription(),
+            newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
     }
 
     public BungEntity toEntity() {

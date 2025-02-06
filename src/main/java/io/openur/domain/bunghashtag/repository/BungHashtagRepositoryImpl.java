@@ -29,6 +29,12 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
     }
 
     @Override
+    public void updateHashtags(Bung bung, List<Hashtag> hashtags) {
+        bungHashtagJpaRepository.deleteByBungEntity_BungId(bung.getBungId());
+        bulkInsertHashtags(bung, hashtags);
+    }
+
+    @Override
     public List<Hashtag> findHashtagsByBungId(String bungId) {
         return bungHashtagJpaRepository.findByBungEntity_BungId(bungId).stream()
             .map(Hashtag::from).toList();

@@ -206,8 +206,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         return bungEntity.endDateTime.loe(LocalDateTime.now());
     }
 
-    private OrderSpecifier withStatusOrdering(BungStatus status) {
-
+    private OrderSpecifier<?> withStatusOrdering(BungStatus status) {
         // 완료된 벙을 볼 경우는 최근 끝난것부터 내림차순
         if (ACCOMPLISHED.equals(status)) {
             return bungEntity.endDateTime.desc();

@@ -1,6 +1,7 @@
 package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,6 +14,9 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.enums.CompleteBungResultEnum;
+import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
@@ -21,8 +25,7 @@ import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
-import io.openur.global.enums.CompleteBungResultEnum;
-import io.openur.global.enums.JoinBungResultEnum;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +42,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
+@Transactional(readOnly = true)
 public class BungApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/bungs";
@@ -80,7 +83,7 @@ public class BungApiTest extends TestSupport {
         ).andExpect(status().isCreated()).andReturn();
 
         String location = result.getResponse().getHeader("Location");
-        assert location != null;
+        assertNotNull(location, "Location header must not be null");
 
         String bungId = location.substring(location.lastIndexOf('/') + 1);
         Optional<BungEntity> bungEntity = bungJpaRepository.findById(bungId);
@@ -273,6 +276,7 @@ public class BungApiTest extends TestSupport {
 
         @Test
         @DisplayName("200 Ok.")
+        @Transactional
         void deleteBung_isOk() throws Exception {
             String token = getTestUserToken("test1@test.com");
             mockMvc.perform(
@@ -367,8 +371,102 @@ public class BungApiTest extends TestSupport {
     }
 
     @Nested
+    @DisplayName("벙 수정하기")
+    class editBungTest {
+        @Test
+        @DisplayName("200 Ok. No elements.")
+        void editBung_isOk_noElements() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String ownerToken = getTestUserToken("test1@test.com");
+            mockMvc.perform(
+                patch(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, ownerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(new HashMap<>()))
+            ).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("403 Forbidden. Not owner of the bung")
+        void editBung_isForbidden_notOwner() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String notOwnerToken = getTestUserToken("test2@test.com");
+            mockMvc.perform(
+                patch(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, notOwnerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(new HashMap<>()))
+            ).andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("403 Forbidden. Bung has already completed")
+        void editBung_isForbidden_alreadyCompleted() throws Exception {
+            String bungId = "a1234567-89ab-cdef-0123-1982ey1kbjas";
+            String ownerToken = getTestUserToken("test3@test.com");
+
+            MvcResult result = mockMvc.perform(
+                patch(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, ownerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(new HashMap<>()))
+            ).andExpect(status().isForbidden()).andReturn();
+
+            ExceptionDto response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+            assert Objects.equals(response.getMessage(), 
+                EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+        }
+
+        @Test
+        @DisplayName("200 Ok. All elements.")
+        void edit_isOk() throws Exception {
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+            String ownerToken = getTestUserToken("test1@test.com");
+            List<String> previousHashtags =
+                bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                    .map(Hashtag::getHashtagStr)
+                    .toList();
+
+            var editBungData = new HashMap<>();
+            editBungData.put("name", "새로운 이름");
+            editBungData.put("description", "새로운 설명");
+            editBungData.put("memberNumber", 5);
+            editBungData.put("hasAfterRun", true);
+            editBungData.put("afterRunDescription", "단백질 보충 가시죠! 고기고기");
+            List<String> hashtags = Arrays.asList("LSD", "음악있음", "고수만");
+            editBungData.put("hashtags", hashtags);
+
+            mockMvc.perform(
+                    patch(PREFIX + "/" + bungId)
+                        .header(AUTH_HEADER, ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonify(editBungData)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+            BungEntity bungEntity = bungJpaRepository.findById(bungId).orElseThrow();
+            assertThat(bungEntity.getName()).isEqualTo(editBungData.get("name"));
+            assertThat(bungEntity.getDescription()).isEqualTo(editBungData.get("description"));
+            assertThat(bungEntity.getMemberNumber()).isEqualTo(editBungData.get("memberNumber"));
+            assertThat(bungEntity.getHasAfterRun()).isEqualTo(editBungData.get("hasAfterRun"));
+            assertThat(bungEntity.getAfterRunDescription())
+                .isEqualTo(editBungData.get("afterRunDescription"));
+
+            assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
+            assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                .map(Hashtag::getHashtagStr).toList().stream().noneMatch(previousHashtags::contains);
+            assert hashtagRepository.findByHashtagStrIn(hashtags).stream()
+                .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
+        }
+    }
+
+    @Nested
     @DisplayName("벙 완료하기")
-    class completeBung {
+    class completeBungTest {
 
         @Test
         @DisplayName("409 Already Completed")

@@ -4,13 +4,15 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
+import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.CompleteBungResultEnum;
+import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
-import io.openur.global.enums.CompleteBungResultEnum;
-import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -132,18 +134,36 @@ public class BungController {
     public ResponseEntity<Response<JoinBungResultEnum>> joinBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
-    ) throws Exception {
+    ) {
         JoinBungResultEnum result = bungService.joinBung(userDetails, bungId);
-        Response<JoinBungResultEnum> response = Response.<JoinBungResultEnum>builder()
+        return ResponseEntity.ok().body(Response.<JoinBungResultEnum>builder()
             .message(result.toString())
             .data(result)
-            .build();
+            .build());
+    }
 
-        if (result == JoinBungResultEnum.SUCCESSFULLY_JOINED) {
-            return ResponseEntity.ok().body(response);
-        }
-
-        throw new Exception("Unexcepted result from joinBung.");
+    @PatchMapping("/{bungId}")
+    @Operation(summary = "벙 수정하기")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "성공적으로 수정됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"message\":\"successfully edited\",\"data\":\"SUCCESSFULLY_EDITED\"}")
+        )),
+        @ApiResponse(responseCode = "403", description = "특정 사유로 수정이 금지됨", content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(value = "{\"statusCode\":403, \"state\":\"FORBIDDEN\", \"message\":\"You cannot edit bung - bung has already completed\"}")
+        ))
+    })
+    public ResponseEntity<Response<EditBungResultEnum>> editBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId,
+        @RequestBody EditBungDto editBungDto
+    ) {
+        EditBungResultEnum result = bungService.editBung(userDetails, bungId, editBungDto);
+        return ResponseEntity.ok().body(Response.<EditBungResultEnum>builder()
+            .message(result.toString())
+            .data(result)
+            .build());
     }
 
     @PatchMapping("/{bungId}/complete")
@@ -165,17 +185,12 @@ public class BungController {
     public ResponseEntity<Response<CompleteBungResultEnum>> completeBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
-    ) throws Exception {
+    ) {
         CompleteBungResultEnum result = bungService.completeBung(userDetails, bungId);
-        Response<CompleteBungResultEnum> response = Response.<CompleteBungResultEnum>builder()
+        return ResponseEntity.ok().body(Response.<CompleteBungResultEnum>builder()
             .message(result.toString())
             .data(result)
-            .build();
-
-        if (result == CompleteBungResultEnum.SUCCESSFULLY_COMPLETED) {
-            return ResponseEntity.ok().body(response);
-        }
-
-        throw new Exception("Unexpected result from completeBung.");
+            .build());
     }
 }
+
