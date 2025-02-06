@@ -7,7 +7,9 @@ import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
+import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
@@ -62,7 +64,6 @@ public class BungService {
         });
     }
 
-
     @Transactional
     public BungInfoDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
         CreateBungDto dto) {
@@ -83,8 +84,11 @@ public class BungService {
         bungRepository.deleteByBungId(bungId);
     }
 
-    public Page<BungInfoDto> getBungLists(UserDetailsImpl userDetails,
-        boolean isAvailableOnly, Pageable pageable) {
+    public Page<BungInfoDto> getBungLists(
+        UserDetailsImpl userDetails,
+        boolean isAvailableOnly,
+        Pageable pageable
+    ) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         return bungRepository
@@ -92,8 +96,12 @@ public class BungService {
             .map(BungInfoDto::new);
     }
 
-    public Page<BungInfoWithOwnershipDto> getMyBungLists(UserDetailsImpl userDetails,
-        Boolean isOwned, BungStatus status, Pageable pageable) {
+    public Page<BungInfoWithOwnershipDto> getMyBungLists(
+        UserDetailsImpl userDetails,
+        Boolean isOwned,
+        BungStatus status,
+        Pageable pageable
+    ) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         return userBungRepository
@@ -102,8 +110,7 @@ public class BungService {
     }
 
     @Transactional
-    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
-        throws JoinBungException {
+    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId) throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
             throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
         }
@@ -111,7 +118,7 @@ public class BungService {
         BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
             bungId);
         if (bungWithMembers.getMemberList().stream().anyMatch(
-            user -> user.getUserId().equals(userDetails.getUser().getUserId())
+                user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
             throw new JoinBungException(JoinBungResultEnum.USER_HAS_ALREADY_JOINED.toString());
         }
@@ -126,17 +133,29 @@ public class BungService {
 
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-    public void editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
+    public EditBungResultEnum editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
         Bung bung = bungRepository.findBungById(bungId);
+
+        if (bung.isCompleted()) {
+            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+        }
+
+        if (bung.getStartDateTime().isBefore(LocalDateTime.now())) {
+            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
+        }
+
         bung.update(editBungDto);
         updateHashtags(bung, editBungDto.getHashtags());
         bungRepository.save(bung);
+        return EditBungResultEnum.SUCCESSFULLY_EDITED;
     }
 
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-    public CompleteBungResultEnum completeBung(UserDetailsImpl userDetails, String bungId)
-        throws CompleteBungException {
+    public CompleteBungResultEnum completeBung(
+        UserDetailsImpl userDetails,
+        String bungId
+    ) throws CompleteBungException {
         Bung bung = bungRepository.findBungById(bungId);
         if (bung.isCompleted()) {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());

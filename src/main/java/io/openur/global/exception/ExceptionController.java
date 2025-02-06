@@ -1,6 +1,7 @@
 package io.openur.global.exception;
 
 import io.openur.domain.bung.exception.CompleteBungException;
+import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.domain.userbung.exception.RemoveUserFromBungException;
@@ -45,7 +46,7 @@ public class ExceptionController {
         return createResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    @ExceptionHandler({AccessDeniedException.class, RemoveUserFromBungException.class})
+    @ExceptionHandler({AccessDeniedException.class, RemoveUserFromBungException.class, EditBungException.class})
     public ResponseEntity<ExceptionDto> handleForbiddenException(Exception e) {
         return createResponse(HttpStatus.FORBIDDEN, e.getMessage());
     }
