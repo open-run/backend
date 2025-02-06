@@ -31,14 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -150,7 +143,7 @@ public class UserController {
             .body(Response.<Void>builder().message("success").build());
     }
 
-    @GetMapping("/feedback")
+    @PatchMapping("/feedback")
     @Operation(summary = "벙 참가자들 피드백(좋아요) 증가")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "피드백이 성공적으로 증가됨", content = @Content(
