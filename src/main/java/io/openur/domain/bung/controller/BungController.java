@@ -5,14 +5,14 @@ import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
-import io.openur.global.enums.CompleteBungResultEnum;
-import io.openur.global.enums.JoinBungResultEnum;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -134,18 +134,12 @@ public class BungController {
     public ResponseEntity<Response<JoinBungResultEnum>> joinBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
-    ) throws Exception {
+    ) {
         JoinBungResultEnum result = bungService.joinBung(userDetails, bungId);
-        Response<JoinBungResultEnum> response = Response.<JoinBungResultEnum>builder()
+        return ResponseEntity.ok().body(Response.<JoinBungResultEnum>builder()
             .message(result.toString())
             .data(result)
-            .build();
-
-        if (result == JoinBungResultEnum.SUCCESSFULLY_JOINED) {
-            return ResponseEntity.ok().body(response);
-        }
-
-        throw new Exception("Unexcepted result from joinBung.");
+            .build());
     }
 
     @PatchMapping("/{bungId}")
@@ -191,17 +185,12 @@ public class BungController {
     public ResponseEntity<Response<CompleteBungResultEnum>> completeBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
-    ) throws Exception {
+    ) {
         CompleteBungResultEnum result = bungService.completeBung(userDetails, bungId);
-        Response<CompleteBungResultEnum> response = Response.<CompleteBungResultEnum>builder()
+        return ResponseEntity.ok().body(Response.<CompleteBungResultEnum>builder()
             .message(result.toString())
             .data(result)
-            .build();
-
-        if (result == CompleteBungResultEnum.SUCCESSFULLY_COMPLETED) {
-            return ResponseEntity.ok().body(response);
-        }
-
-        throw new Exception("Unexpected result from completeBung.");
+            .build());
     }
 }
+

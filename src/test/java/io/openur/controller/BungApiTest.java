@@ -14,7 +14,9 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
@@ -23,8 +25,6 @@ import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
-import io.openur.global.enums.CompleteBungResultEnum;
-import io.openur.global.enums.JoinBungResultEnum;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
