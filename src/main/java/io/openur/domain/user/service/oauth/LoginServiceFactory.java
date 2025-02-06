@@ -12,6 +12,7 @@ public class LoginServiceFactory {
     private final NaverService naverService;
 
     public LoginService getLoginService(Provider provider) {
+        // TODO: login challenge publisher
         return switch (provider) {
             case kakao -> kakaoService;
             case naver -> naverService;
