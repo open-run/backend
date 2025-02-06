@@ -14,6 +14,7 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.repository.BungJpaRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
@@ -24,6 +25,7 @@ import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
 import io.openur.global.enums.CompleteBungResultEnum;
 import io.openur.global.enums.JoinBungResultEnum;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -395,6 +397,27 @@ public class BungApiTest extends TestSupport {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(jsonify(new HashMap<>()))
             ).andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("403 Forbidden. Bung has already completed")
+        void editBung_isForbidden_alreadyCompleted() throws Exception {
+            String bungId = "a1234567-89ab-cdef-0123-1982ey1kbjas";
+            String ownerToken = getTestUserToken("test3@test.com");
+
+            MvcResult result = mockMvc.perform(
+                patch(PREFIX + "/" + bungId)
+                    .header(AUTH_HEADER, ownerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(new HashMap<>()))
+            ).andExpect(status().isForbidden()).andReturn();
+
+            ExceptionDto response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+            assert Objects.equals(response.getMessage(), 
+                EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
         }
 
         @Test
