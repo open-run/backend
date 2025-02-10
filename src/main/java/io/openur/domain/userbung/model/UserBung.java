@@ -6,6 +6,7 @@ import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
@@ -14,6 +15,7 @@ public class UserBung {
     private Long userBungId;
     private User user;
     private Bung bung;
+    @Setter
     private boolean participationStatus;
     private LocalDateTime modifiedAt;
     private boolean isOwner;
