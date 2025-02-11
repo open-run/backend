@@ -111,7 +111,6 @@ public class UserBungApiTest extends TestSupport {
 
         @Test
         @DisplayName("200 Ok.")
-        @Transactional
         void changeOwner_isOkTest() throws Exception {
             String token = getTestUserToken("test1@test.com");
 
@@ -139,7 +138,6 @@ public class UserBungApiTest extends TestSupport {
 
         @Test
         @DisplayName("403 Forbidden. Authorization Header 없음")
-        @Transactional
         void changeOwner_isForbidden() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
@@ -153,7 +151,6 @@ public class UserBungApiTest extends TestSupport {
 
         @Test
         @DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
-        @Transactional
         void changeOwner_isForbidden_notOwner() throws Exception {
             String notOwnerToken = getTestUserToken("test2@test.com");
 
@@ -170,7 +167,6 @@ public class UserBungApiTest extends TestSupport {
 
         @Test
         @DisplayName("401 Unauthorized. invalid Authorization Header")
-        @Transactional
         void changeOwner_isUnauthorized() throws Exception {
             String invalidToken = "Bearer invalidToken";
 
@@ -187,7 +183,6 @@ public class UserBungApiTest extends TestSupport {
 
         @Test
         @DisplayName("401 Unauthorized. Unknown user token")
-        @Transactional
         void changeOwner_isUnauthorized_unknownUser() throws Exception {
             String unknownUserToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5ZWppbmtlbGx5am9vQGdtYWlsLmNvbSIsImV4cCI6MTcyMzYyNDgxMCwiaWF0IjoxNzIzNjIxMjEwfQ.wH-eJCvEBgFg_QjWr7CdxBpMqlQzGt45DLmrsWju-HU";
 
@@ -200,6 +195,55 @@ public class UserBungApiTest extends TestSupport {
                     .header(AUTH_HEADER, unknownUserToken)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("벙 참여 인증 완료")
+    class confirmBungParticipationTest {
+
+        private void isOkTest(String token, String userId, String bungId) throws Exception {
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/participated", bungId)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+
+            UserBung userBung = userBungRepository.findByUserIdAndBungId(userId, bungId);
+            assertThat(userBung.isParticipationStatus()).isTrue();
+        }
+
+        @Test
+        @DisplayName("200 Ok. 벙주인 경우")
+        void confirmBungParticipation_isOkTest() throws Exception {
+            String token = getTestUserToken("test1@test.com");
+            String userId = "9e1bfc60-f76a-47dc-9147-803653707192";
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+            isOkTest(token, userId, bungId);
+        }
+
+        @Test
+        @DisplayName("200 Ok. 벙 참가자인 경우")
+        void confirmBungParticipation_isOk_participant() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+            String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+            isOkTest(token, userId, bungId);
+        }
+
+        @Test
+        @DisplayName("403 Forbidden. 벙 참가자가 아닌 경우")
+        void confirmBungParticipation_isForbidden_notParticipant() throws Exception {
+            String token = getTestUserToken("test3@test.com");
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/participated", bungId)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isForbidden());
         }
     }
 }
