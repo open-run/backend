@@ -33,7 +33,7 @@ public class UserBungService {
 
     @Transactional
     public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
-        String userIdToRemove) {
+        String userIdToRemove) throws RemoveUserFromBungException {
         Boolean isOwner = methodSecurityService.isOwnerOfBung(userDetails, bungId);
         Boolean isSelf = methodSecurityService.isSelf(userDetails, userIdToRemove);
         if (isOwner && isSelf) {
