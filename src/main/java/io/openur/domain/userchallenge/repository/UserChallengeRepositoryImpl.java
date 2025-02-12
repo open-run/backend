@@ -76,7 +76,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     public List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds) {
-        return userChallengeJpaRepository.findByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(userIds,
+        return userChallengeJpaRepository.findByUserEntity_UserIdInAndChallengeIdIn(userIds,
                 challengeIds)
             .stream()
             .map(UserChallenge::from)
@@ -86,14 +86,14 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     @Override
     public Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId) {
         return userChallengeJpaRepository
-            .findByUserEntity_UserIdAndChallengeEntity_ChallengeId(userId,
+            .findByUserEntity_UserIdAndChallengeId(userId,
                 challengeId).map(UserChallenge::from);
     }
 
     @Override
     public boolean existsByUserIdAndChallengeId(String userId, Long
         challengeId) {
-        return userChallengeJpaRepository.existsByUserEntity_UserIdAndChallengeEntity_ChallengeId(
+        return userChallengeJpaRepository.existsByUserEntity_UserIdAndChallengeId(
             userId, challengeId);
     }
 

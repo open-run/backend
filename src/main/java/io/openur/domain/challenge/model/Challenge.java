@@ -1,6 +1,5 @@
 package io.openur.domain.challenge.model;
 
-import io.openur.domain.challenge.entity.ChallengeEntity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -21,36 +20,4 @@ public class Challenge {
     private LocalDateTime completedConditionDate;
     private String completedConditionPlace;
     private Boolean completedConditionWearing;
-
-    public static Challenge from(final ChallengeEntity challengeEntity) {
-        return new Challenge(
-            challengeEntity.getChallengeId(),
-            challengeEntity.getChallengeName(),
-            challengeEntity.getChallengeType(),
-            challengeEntity.getDescription(),
-            challengeEntity.getRewardType(),
-            challengeEntity.getRewardPercentage(),
-            challengeEntity.getCompletedType(),
-            challengeEntity.getCompletedConditionCount(),
-            challengeEntity.getCompletedConditionDate(),
-            challengeEntity.getCompletedConditionPlace(),
-            challengeEntity.getCompletedConditionWearing()
-        );
-    }
-
-    public ChallengeEntity toEntity() {
-        return new ChallengeEntity(
-            this.challengeId,
-            this.challengeName,
-            this.challengeType,
-            this.description,
-            this.rewardType,
-            this.rewardPercentage,
-            this.completedType,
-            this.completedConditionCount,
-            this.completedConditionDate,
-            this.completedConditionPlace,
-            this.completedConditionWearing
-        );
-    }
 }

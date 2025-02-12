@@ -62,24 +62,6 @@ CREATE TABLE IF NOT EXISTS tb_bungs_hashtags
     FOREIGN KEY (hashtag_id) REFERENCES tb_hashtags (hashtag_id)
 );
 
--- TODO: DB 에 있을 필요가 없음. 어떤 다른 형태로 가지고 있을지 논의 필요. 
-CREATE TABLE IF NOT EXISTS tb_challenges
-(
-    challenge_id                BIGINT(20) AUTO_INCREMENT PRIMARY KEY                     NOT NULL,
-    challenge_name              VARCHAR(255)                                              NOT NULL,
-    challenge_type              ENUM ('tuto','normal','hidden')                           NOT NULL DEFAULT 'normal',
-    description                 TEXT                                                      NULL,
--- TODO: reward 관련 column 정말 필요한지? 논의 필요
-    reward_type                 ENUM ('head','accessory','face','shoes','top_and_bottom') NOT NULL,
-    reward_percentage           DECIMAL(5, 2)                                             NOT NULL DEFAULT 25,
-    completed_type              ENUM ('date', 'count', 'place', 'wearing')                NOT NULL,
-    completed_condition_count   BIGINT(20)                                                NULL,
-    completed_condition_date    TIMESTAMP                                                 NULL,
-    completed_condition_place   TEXT                                                      NULL,
--- TODO: BOOLEAN 타입 잘못된듯? 무슨 옷을 입었는지 확인해야 하는거니까 옷 정보가 들어가야할듯. 
-    completed_condition_wearing BOOLEAN                                                   NULL
-);
-
 -- tb_users_challenges 테이블 생성 (존재하지 않을 경우에만)
 CREATE TABLE IF NOT EXISTS tb_users_challenges
 (
@@ -87,7 +69,6 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
     user_id           VARCHAR(36) DEFAULT (UUID())          NOT NULL,
     challenge_id      BIGINT(20)                            NOT NULL,
     FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
-    FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id),
     completed_date    TIMESTAMP   DEFAULT NULL,
     nft_completed     BOOLEAN     DEFAULT FALSE             NOT NULL,
 -- TODO: 유저가 받은 nft 정보 추가

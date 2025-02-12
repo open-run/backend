@@ -5,8 +5,6 @@ import java.util.List;
 
 public interface ChallengeRepository {
 
-    Challenge save(Challenge challenge);
-
     Challenge findById(Long challengeId);
 
     List<Challenge> findAll();
