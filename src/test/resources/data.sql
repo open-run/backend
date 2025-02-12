@@ -14,15 +14,15 @@ VALUES ('9e1bfc60-f76a-47dc-9147-803653707192', 'test', 'test1@test.com', FALSE,
 ;
 
 INSERT INTO tb_bungs (bung_id, name, location, description, start_datetime, end_datetime, distance, pace, member_number,
-                      has_after_run, after_run_description, is_completed)
+                      has_after_run, after_run_description, is_completed, main_image)
 VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'Seoul', 'temp_description',
-        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, false, null, false),
+        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, false, null, false, 'image1.png'),
        ('90477004-1422-4551-acce-04584b34612e', 'test2_bung', 'Bangkok', 'second_bung_data',
-        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 1, '6"30', 2, true, 'chicken & beer', false),
+        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 1, '6"30', 2, true, 'chicken & beer', false, 'image2.png'),
        ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung_incompleted', 'New York', 'past_bung_description',
-        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, false),
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, false, 'image3.png'),
        ('a1234567-89ab-cdef-0123-1982ey1kbjas', 'past_bung_completed', 'New York', 'past_bung_description',
-        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, true)
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, true, 'image4.png')
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
