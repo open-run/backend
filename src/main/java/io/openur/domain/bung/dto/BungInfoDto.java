@@ -26,6 +26,7 @@ public class BungInfoDto {
     private String afterRunDescription;
     private Boolean isCompleted;
     private List<String> hashtags;
+    private String mainImage;
 
     public BungInfoDto(Bung bung) {
         this.bungId = bung.getBungId();
@@ -41,6 +42,7 @@ public class BungInfoDto {
         this.afterRunDescription = bung.getAfterRunDescription();
         this.isCompleted = bung.isCompleted();
         this.hashtags = bung.getHashtags();
+        this.mainImage = bung.getMainImage();
     }
 
     public BungInfoDto(Bung bung, List<String> hashtags) {

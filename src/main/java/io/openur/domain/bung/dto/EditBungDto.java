@@ -18,4 +18,5 @@ public class EditBungDto {
     private Boolean hasAfterRun;
     private String afterRunDescription;
     private List<String> hashtags;
+    private String mainImage;
 }

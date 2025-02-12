@@ -30,6 +30,7 @@ public class Bung {
     private String afterRunDescription;
     private List<String> hashtags;
     private boolean isCompleted;
+    private String mainImage;
 
     public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
@@ -43,6 +44,7 @@ public class Bung {
         this.memberNumber = dto.getMemberNumber();
         this.hasAfterRun = dto.getHasAfterRun();
         this.afterRunDescription = dto.getAfterRunDescription();
+        this.mainImage = dto.getMainImage();
     }
 
     public Bung(BungInfoDto dto) {
@@ -57,7 +59,7 @@ public class Bung {
         this.memberNumber = dto.getMemberNumber();
         this.hasAfterRun = dto.getHasAfterRun();
         this.afterRunDescription = dto.getAfterRunDescription();
-
+        this.mainImage = dto.getMainImage();
     }
 
     public static Bung from(final BungEntity bungEntity) {
@@ -74,14 +76,17 @@ public class Bung {
             bungEntity.getHasAfterRun(),
             bungEntity.getAfterRunDescription(),
             null,
-            bungEntity.isCompleted()
+            bungEntity.isCompleted(),
+            bungEntity.getMainImage()
         );
+
         if (bungEntity.getHashtags() != null) {
             bung.hashtags = bungEntity.getHashtags()
                 .stream()
                 .map(HashtagEntity::getHashtagStr)
                 .toList();
         }
+
         return bung;
     }
 
@@ -109,6 +114,7 @@ public class Bung {
             hasAfterRun,
             afterRunDescription,
             isCompleted,
+            mainImage,
             null
         );
     }
