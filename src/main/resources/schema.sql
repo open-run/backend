@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS tb_bungs
     member_number         SMALLINT                                   NOT NULL,
     has_after_run         BOOLEAN       DEFAULT FALSE,
     after_run_description VARCHAR(4096) DEFAULT NULL,
-    is_completed          BOOLEAN       DEFAULT FALSE                NOT NULL
+    is_completed          BOOLEAN       DEFAULT FALSE                NOT NULL,
+    main_image            VARCHAR(255)  DEFAULT NULL
 );
 
 -- tb_users_bungs 테이블 생성 (존재하지 않을 경우에만)
