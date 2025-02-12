@@ -1,6 +1,5 @@
 package io.openur.domain.userchallenge.entity;
 
-import io.openur.domain.challenge.entity.ChallengeEntity;
 import io.openur.domain.user.entity.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,9 +30,7 @@ public class UserChallengeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity userEntity;
 
-    @ManyToOne(targetEntity = ChallengeEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "challenge_id", nullable = false)
-    private ChallengeEntity challengeEntity;
+    private Long challengeId;
 
     private LocalDateTime completedDate;
 

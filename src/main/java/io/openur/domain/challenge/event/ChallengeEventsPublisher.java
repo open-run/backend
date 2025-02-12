@@ -2,6 +2,7 @@ package io.openur.domain.challenge.event;
 
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.challenge.model.CompletedType;
+import io.openur.domain.challenge.repository.ChallengeRepositoryImpl;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepositoryImpl;
 import java.util.List;
@@ -17,6 +18,7 @@ public class ChallengeEventsPublisher {
 
     private final ApplicationEventPublisher publisher;
     private final UserChallengeRepositoryImpl userChallengeRepository;
+    private final ChallengeRepositoryImpl challengeRepository;
 
     /**
      * Processes challenge completion events when a Bung is completed.
@@ -48,7 +50,7 @@ public class ChallengeEventsPublisher {
         // Filter out completed challenges and group by completion type
         Map<CompletedType, List<UserChallenge>> challengesByType = userChallenges.stream()
             .filter(uc -> !uc.getNftCompleted())
-            .collect(Collectors.groupingBy(uc -> uc.getChallenge().getCompletedType()));
+            .collect(Collectors.groupingBy(uc -> challengeRepository.findById(uc.getChallengeId()).getCompletedType()));
 
         // Publish events for each group
         if (challengesByType.containsKey(CompletedType.date)) {

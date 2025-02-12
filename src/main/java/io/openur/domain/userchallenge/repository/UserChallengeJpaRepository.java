@@ -9,11 +9,11 @@ public interface UserChallengeJpaRepository extends JpaRepository<UserChallengeE
 
     List<UserChallengeEntity> findByUserEntity_UserId(String userId);
 
-    Optional<UserChallengeEntity> findByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(List<String> userIds,
+    Optional<UserChallengeEntity> findByUserEntity_UserIdInAndChallengeIdIn(List<String> userIds,
         List<Long> challengeIds);
 
-    Optional<UserChallengeEntity> findByUserEntity_UserIdAndChallengeEntity_ChallengeId(String userId,
+    Optional<UserChallengeEntity> findByUserEntity_UserIdAndChallengeId(String userId,
         Long challengeId);
 
-    boolean existsByUserEntity_UserIdAndChallengeEntity_ChallengeId(String userId, Long challengeId);
+    boolean existsByUserEntity_UserIdAndChallengeId(String userId, Long challengeId);
 } 

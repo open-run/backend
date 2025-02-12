@@ -1,5 +1,7 @@
 package io.openur.domain.challenge.event;
 
+import io.openur.domain.challenge.model.Challenge;
+import io.openur.domain.challenge.repository.ChallengeRepositoryImpl;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepositoryImpl;
 import jakarta.transaction.Transactional;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 public class ChallengeEventsListener {
 
     private final UserChallengeRepositoryImpl userChallengeRepository;
+    private final ChallengeRepositoryImpl challengeRepository;
 
     private void airdropNFT(UserChallenge userChallenge) {
         // TODO: NFT 에어드랍
@@ -30,7 +33,8 @@ public class ChallengeEventsListener {
         List<Long> completedUserChallengeIds = new ArrayList<>();
         
         for (var userChallenge : event.getUserChallenges()) {
-            LocalDateTime dateCondition = userChallenge.getChallenge().getCompletedConditionDate();
+            Challenge challenge = challengeRepository.findById(userChallenge.getChallengeId());
+            LocalDateTime dateCondition = challenge.getCompletedConditionDate();
             // TODO: Implement proper date condition check
             if (dateCondition != null && LocalDateTime.now().isAfter(dateCondition)) {
                 airdropNFT(userChallenge);
@@ -55,7 +59,8 @@ public class ChallengeEventsListener {
         // Then process NFT airdrops for completed challenges
         List<Long> completedUserChallengeIds = new ArrayList<>();
         for (var userChallenge : event.getUserChallenges()) {
-            Long countCondition = userChallenge.getChallenge().getCompletedConditionCount();
+            Challenge challenge = challengeRepository.findById(userChallenge.getChallengeId());
+            Long countCondition = challenge.getCompletedConditionCount();
             Long currentCount = userChallenge.getCurrentCount() + 1; // Add 1 since we just incremented
             
             if (currentCount.equals(countCondition)) {
@@ -74,7 +79,8 @@ public class ChallengeEventsListener {
         List<Long> completedUserChallengeIds = new ArrayList<>();
         
         for (var userChallenge : event.getUserChallenges()) {
-            String placeCondition = userChallenge.getChallenge().getCompletedConditionPlace();
+            Challenge challenge = challengeRepository.findById(userChallenge.getChallengeId());
+            String placeCondition = challenge.getCompletedConditionPlace();
             // TODO: Implement proper place condition check
             if (placeCondition != null && placeCondition.equals(event.getLocation())) {
                 airdropNFT(userChallenge);
@@ -92,7 +98,8 @@ public class ChallengeEventsListener {
         List<Long> completedUserChallengeIds = new ArrayList<>();
         
         for (var userChallenge : event.getUserChallenges()) {
-            Boolean wearingCondition = userChallenge.getChallenge().getCompletedConditionWearing();
+            Challenge challenge = challengeRepository.findById(userChallenge.getChallengeId());
+            Boolean wearingCondition = challenge.getCompletedConditionWearing();
             // TODO: Implement proper wearing condition check
             if (wearingCondition != null && wearingCondition) {
                 airdropNFT(userChallenge);
