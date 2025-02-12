@@ -30,4 +30,14 @@ public class MethodSecurityService {
         String userId) {
         return userDetails.getUser().getUserId().equals(userId);
     }
+
+    public boolean isBungParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        String bungId) {
+        try {
+            userBungRepository.findByUserIdAndBungId(userDetails.getUser().getUserId(), bungId);
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
 }

@@ -48,4 +48,16 @@ public class UserBungController {
             .message("Member deleted successfully")
             .build());
     }
+
+    @PatchMapping("/{bungId}/participated")
+    @Operation(summary = "벙 참여 인증 완료(벙 참여 중인 본인만 가능)")
+    public ResponseEntity<Response<Void>> confirmBungParticipation(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable String bungId
+    ) {
+        userBungService.confirmBungParticipation(userDetails, bungId);
+        return ResponseEntity.ok().body(Response.<Void>builder()
+            .message("Bung completion verified successfully")
+            .build());
+    }
 }

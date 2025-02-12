@@ -34,7 +34,7 @@ public class UserBungService {
 
     @Transactional
     public void removeUserFromBung(UserDetailsImpl userDetails, String bungId,
-        String userIdToRemove) {
+        String userIdToRemove) throws RemoveUserFromBungException {
         Boolean isOwner = methodSecurityService.isOwnerOfBung(userDetails, bungId);
         Boolean isSelf = methodSecurityService.isSelf(userDetails, userIdToRemove);
         if (isOwner && isSelf) {
@@ -46,5 +46,13 @@ public class UserBungService {
 
         UserBung userBung = userBungRepository.findByUserIdAndBungId(userIdToRemove, bungId);
         userBungRepository.removeUserFromBung(userBung);
+    }
+
+    @Transactional
+    @PreAuthorize("@methodSecurityService.isBungParticipant(#userDetails, #bungId)")
+    public void confirmBungParticipation(UserDetailsImpl userDetails, String bungId) {
+        UserBung userBung = userBungRepository.findByUserIdAndBungId(userDetails.getUser().getUserId(), bungId);
+        userBung.setParticipationStatus(true);
+        userBungRepository.save(userBung);
     }
 }
