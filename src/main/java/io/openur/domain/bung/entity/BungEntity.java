@@ -51,6 +51,7 @@ public class BungEntity {
 
     @Column(name = "is_completed")
     private boolean completed;
+    private String mainImage;
 
     @ManyToMany
     @JoinTable(
@@ -58,5 +59,6 @@ public class BungEntity {
         joinColumns = @JoinColumn(name = "bung_id"),
         inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
+
     private Set<HashtagEntity> hashtags;
 }
