@@ -98,6 +98,7 @@ public class Bung {
         applyIfNotNull(
             dto.getAfterRunDescription(),
             newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
+        applyIfNotNull(dto.getMainImage(), newMainImage -> this.mainImage = newMainImage);
     }
 
     public BungEntity toEntity() {

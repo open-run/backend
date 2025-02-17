@@ -74,6 +74,7 @@ public class BungApiTest extends TestSupport {
         submittedBung.put("hasAfterRun", false);
         submittedBung.put("afterRunDescription", "");
         submittedBung.put("hashtags", hashtags);
+        submittedBung.put("mainImage", "image1.jpg");
 
         MvcResult result = mockMvc.perform(
             post(PREFIX)
@@ -94,6 +95,7 @@ public class BungApiTest extends TestSupport {
             .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
         assert hashtagRepository.findByHashtagStrIn(hashtags).stream().map(Hashtag::getHashtagStr)
             .toList().containsAll(hashtags);
+        assert bungEntity.get().getMainImage().equals("image1.jpg");
     }
 
     @Nested
@@ -226,6 +228,7 @@ public class BungApiTest extends TestSupport {
             assert !response.getData().getMemberList().isEmpty();
             assert response.getData().getMemberList().size() == response.getData()
                 .getMemberNumber();
+            assert response.getData().getMainImage().equals("image1.png");
         }
     }
 
@@ -438,6 +441,7 @@ public class BungApiTest extends TestSupport {
             editBungData.put("afterRunDescription", "단백질 보충 가시죠! 고기고기");
             List<String> hashtags = Arrays.asList("LSD", "음악있음", "고수만");
             editBungData.put("hashtags", hashtags);
+            editBungData.put("mainImage", "image2.jpg");
 
             mockMvc.perform(
                     patch(PREFIX + "/" + bungId)
@@ -454,6 +458,7 @@ public class BungApiTest extends TestSupport {
             assertThat(bungEntity.getHasAfterRun()).isEqualTo(editBungData.get("hasAfterRun"));
             assertThat(bungEntity.getAfterRunDescription())
                 .isEqualTo(editBungData.get("afterRunDescription"));
+            assertThat(bungEntity.getMainImage()).isEqualTo(editBungData.get("mainImage"));
 
             assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
                 .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
