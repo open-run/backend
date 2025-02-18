@@ -71,8 +71,7 @@ public class UserService {
 
     @Transactional
     @PreAuthorize("@methodSecurityService.isBungParticipant(#userDetails, #bungId)")
-    public List<String> increaseFeedback(UserDetailsImpl userDetails,String bungId, List<String> targetUserIds) {
-
+    public List<String> increaseFeedback(UserDetailsImpl userDetails, String bungId, List<String> targetUserIds) {
         if (targetUserIds == null || targetUserIds.isEmpty()) {
             throw new IllegalArgumentException("Target user IDs cannot be null or empty");
         }
