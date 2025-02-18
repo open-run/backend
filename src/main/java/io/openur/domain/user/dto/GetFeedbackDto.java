@@ -7,5 +7,6 @@ import lombok.Getter;
 public class GetFeedbackDto {
 
     private List<String> targetUserIds;
+    private String bungId;
 
 }
