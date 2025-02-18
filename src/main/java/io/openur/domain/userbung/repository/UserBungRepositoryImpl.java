@@ -147,6 +147,11 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
+    public Boolean existsByUserIdAndBungId(String userId, String bungId) {
+        return userBungJpaRepository.existsByUserEntity_UserIdAndBungEntity_BungId(userId, bungId);
+    }
+
+    @Override
     public UserBung findCurrentOwner(String bungId) {
         List<UserBungEntity> userBungEntities = userBungJpaRepository.findByBungEntity_BungId(
             bungId);

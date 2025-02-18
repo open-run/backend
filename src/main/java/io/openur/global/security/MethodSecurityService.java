@@ -33,11 +33,7 @@ public class MethodSecurityService {
 
     public boolean isBungParticipant(@AuthenticationPrincipal UserDetailsImpl userDetails,
         String bungId) {
-        try {
-            userBungRepository.findByUserIdAndBungId(userDetails.getUser().getUserId(), bungId);
-            return true;
-        } catch (NoSuchElementException e) {
-            return false;
-        }
+        return userBungRepository.existsByUserIdAndBungId(userDetails.getUser().getUserId(), bungId);
     }
 }
+

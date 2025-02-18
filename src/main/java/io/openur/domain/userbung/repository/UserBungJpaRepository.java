@@ -13,6 +13,8 @@ public interface UserBungJpaRepository extends JpaRepository<UserBungEntity, Lon
     Optional<UserBungEntity> findByUserEntity_UserIdAndBungEntity_BungId(String userId,
         String bungId);
 
+    Boolean existsByUserEntity_UserIdAndBungEntity_BungId(String userId, String bungId);
+
     Page<UserBungEntity> findAllByUserEntityAndOwnerIsTrueOrderByUserBungIdDesc(UserEntity userEntity,
         Pageable pageable);
 
