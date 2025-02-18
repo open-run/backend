@@ -20,6 +20,8 @@ public interface UserBungRepository {
 
     List<String> findJoinedBungsId(User user);
 
+    Boolean existsByUserIdAndBungId(String userId, String bungId);
+
     UserBung save(UserBung userBung);
 
     UserBung findByUserIdAndBungId(String userId, String bungId);
