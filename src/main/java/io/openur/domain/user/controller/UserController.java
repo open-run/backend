@@ -122,7 +122,7 @@ public class UserController {
         Page<GetUsersResponseDto> users = userService.getUserSuggestion(userDetails, pageable);
 
         return ResponseEntity.ok().body(
-            PagedResponse.build(users, "success"));
+                PagedResponse.build(users, "success"));
     }
 
     @PatchMapping()
@@ -168,10 +168,9 @@ public class UserController {
     public ResponseEntity<Response<List<String>>> increaseFeedback(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody GetFeedbackDto feedbackRequestDto) {
-        // BE-78, TODO: 벙 참가자만 가능
-        //  bungId 도 받아야 함
-        //  userDetails 도 받아서 같은 벙 참가자인지 확인해야 함
-        List<String> notFoundUserIds = userService.increaseFeedback(userDetails, feedbackRequestDto.getBungId(),feedbackRequestDto.getTargetUserIds());
+        List<String> notFoundUserIds = userService.increaseFeedback(userDetails,
+            feedbackRequestDto.getBungId(),
+            feedbackRequestDto.getTargetUserIds());
 
         if (!notFoundUserIds.isEmpty()) {
             throw new UserNotFoundException(notFoundUserIds);
