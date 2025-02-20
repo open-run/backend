@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,17 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
     private final UserBungJpaRepository userBungJpaRepository;
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer countParticipantsByBungId(String bungId){
+        return Objects.requireNonNull(queryFactory
+            .select(userBungEntity.count())
+            .from(userBungEntity)
+            .where(userBungEntity.bungEntity.bungId.eq(bungId))
+            .fetchOne())
+            .intValue();
+    }
 
     @Override
     @Transactional(readOnly = true)
