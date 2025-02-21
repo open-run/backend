@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserBungRepository {
 
+    Integer countParticipantsByBungId(String bungId);
+
     BungInfoWithMemberListDto findBungWithUsersById(String bungId);
 
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);

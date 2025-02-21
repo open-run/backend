@@ -4,6 +4,7 @@ public enum EditBungResultEnum {
     SUCCESSFULLY_EDITED("successfully edited"),
     BUNG_HAS_ALREADY_COMPLETED("You cannot edit bung - bung has already completed"),
     BUNG_HAS_ALREADY_STARTED("You cannot edit bung - bung has already started"),
+    BUNG_PARTICIPANTS_EXCEEDED("You cannot edit bung - current members exceed the allowed limit")
     ;
 
     private final String value;
