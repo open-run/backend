@@ -197,7 +197,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     private BooleanExpression withStatusCondition(BungStatus status) {
         BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
 
-        if (status == null) {
+        if (status.equals(BungStatus.ALL)) {
             return baseCondition;
         }
 
