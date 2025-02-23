@@ -87,7 +87,7 @@ public class BungService {
         bungRepository.deleteByBungId(bungId);
     }
 
-    public Page<BungInfoDto> getBungLists(
+    public Page<BungInfoWithMemberListDto> getBungLists(
         UserDetailsImpl userDetails,
         boolean isAvailableOnly,
         Pageable pageable

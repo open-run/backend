@@ -58,7 +58,7 @@ public class BungController {
 
     @GetMapping()
     @Operation(summary = "현재 시각 기준 벙 시작 시각이 미래인 벙 목록, 시작 시간 오름차순 (가장 임박한 벙 먼저)")
-    public ResponseEntity<PagedResponse<BungInfoDto>> getBungList(
+    public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "true : 참가하지 않은 || false : 참가 유무와 상관 없이 전체 벙 목록")
         @RequestParam(required = false, defaultValue = "false") boolean isAvailableOnly,
@@ -66,7 +66,8 @@ public class BungController {
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoDto> contents = bungService.getBungLists(userDetails, isAvailableOnly, pageable);
+        Page<BungInfoWithMemberListDto> contents = bungService.getBungLists(
+            userDetails, isAvailableOnly, pageable);
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
