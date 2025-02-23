@@ -1,15 +1,28 @@
 package io.openur.domain.bung.repository;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
+import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.user.model.User;
+import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,26 +37,34 @@ public class BungRepositoryImpl implements BungRepository {
     private final BungJpaRepository bungJpaRepository;
 
     @Override
-    public Page<Bung> findBungsWithStatus(User user, boolean isAvailableOnly,
-        Pageable pageable) {
-        List<Bung> contents = queryFactory
-            .selectDistinct(bungEntity)
-            .from(bungEntity)
-            .where(
-                isAvailable(user, isAvailableOnly)
+    public Page<BungInfoWithMemberListDto> findBungsWithStatus(User user, boolean isAvailableOnly,
+        Pageable pageable)
+    {
+        Map<BungEntity, List<UserBungEntity>> entries = queryFactory
+            .select(userBungEntity, bungEntity)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .join(userBungEntity.userEntity, userEntity)
+            .where(isAvailable(user, isAvailableOnly))
+            .orderBy(
+                bungEntity.startDateTime.asc(),
+                isMyself(user),
+                userBungEntity.isOwner.desc(),
+                userBungEntity.userEntity.nickname.asc()
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .orderBy(bungEntity.startDateTime.asc())
-            .fetch().stream().map(Bung::from)
-            .toList();
+            .transform(groupBy(bungEntity).as(list(userBungEntity)));
 
         JPAQuery<Long> count = queryFactory
-            .selectDistinct(bungEntity.count())
+            .select(bungEntity.countDistinct())
             .from(bungEntity)
-            .where(
-                isAvailable(user, isAvailableOnly)
-            );
+            .where(isAvailable(user, isAvailableOnly));
+
+        List<BungInfoWithMemberListDto> contents = new ArrayList<>();
+        for(Entry<BungEntity, List<UserBungEntity>> entry : entries.entrySet()) {
+            contents.add(new BungInfoWithMemberListDto(entry));
+        }
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
@@ -67,6 +88,15 @@ public class BungRepositoryImpl implements BungRepository {
     public Boolean isBungStarted(String bungId) {
         Bung bung = Bung.from(bungJpaRepository.findBungEntityByBungId(bungId));
         return bung.getStartDateTime().isBefore(LocalDateTime.now());
+    }
+
+    private OrderSpecifier<?> isMyself(User user) {
+        return new OrderSpecifier<>(Order.DESC,  // DESC로 변경하여 true가 먼저 오도록
+            Expressions.booleanTemplate(
+                "case when {0} = {1} then true else false end",
+                userBungEntity.userEntity.userId,
+                user.getUserId()
+            ));
     }
 
     private BooleanExpression isAvailable(User user, boolean isAvailableOnly) {

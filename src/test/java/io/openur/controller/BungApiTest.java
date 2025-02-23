@@ -114,15 +114,15 @@ public class BungApiTest extends TestSupport {
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
 
-            PagedResponse<BungInfoDto> response = parseResponse(
+            PagedResponse<BungInfoWithMemberListDto> response = parseResponse(
                 result.getResponse().getContentAsString(),
                 new TypeReference<>() {
                 }
             );
             assert !response.isEmpty();
-            List<BungInfoDto> bungInfoDtoList = response.getData();
+            List<BungInfoWithMemberListDto> bungInfoDtoList = response.getData();
             assert bungInfoDtoList.size() == 2;
-            BungInfoDto oneBung = bungInfoDtoList.get(0);
+            BungInfoWithMemberListDto oneBung = bungInfoDtoList.get(0);
             assert !oneBung.getHashtags().isEmpty();
         }
 
@@ -139,15 +139,15 @@ public class BungApiTest extends TestSupport {
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
 
-            PagedResponse<BungInfoDto> response = parseResponse(
+            PagedResponse<BungInfoWithMemberListDto> response = parseResponse(
                 result.getResponse().getContentAsString(),
                 new TypeReference<>() {
                 }
             );
             assert !response.isEmpty();
-            List<BungInfoDto> bungInfoDtoList = response.getData();
+            List<BungInfoWithMemberListDto> bungInfoDtoList = response.getData();
             assert bungInfoDtoList.size() == 1;
-            BungInfoDto oneBung = bungInfoDtoList.get(0);
+            BungInfoWithMemberListDto oneBung = bungInfoDtoList.get(0);
             assert !oneBung.getHashtags().isEmpty();
             assert !Objects.equals(oneBung.getBungId(), notAvailableBungId);
         }
