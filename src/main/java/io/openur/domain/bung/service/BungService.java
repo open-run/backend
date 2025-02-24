@@ -95,8 +95,7 @@ public class BungService {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
 
         return bungRepository
-            .findBungsWithStatus(user, isAvailableOnly, pageable)
-            .map(BungInfoDto::new);
+            .findBungsWithStatus(user, isAvailableOnly, pageable);
     }
 
     public Page<BungInfoWithOwnershipDto> getMyBungLists(

@@ -4,7 +4,7 @@ import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.model.BungStatus.ACCOMPLISHED;
-import static io.openur.domain.bung.model.BungStatus.PARTICIPATING;
+import static io.openur.domain.bung.model.BungStatus.ALL;
 import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
@@ -195,20 +195,22 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     private BooleanExpression withStatusCondition(BungStatus status) {
-        BooleanExpression baseCondition = bungEntity.startDateTime.goe(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        // 끝난거
+        return switch (status) {
+            // 시작하기 전인 것만 보이는 경우
+            case PENDING -> bungEntity.startDateTime.gt(now);
+            // 참여중인, 즉 행사 시간 내 인 조건.
+            case PARTICIPATING ->
+                bungEntity.startDateTime.loe(now)
+                .and(bungEntity.endDateTime.gt(now));
+            // 시작은 했는데, 완료처리가 되지 않을 경우가 있을 수 있겠다고 생각
+            case ONGOING -> bungEntity.completed.isFalse();
+            // 이미 완료처리가 된 것들
+            case ACCOMPLISHED -> bungEntity.completed.isTrue();
 
-        if (status.equals(BungStatus.ALL)) {
-            return baseCondition;
-        }
-
-        // 행사가 시작한, 즉 시작은 지금보다 나중이지만, 종료 시간이 지금보다 과거여서는 안됌
-        if (PARTICIPATING.equals(status)) {
-            return bungEntity.startDateTime.loe(LocalDateTime.now())
-                .and(bungEntity.endDateTime.gt(LocalDateTime.now()));
-        }
-
-        // 이미 행사가 성공적으로 끝났을 것인
-        return bungEntity.endDateTime.loe(LocalDateTime.now());
+            default -> null;
+        };
     }
 
     private OrderSpecifier<?> withStatusOrdering(BungStatus status) {
