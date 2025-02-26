@@ -161,13 +161,7 @@ public class BungController {
         @RequestBody EditBungDto editBungDto
     ) {
         EditBungResultEnum result = bungService.editBung(userDetails, bungId, editBungDto);
-        if (result != EditBungResultEnum.SUCCESSFULLY_EDITED) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Response.<EditBungResultEnum>builder()
-                    .message(result.toString())
-                    .data(result)
-                    .build());
-        }
+
         return ResponseEntity.ok().body(Response.<EditBungResultEnum>builder()
             .message(result.toString())
             .data(result)
