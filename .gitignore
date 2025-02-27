@@ -38,4 +38,4 @@ out/
 
 ### secret files ###
 src/main/resources/application.yml
-src/main/generated/
+/src/main/generated/io/openur/domain/
