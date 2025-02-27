@@ -75,8 +75,7 @@ public class BungService {
         return new BungInfoDto(bung, dto.getHashtags());
     }
 
-    public BungInfoWithMemberListDto getBungDetail(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        String bungId) {
+    public BungInfoWithMemberListDto getBungDetail(String bungId) {
         return userBungRepository.findBungWithUsersById(bungId);
     }
 
