@@ -98,7 +98,7 @@ public class BungController {
     }
 
     @GetMapping("/{bungId}")
-    @Operation(summary = "벙 정보 상세보기")
+    @Operation(summary = "벙 정보 상세보기 (unauthenticated. 유저 여부와 상관 없이 벙 정보 조회 가능)")
     public ResponseEntity<Response<BungInfoWithMemberListDto>> getBungDetail(
         @PathVariable String bungId
     ) {
