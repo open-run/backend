@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -163,7 +162,6 @@ public class BungController {
         @RequestBody EditBungDto editBungDto
     ) {
         EditBungResultEnum result = bungService.editBung(userDetails, bungId, editBungDto);
-
         return ResponseEntity.ok().body(Response.<EditBungResultEnum>builder()
             .message(result.toString())
             .data(result)
