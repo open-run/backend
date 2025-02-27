@@ -123,6 +123,7 @@ public class BungApiTest extends TestSupport {
             List<BungInfoWithMemberListDto> bungInfoDtoList = response.getData();
             assert bungInfoDtoList.size() == 2;
             BungInfoWithMemberListDto oneBung = bungInfoDtoList.get(0);
+            assert bungInfoDtoList.get(0).getStartDateTime().isBefore(bungInfoDtoList.get(1).getStartDateTime());
             assert !oneBung.getHashtags().isEmpty();
         }
 
@@ -179,7 +180,7 @@ public class BungApiTest extends TestSupport {
                 .map(BungInfoDto::getStartDateTime)
                 .toList();
             List<LocalDateTime> sortedStartDateTimes = new ArrayList<>(startDateTimes);
-            sortedStartDateTimes.sort(Comparator.reverseOrder());
+            sortedStartDateTimes.sort(Comparator.naturalOrder());
             assert startDateTimes.equals(
                 sortedStartDateTimes) : "The list is not in descending order of startDateTime";
         }

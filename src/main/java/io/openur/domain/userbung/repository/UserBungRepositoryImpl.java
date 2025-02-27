@@ -4,7 +4,6 @@ import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.model.BungStatus.ACCOMPLISHED;
-import static io.openur.domain.bung.model.BungStatus.ALL;
 import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
