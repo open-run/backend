@@ -100,10 +100,9 @@ public class BungController {
     @GetMapping("/{bungId}")
     @Operation(summary = "벙 정보 상세보기")
     public ResponseEntity<Response<BungInfoWithMemberListDto>> getBungDetail(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId
     ) {
-        BungInfoWithMemberListDto getBung = bungService.getBungDetail(userDetails, bungId);
+        BungInfoWithMemberListDto getBung = bungService.getBungDetail(bungId);
         return ResponseEntity.ok().body(Response.<BungInfoWithMemberListDto>builder()
             .message("success")
             .data(getBung)
