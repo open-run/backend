@@ -76,14 +76,16 @@ public class BungController {
     @GetMapping("/my-bungs")
     @Operation(summary = """
         내가 소유 및 참가했던 벙 목록.
-         status == PARTICIPATING 이면 시작 시간 오름차순 (가장 임박한 벙 먼저),
-         status == (ACCOMPLISHED or null) 이면 시작 시간 내림차순 (가장 최근에 완료된 or 가장 먼 미래의 벙 먼저)""")
+        status == PARTICIPATING, ONGOING, PENDING 이면 시작 시간 오름차순 (가장 임박한 벙 먼저),
+        status == (ACCOMPLISHED or null) 이면 시작 시간 내림차순 (가장 최근에 완료된 or 가장 먼 미래의 벙 먼저)
+        """
+    )
     public ResponseEntity<PagedResponse<BungInfoWithOwnershipDto>> getMyBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(description = "null : 전부 || true : 소유한 || false : 소유자는 아닌")
         @RequestParam(required = false, defaultValue = "") Boolean isOwned,
         @Parameter(description = "null : 전부 || PARTICIPATING : 아직 시작하지 않은 || ACCOMPLISHED : 완료된")
-        @RequestParam(required = false, defaultValue = "") BungStatus status,
+        @RequestParam(required = false, defaultValue = "ALL") BungStatus status,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
