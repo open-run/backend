@@ -147,7 +147,6 @@ public class BungService {
             throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
         }
 
-        //프론트 요청 사항으로 return으로 result 값 0이 아닌 다른 값으로 보내고 메시지도 달라고 했음.
         int numberOfCurrentMember = userBungRepository.countParticipantsByBungId(bungId);
         if(editBungDto.getMemberNumber() < numberOfCurrentMember) {
             throw new EditBungException(EditBungResultEnum.BUNG_PARTICIPANTS_EXCEEDED.toString());
