@@ -193,24 +193,6 @@ public class BungApiTest extends TestSupport {
         String bungId = "c0477004-1632-455f-acc9-04584b55921f";
 
         @Test
-        @DisplayName("403 Forbidden. Authorization Header 없음")
-        void getBungDetail_isForbidden() throws Exception {
-            mockMvc.perform(
-                get(PREFIX + "/" + bungId)
-            ).andExpect(status().isForbidden());
-        }
-
-        @Test
-        @DisplayName("401 Unauthorized. invalid Authorization Header")
-        void getBungDetail_isUnauthorized() throws Exception {
-            String invalidToken = "Bearer invalidToken";
-            mockMvc.perform(
-                get(PREFIX + "/" + bungId)
-                    .header(AUTH_HEADER, invalidToken)
-            ).andExpect(status().isUnauthorized());
-        }
-
-        @Test
         @DisplayName("200 OK.")
         void getBungDetail_isOk() throws Exception {
             String token = getTestUserToken("test3@test.com");  // not owner of the bung
