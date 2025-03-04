@@ -148,7 +148,7 @@ public class BungService {
         }
 
         int numberOfCurrentMember = userBungRepository.countParticipantsByBungId(bungId);
-        if(editBungDto.getMemberNumber() < numberOfCurrentMember) {
+        if (editBungDto.getMemberNumber() < numberOfCurrentMember) {
             throw new EditBungException(EditBungResultEnum.BUNG_PARTICIPANTS_EXCEEDED);
         }
 

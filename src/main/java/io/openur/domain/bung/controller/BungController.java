@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -157,7 +158,7 @@ public class BungController {
     public ResponseEntity<Response<EditBungResultEnum>> editBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable String bungId,
-        @RequestBody EditBungDto editBungDto
+        @RequestBody @Valid EditBungDto editBungDto
     ) {
         EditBungResultEnum result = bungService.editBung(userDetails, bungId, editBungDto);
         return ResponseEntity.ok().body(Response.<EditBungResultEnum>builder()

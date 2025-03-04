@@ -25,7 +25,6 @@ import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.dto.ExceptionDto;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -376,8 +375,27 @@ public class BungApiTest extends TestSupport {
     @Nested
     @DisplayName("벙 수정하기")
     class editBungTest {
+
+        HashMap<Object, Object> getEditBungData() {
+            var editBungData = new HashMap<>();
+            editBungData.put("name", "새로운 이름");
+            editBungData.put("description", "새로운 설명");
+            editBungData.put("memberNumber", 5);
+            editBungData.put("hasAfterRun", true);
+            editBungData.put("afterRunDescription", "단백질 보충 가시죠! 고기고기");
+            editBungData.put("hashtags", getHashtags());
+            editBungData.put("mainImage", "image2.jpg");
+            return editBungData;
+        }
+
+        List<String> getHashtags() {
+            return Arrays.asList("LSD", "음악있음", "고수만");
+
+        }
+
+
         @Test
-        @DisplayName("200 Ok. No elements.")
+        @DisplayName("400 Bad Request. No elements.")
         void editBung_isOk_noElements() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String ownerToken = getTestUserToken("test1@test.com");
@@ -386,7 +404,7 @@ public class BungApiTest extends TestSupport {
                     .header(AUTH_HEADER, ownerToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(jsonify(new HashMap<>()))
-            ).andExpect(status().isOk());
+            ).andExpect(status().isBadRequest());
         }
 
         @Test
@@ -398,7 +416,7 @@ public class BungApiTest extends TestSupport {
                 patch(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, notOwnerToken)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(jsonify(new HashMap<>()))
+                    .content(jsonify(getEditBungData()))
             ).andExpect(status().isForbidden());
         }
 
@@ -412,7 +430,7 @@ public class BungApiTest extends TestSupport {
                 patch(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, ownerToken)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(jsonify(new HashMap<>()))
+                    .content(jsonify(getEditBungData()))
             ).andExpect(status().isForbidden()).andReturn();
 
             ExceptionDto response = parseResponse(
@@ -433,15 +451,8 @@ public class BungApiTest extends TestSupport {
                     .map(Hashtag::getHashtagStr)
                     .toList();
 
-            var editBungData = new HashMap<>();
-            editBungData.put("name", "새로운 이름");
-            editBungData.put("description", "새로운 설명");
-            editBungData.put("memberNumber", 5);
-            editBungData.put("hasAfterRun", true);
-            editBungData.put("afterRunDescription", "단백질 보충 가시죠! 고기고기");
-            List<String> hashtags = Arrays.asList("LSD", "음악있음", "고수만");
-            editBungData.put("hashtags", hashtags);
-            editBungData.put("mainImage", "image2.jpg");
+            HashMap<Object, Object> editBungData = getEditBungData();
+            List<String> hashtags = getHashtags();
 
             mockMvc.perform(
                     patch(PREFIX + "/" + bungId)
