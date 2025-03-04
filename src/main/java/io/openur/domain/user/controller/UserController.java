@@ -167,7 +167,7 @@ public class UserController {
     })
     public ResponseEntity<Response<List<String>>> increaseFeedback(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestBody GetFeedbackDto feedbackRequestDto) {
+        @RequestBody @Valid GetFeedbackDto feedbackRequestDto) {
         List<String> notFoundUserIds = userService.increaseFeedback(userDetails,
             feedbackRequestDto.getBungId(),
             feedbackRequestDto.getTargetUserIds());
