@@ -113,7 +113,7 @@ public class BungService {
     @Transactional
     public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId) throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
-            throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
+            throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED);
         }
 
         BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
@@ -121,11 +121,11 @@ public class BungService {
         if (bungWithMembers.getMemberList().stream().anyMatch(
                 user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
-            throw new JoinBungException(JoinBungResultEnum.USER_HAS_ALREADY_JOINED.toString());
+            throw new JoinBungException(JoinBungResultEnum.USER_HAS_ALREADY_JOINED);
         }
 
         if (bungWithMembers.getMemberList().size() == bungWithMembers.getMemberNumber()) {
-            throw new JoinBungException(JoinBungResultEnum.BUNG_IS_FULL.toString());
+            throw new JoinBungException(JoinBungResultEnum.BUNG_IS_FULL);
         }
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
@@ -138,16 +138,16 @@ public class BungService {
         Bung bung = bungRepository.findBungById(bungId);
 
         if (bung.isCompleted()) {
-            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED);
         }
 
         if (bung.getStartDateTime().isBefore(LocalDateTime.now())) {
-            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED.toString());
+            throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED);
         }
 
         int numberOfCurrentMember = userBungRepository.countParticipantsByBungId(bungId);
         if(editBungDto.getMemberNumber() < numberOfCurrentMember) {
-            throw new EditBungException(EditBungResultEnum.BUNG_PARTICIPANTS_EXCEEDED.toString());
+            throw new EditBungException(EditBungResultEnum.BUNG_PARTICIPANTS_EXCEEDED);
         }
 
         bung.update(editBungDto);
@@ -164,11 +164,11 @@ public class BungService {
     ) throws CompleteBungException {
         Bung bung = bungRepository.findBungById(bungId);
         if (bung.isCompleted()) {
-            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED.toString());
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED);
         }
 
         if (bung.getStartDateTime().isAfter(LocalDateTime.now())) {
-            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED.toString());
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED);
         }
 
         //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
