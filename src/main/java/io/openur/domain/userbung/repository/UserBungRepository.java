@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserBungRepository {
 
-    Integer countParticipantsByBungId(String bungId);
+    int countParticipantsByBungId(String bungId);
 
     BungInfoWithMemberListDto findBungWithUsersById(String bungId);
 
