@@ -1,4 +1,4 @@
-name: openur-backend
+name: CI/CD
 
 on:
   push:
@@ -9,7 +9,12 @@ permissions:
     contents: read
 
 env:
-    DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/openur
+  LOCATION: asia-northeast3
+  ZONE: asia-northeast3-a
+  DOCKER_CONTAINER_PATH: asia-northeast3-docker.pkg.dev/openrun-452712
+  DOCKER_REPOSITORY_NAME: openrun-server
+  DOCKER_IMAGE_NAME: openrun
+  INSTANCE_NAME: openrun-instance
 
 jobs:
   build:
@@ -28,7 +33,7 @@ jobs:
       run: |
         cd ./src/main/resources
         touch ./application.yml
-        echo -e "${{ secrets.APPLICATION }}" > ./application.yml
+        echo ${{ secrets.APPLICATION_YML }} | base64 -d > ./application.yml
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
@@ -38,28 +43,68 @@ jobs:
       run: ./gradlew clean build
       shell: bash
 
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${{ env.DOCKER_IMAGE_NAME }}:latest
-
-    - name: Login to Docker Hub using Access Token
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-
-    - name: Push the Docker image
-      run: docker push ${{ env.DOCKER_IMAGE_NAME }}:latest
-
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@master
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-          host: ${{ secrets.HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-              sudo docker pull ${{ env.DOCKER_IMAGE_NAME }}
-              CONTAINER_ID=$(sudo docker ps -q --filter "publish=8080-8080")
+        credentials_json: "${{ secrets.GCP_DEPLOYMENT_SA_KEY }}"
 
-              if [ ! -z "$CONTAINER_ID" ]; then
-                sudo docker stop $CONTAINER_ID
-                sudo docker rm $CONTAINER_ID
-              fi
-              sudo docker run -d -p 8080:8080 ${{ env.DOCKER_IMAGE_NAME }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: "${{ secrets.GCP_PROJECT_ID }}"
+
+    - name: Configure Docker to use gcloud as a credential helper
+      run: gcloud auth configure-docker ${{ env.LOCATION }}-docker.pkg.dev
+
+    - name: Create Artifact Registry Repository if it doesn't exist
+      run: |
+        if ! gcloud artifacts repositories describe ${{ env.DOCKER_REPOSITORY_NAME }} --location=${{ env.LOCATION }}; then
+          gcloud artifacts repositories create ${{ env.DOCKER_REPOSITORY_NAME }} --repository-format=docker --location=${{ env.LOCATION }} --description="Docker repository for openrun"
+        fi
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+
+    - name: Push the Docker image to Google Artifact Registry
+      run: docker push ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo ${{ secrets.GCE_SSH_PRIVATE_KEY }} | base64 -d > ~/.ssh/google_compute_engine
+        chmod 600 ~/.ssh/google_compute_engine
+        ssh-keygen -y -f ~/.ssh/google_compute_engine > ~/.ssh/google_compute_engine.pub
+
+    - name: Configure GCE instance
+      run: |
+        MACHINE_TYPE=f1-micro
+
+        # Check if the instance exists 
+        if gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}; then
+          # Stop and remove any existing containers if it exists
+          CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q" | tr -d '\n')
+          if [ -n "$CONTAINER_ID" ]; then
+            gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker stop $CONTAINER_ID && docker rm $CONTAINER_ID"
+          fi
+        
+        # Create a new instance if it doesn't exist
+        else
+          gcloud compute instances create-with-container ${{ env.INSTANCE_NAME }} \
+            --container-image=${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest \
+            --zone=${{ env.ZONE }} \
+            --machine-type=$MACHINE_TYPE \
+            --service-account=${{ secrets.GCP_DEPLOYMENT_SA_PRINCIPAL }} \
+            --scopes=https://www.googleapis.com/auth/cloud-platform
+          sleep 5  # Give the instance time to get configured and started.
+        fi
+
+    - name: Get the external IP of the GCE and add it to the known_hosts file
+      run: |
+        EXTERNAL_IP=$(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+        ssh-keyscan -H $EXTERNAL_IP >> ~/.ssh/known_hosts
+
+    - name: Pull the latest docker image in GCE and run it
+      run: |
+        gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="echo ${{ secrets.GCP_DEPLOYMENT_SA_KEY }} | docker login -u _json_key_base64 --password-stdin https://asia-northeast3-docker.pkg.dev"
+        gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker pull ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
+        gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d -p 8080:8080 ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
