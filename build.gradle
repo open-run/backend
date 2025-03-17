@@ -22,6 +22,7 @@ ext {
 
 dependencies {
     implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.3.0' //version up 필요
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
