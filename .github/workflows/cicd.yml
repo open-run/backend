@@ -77,24 +77,19 @@ jobs:
 
     - name: Configure GCE instance
       run: |
-        MACHINE_TYPE=f1-micro
+        MACHINE_TYPE=e2-small
 
-        # Check if the instance exists 
         if gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}; then
-          # Stop and remove any existing containers if it exists
-          CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q" | tr -d '\n')
-          if [ -n "$CONTAINER_ID" ]; then
-            gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker stop $CONTAINER_ID && docker rm $CONTAINER_ID"
-          fi
-        
-        # Create a new instance if it doesn't exist
+          echo "Instance already exists, skipping creation."
         else
+          echo "Instance does not exist, creating a new one..."
           gcloud compute instances create-with-container ${{ env.INSTANCE_NAME }} \
             --container-image=${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest \
             --zone=${{ env.ZONE }} \
             --machine-type=$MACHINE_TYPE \
             --service-account=${{ secrets.GCP_DEPLOYMENT_SA_PRINCIPAL }} \
-            --scopes=https://www.googleapis.com/auth/cloud-platform
+            --scopes=https://www.googleapis.com/auth/cloud-platform \
+            --tags=mysql-access
           sleep 5  # Give the instance time to get configured and started.
         fi
 
@@ -103,8 +98,62 @@ jobs:
         EXTERNAL_IP=$(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
         ssh-keyscan -H $EXTERNAL_IP >> ~/.ssh/known_hosts
 
+    - name: Run a MySQL container in the GCE
+      run: | 
+        NETWORK_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker network ls -q -f name=openur-network" | tr -d '\n')
+        if [ -z "$NETWORK_ID" ]; then
+          echo "Docker network does not exist, creating a new one..."
+          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker network create openur-network"
+        fi
+
+        # Check if MySQL container exists
+        MYSQL_CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q -f name=mysql" | tr -d '\n')
+        if [ -z "$MYSQL_CONTAINER_ID" ]; then
+          echo "MySQL container does not exist, running a new one..."
+          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
+            --name mysql \
+            --network openur-network \
+            -p 3306:3306 \
+            -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            -e MYSQL_DATABASE=openur \
+            -e MYSQL_USER=openur \
+            -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+            -v mysql-data:/var/lib/mysql \
+            mysql:8.0"
+        else
+          echo "MySQL container already exists, restarting it..."
+          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker restart mysql"
+        fi
+
+    - name: Create firewall rule for MySQL access
+      run: |
+        if ! gcloud compute firewall-rules describe allow-mysql --format='get(name)'; then
+          gcloud compute firewall-rules create allow-mysql \
+            --allow tcp:3306 \
+            --source-ranges 0.0.0.0/0 \
+            --target-tags mysql-access \
+            --description "Allow external MySQL access on port 3306"
+        else
+          echo "Firewall rule already exists, skipping creation."
+        fi
+    
     - name: Pull the latest docker image in GCE and run it
       run: |
+        # Authenticate to Google Artifact Registry
         gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="echo ${{ secrets.GCP_DEPLOYMENT_SA_KEY }} | docker login -u _json_key_base64 --password-stdin https://asia-northeast3-docker.pkg.dev"
+        
+        # Pull the latest docker image
         gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker pull ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
-        gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d -p 8080:8080 ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
+
+        CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q -f name=openrun" | tr -d '\n')
+        if [ -n "$CONTAINER_ID" ]; then
+          echo "Openrun container already exists, stopping and removing it..."
+          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker stop $CONTAINER_ID && docker rm $CONTAINER_ID"
+        fi
+        
+        # Run the application container on the same Docker network as MySQL
+        gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
+          --name openrun \
+          --network openur-network \
+          -p 80:8080 \
+          ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
