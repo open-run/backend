@@ -1,0 +1,57 @@
+{
+    "eventTriggers": {
+        "BUNG_COMPLETE": {
+            "description": "Triggered when a bung is completed",
+            "challengeIds": [1, 1001]
+        },
+        "USER_LOGIN": {
+            "description": "Triggered when user logs in",
+            "challengeIds": []
+        },
+        "AVATAR_CHANGE": {
+            "description": "Triggered when user changes avatar items",
+            "challengeIds": []
+        }
+    },
+    "challenges": [
+        {
+            "challengeId": 1,
+            "challengeName": "Complete bung 1 time",
+            "challengeType": "tuto",
+            "description": "성공적으로 벙을 1회 완료한다.",
+            "rewardType": "face",
+            "rewardPercentage": 0.25,
+            "completedType": "count",
+            "completedConditionCount": 1,
+            "completedConditionDate": null,
+            "completedConditionPlace": null,
+            "completedConditionWearing": null
+        },
+        {
+            "challengeId": 1001,
+            "challengeName": "Complete bung 5 times",
+            "challengeType": "normal",
+            "description": "성공적으로 벙을 5회 완료한다.",
+            "rewardType": "top_and_bottom",
+            "rewardPercentage": 0.5,
+            "completedType": "count",
+            "completedConditionCount": 5,
+            "completedConditionDate": null,
+            "completedConditionPlace": null,
+            "completedConditionWearing": null
+        },
+        {
+            "challengeId": 2001,
+            "challengeName": "Secret Achievement",
+            "challengeType": "hidden",
+            "description": "??????????",
+            "rewardType": "shoes",
+            "rewardPercentage": 1.0,
+            "completedType": "count",
+            "completedConditionCount": 1,
+            "completedConditionDate": null,
+            "completedConditionPlace": null,
+            "completedConditionWearing": null
+        }
+    ]
+}
