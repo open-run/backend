@@ -2,6 +2,7 @@ package io.openur.global.redis;
 
 import static io.openur.global.redis.RedisKeyProperties.CHALLENGE_ID;
 import static io.openur.global.redis.RedisKeyProperties.CHALLENGE_KEY;
+import static io.openur.global.redis.RedisKeyProperties.CHALLENGE_KEY_PATTERN;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +20,10 @@ public class RedisService extends RedisUtils {
     public RedisService(RedisTemplate<String, Object> redisTemplate) {
         super(redisTemplate);
         
+        // 새로 Application 을 키는 경우 이전 키를 한번 WIPE
+        deleteByPattern(CHALLENGE_KEY_PATTERN);
+        
+        // File Storage 로 부터 Mount
         Resource challengeJson = new ClassPathResource("challenge.json");
         JsonNode challengeNode;
         
@@ -28,6 +33,7 @@ public class RedisService extends RedisUtils {
             throw new RuntimeException(e.getMessage());
         }
         
+        // Redis 에 Json 내에 존재하는 Entity 를 모두 저장
         challengeNode.forEach(node -> {
             String challengeId = node.get(CHALLENGE_ID).asText();
             
