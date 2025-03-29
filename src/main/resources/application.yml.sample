@@ -4,6 +4,10 @@ spring:
     username: ${{ DATASOURCE_USERNAME }}
     password: ${{ DATASOURCE_PASSWORD }}
 
+  data:
+    redis:
+      password: ${{ REDIS_PASSWORD }}
+
   security:
     oauth2:
       client:

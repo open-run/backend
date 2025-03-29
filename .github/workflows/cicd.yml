@@ -121,8 +121,24 @@ jobs:
             -v mysql-data:/var/lib/mysql \
             mysql:8.0"
         else
-          echo "MySQL container already exists, restarting it..."
-          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker restart mysql"
+          echo "MySQL container already exists, skipping creation."
+        fi
+
+    - name: Run a Redis container in the GCE
+      run: |
+        # Check if Redis container exists
+        REDIS_CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q -f name=redis" | tr -d '\n')
+        if [ -z "$REDIS_CONTAINER_ID" ]; then
+          echo "Redis container does not exist, running a new one..."
+          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
+            --name redis \
+            --network openur-network \
+            -p 6379:6379 \
+            -v redis-data:/data \
+            -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+            redis:7.2 redis-server --requirepass ${{ secrets.REDIS_PASSWORD }}"
+        else
+          echo "Redis container already exists, skipping creation."
         fi
 
     - name: Create firewall rule for MySQL access
@@ -133,6 +149,18 @@ jobs:
             --source-ranges 0.0.0.0/0 \
             --target-tags mysql-access \
             --description "Allow external MySQL access on port 3306"
+        else
+          echo "Firewall rule already exists, skipping creation."
+        fi
+
+    - name: Create firewall rule for Redis access
+      run: |
+        if ! gcloud compute firewall-rules describe allow-redis --format='get(name)'; then
+          gcloud compute firewall-rules create allow-redis \
+            --allow tcp:6379 \
+            --source-ranges 0.0.0.0/0 \
+            --target-tags mysql-access \
+            --description "Allow external Redis access on port 6379"
         else
           echo "Firewall rule already exists, skipping creation."
         fi
