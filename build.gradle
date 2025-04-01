@@ -49,6 +49,12 @@ dependencies {
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
+    implementation 'org.xrpl:xrpl4j-bom:4.0.5'
+    implementation 'org.xrpl:xrpl4j-core:4.0.5'
+    implementation 'org.xrpl:xrpl4j-client:4.0.5'
+    //implementation 'org.xrpl:xrpl4j-wallet'
+    implementation 'org.xrpl:xrpl4j-crypto-bouncycastle:3.0.0-rc2'
+
     testRuntimeOnly 'com.h2database:h2:2.2.224'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
