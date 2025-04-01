@@ -49,6 +49,9 @@ dependencies {
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
+    implementation 'commons-codec:commons-codec:1.15'
+
+
     implementation 'org.xrpl:xrpl4j-bom:4.0.5'
     implementation 'org.xrpl:xrpl4j-core:4.0.5'
     implementation 'org.xrpl:xrpl4j-client:4.0.5'
