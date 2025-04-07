@@ -1,7 +1,7 @@
 package io.openur.domain.challenge.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import io.openur.domain.challenge.entity.ChallengeEntity;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,13 +11,42 @@ public class Challenge {
 
     private Long challengeId;
     private String challengeName;
+    private String challengeDescription;
     private ChallengeType challengeType;
-    private String description;
     private RewardType rewardType;
-    private BigDecimal rewardPercentage;
+    private Float rewardPercentage;
     private CompletedType completedType;
-    private Long completedConditionCount;
-    private LocalDateTime completedConditionDate;
-    private String completedConditionPlace;
-    private Boolean completedConditionWearing;
+    private Integer completedConditionCount;
+    private LocalDate completedConditionDate;
+    private String completedConditionText;
+    
+    public ChallengeEntity toEntity() {
+        return new ChallengeEntity(
+            this.challengeId,
+            this.challengeName,
+            this.challengeDescription,
+            this.challengeType,
+            this.rewardType,
+            this.rewardPercentage,
+            this.completedType,
+            this.completedConditionCount,
+            this.completedConditionDate,
+            this.completedConditionText
+        );
+    }
+    
+    public static Challenge from(final ChallengeEntity challengeEntity) {
+        return new Challenge(
+            challengeEntity.getChallengeId(),
+            challengeEntity.getName(),
+            challengeEntity.getDescription(),
+            challengeEntity.getChallengeType(),
+            challengeEntity.getRewardType(),
+            challengeEntity.getRewardPercentage(),
+            challengeEntity.getCompletedType(),
+            challengeEntity.getConditionAsCount(),
+            challengeEntity.getConditionAsDate(),
+            challengeEntity.getConditionAsText()
+        );
+    }
 }

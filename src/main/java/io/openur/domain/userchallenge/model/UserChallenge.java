@@ -1,5 +1,6 @@
 package io.openur.domain.userchallenge.model;
 
+import io.openur.domain.challenge.model.Challenge;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ public class UserChallenge {
 
     private Long userChallengeId;
     private User user;
-    private Long challengeId;
+    private Challenge challenge;
     @Setter
     private LocalDateTime completedDate;
     @Setter
@@ -25,7 +26,7 @@ public class UserChallenge {
         return new UserChallenge(
             userChallengeEntity.getUserChallengeId(),
             User.from(userChallengeEntity.getUserEntity()),
-            userChallengeEntity.getChallengeId(),
+            Challenge.from(userChallengeEntity.getChallengeEntity()),
             userChallengeEntity.getCompletedDate(),
             userChallengeEntity.getNftCompleted(),
             userChallengeEntity.getCurrentCount()
@@ -36,7 +37,7 @@ public class UserChallenge {
         return new UserChallengeEntity(
             this.userChallengeId,
             this.user.toEntity(),
-            this.challengeId,
+            this.challenge.toEntity(),
             this.completedDate,
             this.nftCompleted,
             this.currentCount

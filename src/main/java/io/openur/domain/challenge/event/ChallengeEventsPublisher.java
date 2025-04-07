@@ -50,7 +50,9 @@ public class ChallengeEventsPublisher {
         // Filter out completed challenges and group by completion type
         Map<CompletedType, List<UserChallenge>> challengesByType = userChallenges.stream()
             .filter(uc -> !uc.getNftCompleted())
-            .collect(Collectors.groupingBy(uc -> challengeRepository.findById(uc.getChallengeId()).getCompletedType()));
+            .collect(Collectors.groupingBy(uc ->
+                challengeRepository.findById(uc.getChallenge().getChallengeId()).getCompletedType())
+            );
 
         // Publish events for each group
         if (challengesByType.containsKey(CompletedType.date)) {
