@@ -46,21 +46,18 @@ CREATE TABLE IF NOT EXISTS tb_users_bungs
     is_owner             BOOLEAN     DEFAULT FALSE             NOT NULL
 );
 
--- tb_hashtags 테이블 생성 (존재하지 않을 경우에만)
-CREATE TABLE IF NOT EXISTS tb_hashtags
+-- tb_challenges 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_challenges
 (
-    hashtag_id  BIGINT(36) AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    hashtag_str VARCHAR(36) UNIQUE                    NOT NULL
-);
-
--- tb_hashtags 테이블 생성 (존재하지 않을 경우에만)
-CREATE TABLE IF NOT EXISTS tb_bungs_hashtags
-(
-    bung_hashtag_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    bung_id         VARCHAR(36) DEFAULT (UUID())          NOT NULL,
-    hashtag_id      BIGINT(36)                            NOT NULL,
-    FOREIGN KEY (bung_id) REFERENCES tb_bungs (bung_id),
-    FOREIGN KEY (hashtag_id) REFERENCES tb_hashtags (hashtag_id)
+    challenge_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    name         VARCHAR(255)                          NOT NULL,
+    description  VARCHAR(255)                          NOT NULL,
+    reward_type VARCHAR(30)                            NOT NULL,
+    reward_percentage FLOAT4                           NOT NULL,
+    completed_type VARCHAR(30)                         NOT NULL,
+    completed_count BIGINT(20)                         NOT NULL,
+    condition_date BIGINT                              NOT NULL,
+    condition_text BIGINT                              NOT NULL
 );
 
 -- tb_users_challenges 테이블 생성 (존재하지 않을 경우에만)
@@ -74,5 +71,22 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
     nft_completed     BOOLEAN     DEFAULT FALSE             NOT NULL,
 -- TODO: 유저가 받은 nft 정보 추가
     current_count     BIGINT(20)                            NULL
+);
+
+-- tb_hashtags 테이블 생성 (존재하지 않을 경우에만)
+CREATE TABLE IF NOT EXISTS tb_hashtags
+(
+    hashtag_id  BIGINT(36) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    hashtag_str VARCHAR(36) UNIQUE                    NOT NULL
+);
+
+-- tb_bung_hashtags 테이블 생성 (존재하지 않을 경우에만)
+CREATE TABLE IF NOT EXISTS tb_bungs_hashtags
+(
+    bung_hashtag_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    bung_id         VARCHAR(36) DEFAULT (UUID())          NOT NULL,
+    hashtag_id      BIGINT(36)                            NOT NULL,
+    FOREIGN KEY (bung_id) REFERENCES tb_bungs (bung_id),
+    FOREIGN KEY (hashtag_id) REFERENCES tb_hashtags (hashtag_id)
 );
 
