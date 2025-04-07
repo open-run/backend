@@ -3,6 +3,7 @@ package io.openur.domain.userchallenge.repository;
 import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -10,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,16 +71,24 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     public List<UserChallenge> findByUserId(String userId) {
-        return userChallengeJpaRepository.findByUserEntity_UserId(userId)
+        return userChallengeJpaRepository.findAllByUserEntity_UserId(userId)
             .stream()
             .map(UserChallenge::from)
             .toList();
     }
+    
+    @Override
+    public Page<UserChallenge> findAllByUserEntity(UserEntity userEntity,
+        Pageable pageable) {
+        return userChallengeJpaRepository
+            .findAllByUserEntity(userEntity, pageable)
+            .map(UserChallenge::from);
+    }
 
     @Override
     public List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds) {
-        return userChallengeJpaRepository.findByUserEntity_UserIdInAndChallengeIdIn(userIds,
-                challengeIds)
+        return userChallengeJpaRepository
+            .findAllByUserEntity_UserIdInAndChallengeIdIn(userIds, challengeIds)
             .stream()
             .map(UserChallenge::from)
             .toList();

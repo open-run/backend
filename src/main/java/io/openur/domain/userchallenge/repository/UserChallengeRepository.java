@@ -1,8 +1,11 @@
 package io.openur.domain.userchallenge.repository;
 
+import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserChallengeRepository {
 
@@ -21,7 +24,10 @@ public interface UserChallengeRepository {
     void bulkUpdateCompletedChallenges(List<Long> completedUserChallengeIds);
 
     List<UserChallenge> findByUserId(String userId);
-
+    
+    Page<UserChallenge> findAllByUserEntity(UserEntity userEntity,
+        Pageable pageable);
+    
     List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds);
 
     Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId);

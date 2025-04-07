@@ -1,6 +1,7 @@
 package io.openur.domain.challenge.repository;
 
 import io.openur.domain.challenge.model.Challenge;
+import io.openur.domain.userchallenge.repository.ChallengeJpaRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class ChallengeRepositoryImpl implements ChallengeRepository {
+    
+    private final ChallengeJpaRepository challengeJpaRepository;
 
     @Override
     public Challenge findById(Long challengeId) {
@@ -23,4 +26,4 @@ public class ChallengeRepositoryImpl implements ChallengeRepository {
     public void delete(Challenge challenge) {
         return;
     }
-} 
+}

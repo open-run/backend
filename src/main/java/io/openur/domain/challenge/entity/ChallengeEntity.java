@@ -1,5 +1,6 @@
 package io.openur.domain.challenge.entity;
 
+import io.openur.domain.challenge.model.ChallengeType;
 import io.openur.domain.challenge.model.CompletedType;
 import io.openur.domain.challenge.model.RewardType;
 import jakarta.persistence.Column;
@@ -24,7 +25,7 @@ public class ChallengeEntity {
     
     private String name;
     private String description;
-    
+    private ChallengeType challengeType;
     private RewardType rewardType;
     private Float rewardPercentage;
     
@@ -39,7 +40,7 @@ public class ChallengeEntity {
     @Column(name = "condition_date")
     private LocalDate conditionAsDate;
     
-    // 페이스, 장소 등
     @Column(name = "condition_text")
     private String conditionAsText;
+    // 페이스, 장소 등
 }
