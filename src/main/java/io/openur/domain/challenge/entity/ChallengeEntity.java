@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,7 @@ public class ChallengeEntity {
     
     // 날짜 조건
     @Column(name = "condition_date")
-    private LocalDate conditionAsDate;
+    private LocalDateTime conditionAsDate;
     
     @Column(name = "condition_text")
     private String conditionAsText;

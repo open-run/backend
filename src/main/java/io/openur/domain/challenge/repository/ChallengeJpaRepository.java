@@ -1,4 +1,4 @@
-package io.openur.domain.userchallenge.repository;
+package io.openur.domain.challenge.repository;
 
 import io.openur.domain.challenge.entity.ChallengeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
