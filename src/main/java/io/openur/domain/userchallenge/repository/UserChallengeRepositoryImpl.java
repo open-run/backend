@@ -4,6 +4,7 @@ import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userCha
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -78,11 +79,12 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
     
     @Override
-    public Page<UserChallenge> findAllByUserEntity(UserEntity userEntity,
+    public Page<UserChallengeInfoDto> findAllByUserEntity(UserEntity userEntity,
         Pageable pageable) {
         return userChallengeJpaRepository
             .findAllByUserEntity(userEntity, pageable)
-            .map(UserChallenge::from);
+            .map(UserChallenge::from)
+            .map(UserChallengeInfoDto::new);
     }
 
     @Override

@@ -2,6 +2,7 @@ package io.openur.domain.challenge.model;
 
 import io.openur.domain.challenge.entity.ChallengeEntity;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -17,7 +18,7 @@ public class Challenge {
     private Float rewardPercentage;
     private CompletedType completedType;
     private Integer completedConditionCount;
-    private LocalDate completedConditionDate;
+    private LocalDateTime completedConditionDate;
     private String completedConditionText;
     
     public ChallengeEntity toEntity() {

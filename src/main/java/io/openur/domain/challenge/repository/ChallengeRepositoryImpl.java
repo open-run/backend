@@ -1,7 +1,6 @@
 package io.openur.domain.challenge.repository;
 
 import io.openur.domain.challenge.model.Challenge;
-import io.openur.domain.userchallenge.repository.ChallengeJpaRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

@@ -20,7 +20,7 @@ public class UserChallenge {
     @Setter
     private Boolean nftCompleted;  // TODO: 단순 boolean 말고 NFT index 정보를 갖게 하는것도?
     @Setter
-    private Long currentCount;
+    private Integer currentCount;
 
     public static UserChallenge from(final UserChallengeEntity userChallengeEntity) {
         return new UserChallenge(

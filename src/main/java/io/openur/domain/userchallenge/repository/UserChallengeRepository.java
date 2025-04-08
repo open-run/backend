@@ -1,6 +1,7 @@
 package io.openur.domain.userchallenge.repository;
 
 import io.openur.domain.user.entity.UserEntity;
+import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public interface UserChallengeRepository {
 
     List<UserChallenge> findByUserId(String userId);
     
-    Page<UserChallenge> findAllByUserEntity(UserEntity userEntity,
+    Page<UserChallengeInfoDto> findAllByUserEntity(UserEntity userEntity,
         Pageable pageable);
     
     List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds);

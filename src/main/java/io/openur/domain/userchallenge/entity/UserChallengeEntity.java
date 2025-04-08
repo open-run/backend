@@ -40,5 +40,5 @@ public class UserChallengeEntity {
     @Column(nullable = false)
     private Boolean nftCompleted;
 
-    private Long currentCount;
+    private Integer currentCount;
 }
