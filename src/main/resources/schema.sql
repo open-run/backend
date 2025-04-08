@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS tb_challenges
     challenge_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
     name         VARCHAR(255)                          NOT NULL,
     description  VARCHAR(255)                          NOT NULL,
+    challenge_type VARCHAR(30)                         NOT NULL,
     reward_type VARCHAR(30)                            NOT NULL,
     reward_percentage FLOAT4                           NOT NULL,
     completed_type VARCHAR(30)                         NOT NULL,
@@ -65,8 +66,9 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
 (
     user_challenge_id BIGINT(20) AUTO_INCREMENT PRIMARY KEY NOT NULL,
     user_id           VARCHAR(36) DEFAULT (UUID())          NOT NULL,
-    challenge_id      BIGINT(20)                            NOT NULL,
     FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
+    challenge_id      BIGINT(20)                            NOT NULL,
+    FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id),
     completed_date    TIMESTAMP   DEFAULT NULL,
     nft_completed     BOOLEAN     DEFAULT FALSE             NOT NULL,
 -- TODO: 유저가 받은 nft 정보 추가

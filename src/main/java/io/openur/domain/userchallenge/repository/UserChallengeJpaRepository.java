@@ -1,6 +1,5 @@
 package io.openur.domain.userchallenge.repository;
 
-import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import java.util.List;
 import java.util.Optional;
@@ -14,13 +13,13 @@ public interface UserChallengeJpaRepository extends JpaRepository<UserChallengeE
     List<UserChallengeEntity> findAllByUserEntity_UserId(String userId);
     
     @EntityGraph(attributePaths = {"challengeEntity"})
-    Page<UserChallengeEntity> findAllByUserEntity(UserEntity userEntity, Pageable pageable);
+    Page<UserChallengeEntity> findAllByUserEntity_UserId(String userId, Pageable pageable);
 
-    List<UserChallengeEntity> findAllByUserEntity_UserIdInAndChallengeIdIn(List<String> userIds,
+    List<UserChallengeEntity> findAllByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(List<String> userIds,
         List<Long> challengeIds);
 
-    Optional<UserChallengeEntity> findByUserEntity_UserIdAndChallengeId(String userId,
+    Optional<UserChallengeEntity> findByUserEntity_UserIdAndChallengeEntity_ChallengeId(String userId,
         Long challengeId);
 
-    boolean existsByUserEntity_UserIdAndChallengeId(String userId, Long challengeId);
+    boolean existsByUserEntity_UserIdAndChallengeEntity_ChallengeId(String userId, Long challengeId);
 } 
