@@ -38,6 +38,9 @@ public class ChallengeEventsPublisher {
      * - Implement filtering of challenge IDs that must be triggered when bung is complete
      * - Add initial UserChallenge data creation process
      * - Implement user NFT ownership indexing and current wearing data handling
+     * 메소드 분리
+     *                groupingBy -> groupBy Query 로 통합
+     *                queryDsl 의 경우 id 로 검색하는
      */
     public void bungIsComplete(Bung bung, List<String> userIds) {
         // TODO: 벙이 완료됐을 떄 트리거 되어야 하는 challengeID 만 필터링 필요. 
