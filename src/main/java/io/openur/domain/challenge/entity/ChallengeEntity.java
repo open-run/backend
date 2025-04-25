@@ -9,14 +9,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity @Getter
-@Table(name = "tb_challenge")
+@Table(name = "tb_challenges")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChallengeEntity {
@@ -26,8 +25,14 @@ public class ChallengeEntity {
     
     private String name;
     private String description;
+    
+    @Column(name = "challenge_type")
     private ChallengeType challengeType;
+    
+    @Column(name = "reward_type")
     private RewardType rewardType;
+    
+    @Column(name = "reward_percentage")
     private Float rewardPercentage;
     
     @Column(name = "completed_type")
@@ -41,7 +46,8 @@ public class ChallengeEntity {
     @Column(name = "condition_date")
     private LocalDateTime conditionAsDate;
     
+    // 페이스, 장소 등
     @Column(name = "condition_text")
     private String conditionAsText;
-    // 페이스, 장소 등
+    
 }
