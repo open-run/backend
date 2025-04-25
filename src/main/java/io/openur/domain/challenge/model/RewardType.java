@@ -1,5 +1,12 @@
 package io.openur.domain.challenge.model;
 
 public enum RewardType {
-    head, accessory, face, shoes, top_and_bottom
+    face, // 너으 "눈, 코, 입"
+    hair,
+    accessory,
+    top,
+    bottom,
+    footwear,
+    pairs,
+    skin
 }

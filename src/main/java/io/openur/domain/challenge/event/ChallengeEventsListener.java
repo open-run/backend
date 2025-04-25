@@ -100,7 +100,7 @@ public class ChallengeEventsListener {
         for (var userChallenge : event.getUserChallenges()) {
             Challenge challenge = challengeRepository.findById(userChallenge.getChallenge().getChallengeId());
 //            Boolean wearingCondition = challenge.getCompletedConditionText();
-//            // TODO: Implement 요구사항에 일치하는 옷인지를 검사하는게 맞을거 같은데 옷 정보가 어떻게 되더라.
+//            // TODO: 옷 정보 불/합치 정보는 NFT 완성 이후 논의 필요
 //            if (wearingCondition != null && wearingCondition) {
 //                airdropNFT(userChallenge);
 //                completedUserChallengeIds.add(userChallenge.getUserChallengeId());

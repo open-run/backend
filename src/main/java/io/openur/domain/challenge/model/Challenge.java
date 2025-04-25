@@ -1,7 +1,6 @@
 package io.openur.domain.challenge.model;
 
 import io.openur.domain.challenge.entity.ChallengeEntity;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
