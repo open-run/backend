@@ -85,7 +85,7 @@ public class BungService {
         userBungRepository.deleteByBungId(bungId);
         bungRepository.deleteByBungId(bungId);
     }
-
+    
     public Page<BungInfoWithMemberListDto> getBungLists(
         UserDetailsImpl userDetails,
         boolean isAvailableOnly,
@@ -96,7 +96,12 @@ public class BungService {
         return bungRepository
             .findBungsWithStatus(user, isAvailableOnly, pageable);
     }
-
+    
+    public Page<BungInfoWithMemberListDto> searchBungLists(
+        UserDetailsImpl userDetails, String keyword, Pageable pageable) {
+        return null;
+    }
+    
     public Page<BungInfoWithOwnershipDto> getMyBungLists(
         UserDetailsImpl userDetails,
         Boolean isOwned,
@@ -109,7 +114,7 @@ public class BungService {
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
             .map(BungInfoWithOwnershipDto::new);
     }
-
+    
     @Transactional
     public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId) throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
@@ -131,7 +136,7 @@ public class BungService {
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
         return JoinBungResultEnum.SUCCESSFULLY_JOINED;
     }
-
+    
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public EditBungResultEnum editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
@@ -155,7 +160,7 @@ public class BungService {
         bungRepository.save(bung);
         return EditBungResultEnum.SUCCESSFULLY_EDITED;
     }
-
+    
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public CompleteBungResultEnum completeBung(
