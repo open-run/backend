@@ -182,4 +182,31 @@ public class UserController {
             .build();
         return ResponseEntity.ok().body(response);
     }
+
+    @PatchMapping("/wallet")
+    @Operation(summary = "유저 지갑 주소 저장")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "지갑 주소가 성공적으로 저장됨", content = @Content(
+            mediaType = "application/json", 
+            examples = @ExampleObject(value = "{\"message\":\"Wallet address updated successfully\"}")
+        )),
+        @ApiResponse(responseCode = "400", description = "지갑 주소가 잘못된 형식임", content = @Content(
+            mediaType = "application/json", 
+            examples = @ExampleObject(value = "{\"statusCode\":400,\"state\":\"BAD REQUEST\",\"message\":\"Invalid wallet address\"}")
+        )),
+        @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없음", content = @Content(
+            mediaType = "application/json", 
+            examples = @ExampleObject(value = "{\"statusCode\":404,\"state\":\"NOT FOUND\",\"message\":\"User not found\"}")
+        )),
+    })
+    public ResponseEntity<Response<Void>> updateWalletAddress(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam String walletAddress  // TODO: 지갑 주소 형식 검증
+    ) {
+        userService.updateWalletAddress(userDetails, walletAddress);
+        return ResponseEntity.ok()
+            .body(Response.<Void>builder()
+                .message("success")
+                .build());
+    }
 }

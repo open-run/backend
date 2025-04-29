@@ -89,4 +89,8 @@ public class User {
         applyIfNotNull(patchUserSurveyRequestDto.getRunningFrequency(),
             newRunningFrequency -> this.runningFrequency = newRunningFrequency);
     }
+
+    public void updateWalletAddress(String walletAddress) {
+        this.blockchainAddress = walletAddress;
+    }
 }

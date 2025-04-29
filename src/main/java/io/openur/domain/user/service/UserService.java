@@ -77,4 +77,11 @@ public class UserService {
         }
         return userRepository.batchIncrementFeedback(targetUserIds);
     }
+
+    @Transactional
+    public void updateWalletAddress(UserDetailsImpl userDetails, String walletAddress) {
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        user.updateWalletAddress(walletAddress);
+        userRepository.update(user);
+    }
 }
