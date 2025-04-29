@@ -73,6 +73,22 @@ public class BungController {
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
     }
+    
+    @GetMapping("/search")
+    @Operation(summary = "벙 검색하기")
+    public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> searchBungList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam String keyword,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungInfoWithMemberListDto> contents = bungService.searchBungLists(
+            userDetails, keyword, pageable);
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success"));
+    }
 
     @GetMapping("/my-bungs")
     @Operation(summary = """
