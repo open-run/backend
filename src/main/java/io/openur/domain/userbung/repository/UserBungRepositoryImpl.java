@@ -1,7 +1,5 @@
 package io.openur.domain.userbung.repository;
 
-import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.model.BungStatus.ACCOMPLISHED;
 import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
@@ -22,15 +20,13 @@ import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,7 +36,6 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    @Transactional(readOnly = true)
     public int countParticipantsByBungId(String bungId) {
         return queryFactory
             .select(userBungEntity.count())
@@ -51,21 +46,22 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public BungInfoWithMemberListDto findBungWithUsersById(String bungId) {
-        Map<BungEntity, List<UserBungEntity>> contents = queryFactory
-            .select(userBungEntity, bungEntity)
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .join(userBungEntity.userEntity, userEntity)
+    public Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId) {
+        BungEntity bung = queryFactory
+            .selectFrom(bungEntity)
             .where(bungEntity.bungId.eq(bungId))
-            .transform(groupBy(bungEntity).as(list(userBungEntity)));
-
-        for (Entry<BungEntity, List<UserBungEntity>> entry : contents.entrySet()) {
-            return new BungInfoWithMemberListDto(entry);
-        }
-
-        return null;
+            .fetchOne();
+        
+        if(bung == null) return Optional.empty();
+        
+        // Bung 이 존재하지 않았다면, 유저들을 복잡하게 조인해서 찾을 이유 없음.
+        List<UserBungEntity> members = queryFactory
+            .selectFrom(userBungEntity)
+            .join(userBungEntity.userEntity).fetchJoin()  // 페치 조인 추가
+            .where(userBungEntity.bungEntity.eq(bung))
+            .fetch();
+        
+        return Optional.of(new BungInfoWithMemberListDto(bung, members));
     }
 
     @Override

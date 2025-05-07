@@ -9,9 +9,11 @@ import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.GetBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
+import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
@@ -28,6 +30,7 @@ import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -76,7 +79,8 @@ public class BungService {
     }
 
     public BungInfoWithMemberListDto getBungDetail(String bungId) {
-        return userBungRepository.findBungWithUsersById(bungId);
+        return userBungRepository.findBungWithUsersById(bungId)
+            .orElseThrow(() -> new GetBungException(GetBungResultEnum.BUNG_NOT_FOUND));
     }
 
     @Transactional
@@ -98,7 +102,12 @@ public class BungService {
     }
     
     public Page<BungInfoWithMemberListDto> searchBungLists(
-        UserDetailsImpl userDetails, String keyword, Pageable pageable) {
+        UserDetailsImpl userDetails,
+        String keyword,
+        Pageable pageable
+    ) {
+        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        
         return null;
     }
     
@@ -121,8 +130,7 @@ public class BungService {
             throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED);
         }
 
-        BungInfoWithMemberListDto bungWithMembers = userBungRepository.findBungWithUsersById(
-            bungId);
+        BungInfoWithMemberListDto bungWithMembers = getBungDetail(bungId);
         if (bungWithMembers.getMemberList().stream().anyMatch(
                 user -> user.getUserId().equals(userDetails.getUser().getUserId())
         )) {
@@ -177,7 +185,7 @@ public class BungService {
         }
 
         //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
-        List<String> memberIds = userBungRepository.findBungWithUsersById(bungId)
+        List<String> memberIds = getBungDetail(bungId)
             .getMemberList()
             .stream()
             .map(UserBungInfoDto::getUserId)
