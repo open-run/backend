@@ -6,7 +6,6 @@ import io.openur.domain.userbung.dto.UserBungInfoDto;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import java.util.List;
-import java.util.Map.Entry;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,13 +16,11 @@ public class BungInfoWithMemberListDto extends BungInfoDto {
     private List<UserBungInfoDto> memberList;
 
     public BungInfoWithMemberListDto(
-        Entry<BungEntity, List<UserBungEntity>> entrySet
-    ) {
-        super(Bung.from(entrySet.getKey()));
+        BungEntity bungEntity, List<UserBungEntity> userBungEntities) {
+        super(Bung.from(bungEntity));
 
         this.memberList =
-            entrySet.getValue()
-                .stream()
+            userBungEntities.stream()
                 .map(userBungEntity -> new UserBungInfoDto(UserBung.from(userBungEntity)))
                 .toList();
     }
