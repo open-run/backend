@@ -62,7 +62,7 @@ public class BungRepositoryImpl implements BungRepository {
 
         List<BungInfoWithMemberListDto> contents = new ArrayList<>();
         for(Entry<BungEntity, List<UserBungEntity>> entry : entries.entrySet()) {
-            contents.add(new BungInfoWithMemberListDto(entry));
+            contents.add(new BungInfoWithMemberListDto(, ));
         }
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);

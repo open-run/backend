@@ -6,6 +6,7 @@ import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.model.UserBung;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,7 +14,7 @@ public interface UserBungRepository {
 
     int countParticipantsByBungId(String bungId);
 
-    BungInfoWithMemberListDto findBungWithUsersById(String bungId);
+    Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId);
 
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
 
