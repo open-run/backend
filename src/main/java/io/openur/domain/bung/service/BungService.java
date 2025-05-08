@@ -30,7 +30,6 @@ import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -101,14 +100,14 @@ public class BungService {
             .findBungsWithStatus(user, isAvailableOnly, pageable);
     }
     
-    public Page<BungInfoWithMemberListDto> searchBungLists(
+    public Page<BungInfoDto> searchBungLists(
         UserDetailsImpl userDetails,
         String keyword,
         Pageable pageable
     ) {
         User user = userRepository.findByEmail(userDetails.getUser().getEmail());
         
-        return null;
+        return userBungRepository.findBungWithUserName(keyword, pageable);
     }
     
     public Page<BungInfoWithOwnershipDto> getMyBungLists(
@@ -125,7 +124,8 @@ public class BungService {
     }
     
     @Transactional
-    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId) throws JoinBungException {
+    public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
+        throws JoinBungException {
         if (bungRepository.isBungStarted(bungId)) {
             throw new JoinBungException(JoinBungResultEnum.BUNG_HAS_ALREADY_STARTED);
         }
@@ -147,7 +147,8 @@ public class BungService {
     
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
-    public EditBungResultEnum editBung(UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
+    public EditBungResultEnum editBung(
+        UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
         Bung bung = bungRepository.findBungById(bungId);
 
         if (bung.isCompleted()) {
