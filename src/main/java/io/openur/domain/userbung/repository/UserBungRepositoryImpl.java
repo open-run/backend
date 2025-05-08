@@ -11,22 +11,27 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -62,6 +67,33 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .fetch();
         
         return Optional.of(new BungInfoWithMemberListDto(bung, members));
+    }
+    
+    public Page<BungInfoDto> findBungWithUserName(String keyword, Pageable pageable) {
+        if (!StringUtils.hasText(keyword)) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+        
+        List<BungInfoDto> contents = queryFactory
+            .selectFrom(userBungEntity)
+            .join(userBungEntity.userEntity, userEntity).fetchJoin()
+            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+            .where(userBungEntity.userEntity.nickname.containsIgnoreCase(keyword))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch().stream()
+            .map(UserBungEntity::getBungEntity)
+            .map(Bung::from)
+            .map(BungInfoDto::new).toList();
+        
+        JPAQuery<Long> count = queryFactory
+            .select(userBungEntity.count())
+            .from(userBungEntity)
+            .where(
+                userBungEntity.userEntity.nickname.containsIgnoreCase(keyword)
+            );
+        
+        return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
     }
 
     @Override

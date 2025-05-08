@@ -76,14 +76,14 @@ public class BungController {
     
     @GetMapping("/search")
     @Operation(summary = "벙 검색하기")
-    public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> searchBungList(
+    public ResponseEntity<PagedResponse<BungInfoDto>> searchBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam String keyword,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoWithMemberListDto> contents = bungService.searchBungLists(
+        Page<BungInfoDto> contents = bungService.searchBungLists(
             userDetails, keyword, pageable);
 
         return ResponseEntity.ok().body(
