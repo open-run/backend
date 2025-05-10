@@ -15,18 +15,17 @@ public class EditBungDto {
     private String name;
     @NotBlank
     private String description;
-
+    
+    private String mainImage;
+    
     @Min(3)
     @Max(300)
     @NotNull
     private Integer memberNumber;
-
+    
     @NotNull
     private Boolean hasAfterRun;
-    @NotBlank
     private String afterRunDescription;
-    @NotEmpty
+    
     private List<String> hashtags;
-    @NotBlank
-    private String mainImage;
 }
