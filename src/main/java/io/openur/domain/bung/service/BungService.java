@@ -37,6 +37,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -157,6 +158,10 @@ public class BungService {
 
         if (bung.getStartDateTime().isBefore(LocalDateTime.now())) {
             throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED);
+        }
+        
+        if (editBungDto.getHasAfterRun() && !StringUtils.hasText(editBungDto.getAfterRunDescription())) {
+            throw new EditBungException(EditBungResultEnum.BUNG_AFTER_RUN_DESCRIPTION_MISSING);
         }
 
         int numberOfCurrentMember = userBungRepository.countParticipantsByBungId(bungId);
