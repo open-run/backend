@@ -93,12 +93,12 @@ public class Bung {
     public void update(EditBungDto dto) {
         applyIfNotNull(dto.getName(), newName -> this.name = newName);
         applyIfNotNull(dto.getDescription(), newDesc -> this.description = newDesc);
+        applyIfNotNull(dto.getMainImage(), newMainImage -> this.mainImage = newMainImage);
         applyIfNotNull(dto.getMemberNumber(), newNumber -> this.memberNumber = newNumber);
         applyIfNotNull(dto.getHasAfterRun(), newAfterRun -> this.hasAfterRun = newAfterRun);
         applyIfNotNull(
             dto.getAfterRunDescription(),
             newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
-        applyIfNotNull(dto.getMainImage(), newMainImage -> this.mainImage = newMainImage);
     }
 
     public BungEntity toEntity() {
