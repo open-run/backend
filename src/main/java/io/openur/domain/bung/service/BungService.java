@@ -11,6 +11,7 @@ import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.GetBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
+import io.openur.domain.bung.enums.SearchBungTypeEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
@@ -64,6 +65,11 @@ public class BungService {
     }
 
     private void updateHashtags(Bung bung, List<String> hashtagStrList) {
+        if(hashtagStrList.isEmpty()) {
+            return;
+        }
+//         bung.toEntity()
+        
         applyIfNotNull(hashtagStrList, hashtagsStr -> {
             List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
             bungHashtagRepository.updateHashtags(bung, hashtags);
@@ -91,31 +97,24 @@ public class BungService {
     }
     
     public Page<BungInfoWithMemberListDto> getBungLists(
-        UserDetailsImpl userDetails,
-        boolean isAvailableOnly,
-        Pageable pageable
+        UserDetailsImpl userDetails, SearchBungTypeEnum type, String keyword,
+        boolean isJoinedOnly, Pageable pageable
     ) {
+        if(SearchBungTypeEnum.needToSearch(type) && !StringUtils.hasText(keyword))
+            throw new GetBungException(GetBungResultEnum.EMPTY_KEYWORD);
+        
         User user = userRepository.findUser(userDetails.getUser());
 
-        return bungRepository
-            .findBungsWithStatus(user, isAvailableOnly, pageable);
-    }
-    
-    public Page<BungInfoDto> searchBungLists(
-        UserDetailsImpl userDetails,
-        String keyword,
-        Pageable pageable
-    ) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
-        
-        return userBungRepository.findBungWithUserName(keyword, pageable);
+        return switch (type) {
+            case ALL -> bungRepository.findBungsWithStatus(user, isJoinedOnly, pageable);
+            case MEMBER_NAME -> userBungRepository.findBungWithUserName(keyword, pageable);
+            case HASHTAG ->  null; //bungRepository.findBungsWithHashtag(keyword, pageable);
+            case LOCATION -> bungRepository.findBungsWithLocation(keyword, pageable);
+        };
     }
     
     public Page<BungInfoWithOwnershipDto> getMyBungLists(
-        UserDetailsImpl userDetails,
-        Boolean isOwned,
-        BungStatus status,
-        Pageable pageable
+        UserDetailsImpl userDetails, Boolean isOwned, BungStatus status, Pageable pageable
     ) {
         User user = userRepository.findUser(userDetails.getUser());
 
@@ -123,6 +122,7 @@ public class BungService {
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
             .map(BungInfoWithOwnershipDto::new);
     }
+    // 전체, 멤버 해시태그
     
     @Transactional
     public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
