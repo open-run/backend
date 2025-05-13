@@ -4,6 +4,7 @@ import io.openur.domain.bung.model.Bung;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,7 +57,7 @@ public class UserBung {
     public UserBungEntity toEntity() {
         return new UserBungEntity(
             this.userBungId,
-            this.bung.toEntity(),
+            this.bung.toEntity(Collections.emptyList()),
             this.user.toEntity(),
             this.participationStatus,
             this.modifiedAt,
