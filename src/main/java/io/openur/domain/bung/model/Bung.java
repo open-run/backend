@@ -6,6 +6,8 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
+import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -62,34 +64,6 @@ public class Bung {
         this.mainImage = dto.getMainImage();
     }
 
-    public static Bung from(final BungEntity bungEntity) {
-        Bung bung = new Bung(
-            bungEntity.getBungId(),
-            bungEntity.getName(),
-            bungEntity.getDescription(),
-            bungEntity.getLocation(),
-            bungEntity.getStartDateTime(),
-            bungEntity.getEndDateTime(),
-            bungEntity.getDistance(),
-            bungEntity.getPace(),
-            bungEntity.getMemberNumber(),
-            bungEntity.getHasAfterRun(),
-            bungEntity.getAfterRunDescription(),
-            null,
-            bungEntity.isCompleted(),
-            bungEntity.getMainImage()
-        );
-
-        if (bungEntity.getHashtags() != null) {
-            bung.hashtags = bungEntity.getHashtags()
-                .stream()
-                .map(HashtagEntity::getHashtagStr)
-                .toList();
-        }
-
-        return bung;
-    }
-
     public void update(EditBungDto dto) {
         applyIfNotNull(dto.getName(), newName -> this.name = newName);
         applyIfNotNull(dto.getDescription(), newDesc -> this.description = newDesc);
@@ -100,8 +74,30 @@ public class Bung {
             dto.getAfterRunDescription(),
             newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
     }
-
-    public BungEntity toEntity() {
+    
+    public static Bung from(final BungEntity bungEntity) {
+        return new Bung(
+            bungEntity.getBungId(),
+            bungEntity.getName(),
+            bungEntity.getDescription(),
+            bungEntity.getMainImage(),
+            bungEntity.getLocation(),
+            bungEntity.getStartDateTime(),
+            bungEntity.getEndDateTime(),
+            bungEntity.getDistance(),
+            bungEntity.getPace(),
+            bungEntity.getMemberNumber(),
+            bungEntity.getHasAfterRun(),
+            bungEntity.getAfterRunDescription(),
+            bungEntity.isCompleted(),
+            bungEntity.getBungHashtags().stream()
+                .map(BungHashtagEntity::getHashtagEntity)
+                .map(HashtagEntity::getHashtagStr)
+                .toList()
+        );
+    }
+    
+    public BungEntity toEntity(List<BungHashtag> bungHashtags) {
         return new BungEntity(
             bungId,
             name,
@@ -116,7 +112,7 @@ public class Bung {
             afterRunDescription,
             isCompleted,
             mainImage,
-            null
+            bungHashtags.stream().map(BungHashtag::toEntity).toList()
         );
     }
 

@@ -14,6 +14,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.Bung;
+import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
@@ -120,8 +121,8 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     @Override
-    public Bung save(Bung bung) {
-        return Bung.from(bungJpaRepository.save(bung.toEntity()));
+    public Bung save(Bung bung, List<BungHashtag> bungHashtags) {
+        return Bung.from(bungJpaRepository.save(bung.toEntity(bungHashtags)));
     }
 
     @Override

@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface BungHashtagRepository {
 
-    void bulkInsertHashtags(Bung bung, List<Hashtag> hashtags);
+    Bung saveNewBungHashtag(Bung bung, List<Hashtag> hashtags);
 
     void updateHashtags(Bung bung, List<Hashtag> hashtags);
 

@@ -1,6 +1,8 @@
 package io.openur.domain.bunghashtag.repository;
 
 import io.openur.domain.bung.model.Bung;
+import io.openur.domain.bung.repository.BungRepositoryImpl;
+import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.model.Hashtag;
 import jakarta.persistence.EntityManager;
@@ -14,30 +16,46 @@ import org.springframework.stereotype.Repository;
 public class BungHashtagRepositoryImpl implements BungHashtagRepository {
 
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
+    private final BungRepositoryImpl bungRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
-
+    
+    /***
+     * Bung 의 변동된 해시태그를 저장합니다
+     * 목록이 빈 경우 제거 혹은 아무 동작도 않고 종료합니다.
+     * @param bung
+     * @param hashtags
+     * @return Bung
+     */
     @Override
-    public void bulkInsertHashtags(Bung bung, List<Hashtag> hashtags) {
-        for (Hashtag hashtag : hashtags) {
-            BungHashtag bungHashtag = new BungHashtag(bung, hashtag);
-            entityManager.persist(bungHashtag.toEntity());
-        }
-        entityManager.flush();
-        entityManager.clear();
+    public Bung saveNewBungHashtag(Bung bung, List<Hashtag> hashtags) {
+        if(hashtags.isEmpty()) return bung;
+        
+        Bung finalBung = bung;
+        List<BungHashtag> bungHashtags = bungHashtagJpaRepository
+            .saveAll(
+                hashtags.stream().map(hashtag ->
+                        new BungHashtag(finalBung, hashtag).toEntity()
+                ).toList()
+        ).stream().map(BungHashtag::from).toList();
+        
+        bung = bungRepository.save(bung, bungHashtags);
+        return bung;
     }
 
     @Override
     public void updateHashtags(Bung bung, List<Hashtag> hashtags) {
         bungHashtagJpaRepository.deleteByBungEntity_BungId(bung.getBungId());
-        bulkInsertHashtags(bung, hashtags);
+//        saveBungHashtag(bung, hashtags);
     }
 
     @Override
     public List<Hashtag> findHashtagsByBungId(String bungId) {
         return bungHashtagJpaRepository.findByBungEntity_BungId(bungId).stream()
-            .map(Hashtag::from).toList();
+            .map(BungHashtagEntity::getHashtagEntity)
+            .map(Hashtag::from)
+            .toList();
     }
 
     @Override
