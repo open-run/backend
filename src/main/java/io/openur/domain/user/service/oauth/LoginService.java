@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.OauthUserInfoDto;
+import io.openur.domain.user.dto.SmartWalletUserInfoDto;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import java.net.URI;
@@ -71,6 +72,19 @@ public abstract class LoginService {
         if (user == null) {
             // 없으면 회원가입
             User newUser = new User(email, oauthUserInfoDto.getProvider());
+            return userRepository.save(newUser);
+        } else {
+            return user;
+        }
+    }
+
+    protected User registerUserIfNew(SmartWalletUserInfoDto smartWalletUserInfoDto) {
+        // DB 에 중복된 블록체인 주소의 유저가 있는지 확인
+        String blockchainAddress = smartWalletUserInfoDto.getBlockchainAddress();
+        User user = userRepository.findByBlockchainAddress(blockchainAddress);
+        if (user == null) {
+            // 없으면 회원가입
+            User newUser = new User(blockchainAddress);
             return userRepository.save(newUser);
         } else {
             return user;
