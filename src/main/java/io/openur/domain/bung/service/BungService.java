@@ -49,7 +49,7 @@ public class BungService {
     private final ChallengeEventsPublisher challengeEventsPublisher;
 
     private Bung saveNewBung(UserDetailsImpl userDetails, CreateBungDto dto) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
         Bung bung = bungRepository.save(new Bung(dto));
         userBungRepository.save(UserBung.isOwnerBung(user, bung));
         return bung;
@@ -91,7 +91,7 @@ public class BungService {
         boolean isAvailableOnly,
         Pageable pageable
     ) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
 
         return bungRepository
             .findBungsWithStatus(user, isAvailableOnly, pageable);
@@ -103,7 +103,7 @@ public class BungService {
         BungStatus status,
         Pageable pageable
     ) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
 
         return userBungRepository
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)

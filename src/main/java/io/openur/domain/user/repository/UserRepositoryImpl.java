@@ -20,7 +20,24 @@ public class UserRepositoryImpl implements UserRepository {
     private EntityManager entityManager;
 
     @Override
-    public User findByEmail(String email) {
+    public User findUser(User user) {
+        // Try to find by email first if available
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            User foundUser = findByEmail(user.getEmail());
+            if (foundUser != null) {
+                return foundUser;
+            }
+        }
+        
+        // If email not found or not available, try blockchain address
+        if (user.getBlockchainAddress() != null && !user.getBlockchainAddress().matches("0x")) {
+            return findByBlockchainAddress(user.getBlockchainAddress());
+        }
+        
+        return null;
+    }
+
+    private User findByEmail(String email) {
         UserEntity userEntity = userJpaRepository.findByEmail(email).orElse(null);
         if (userEntity == null) {
             return null;
@@ -29,8 +46,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
-    @Override
-    public User findByBlockchainAddress(String blockchainAddress) {
+    private User findByBlockchainAddress(String blockchainAddress) {
         UserEntity userEntity = userJpaRepository.findByBlockchainAddress(blockchainAddress).orElse(null);
         if (userEntity == null) {
             return null;
