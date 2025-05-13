@@ -59,9 +59,9 @@ public class BungService {
         return bung;
     }
 
-    private void saveHashtags(Bung bung, List<String> hashtagStrList) {
+    private void saveHashtags(List<String> hashtagStrList) {
         List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagStrList);
-        bungHashtagRepository.bulkInsertHashtags(bung, hashtags);
+//        bungHashtagRepository.bulkInsertHashtags(bung, hashtags);
     }
 
     private void updateHashtags(Bung bung, List<String> hashtagStrList) {
@@ -80,7 +80,7 @@ public class BungService {
     public BungInfoDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
         CreateBungDto dto) {
         Bung bung = this.saveNewBung(userDetails, dto);
-        this.saveHashtags(bung, dto.getHashtags());
+        this.saveHashtags(dto.getHashtags());
         return new BungInfoDto(bung, dto.getHashtags());
     }
 
