@@ -1,15 +1,8 @@
 package io.openur.domain.hashtag.repository;
 
-import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
-
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.openur.domain.hashtag.entity.HashtagEntity;
-import io.openur.domain.hashtag.entity.QHashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +13,7 @@ import org.springframework.stereotype.Repository;
 public class HashtagRepositoryImpl implements HashtagRepository {
 
     private final HashtagJpaRepository hashtagJpaRepository;
-    private final JPAQueryFactory queryFactory;
-
+    
     /**
      * Saves new hashtag strings into the database and returns all hashtag elements with their ID values.
      *
@@ -56,13 +48,7 @@ public class HashtagRepositoryImpl implements HashtagRepository {
         
         return allHashtags;
     }
-
-    @Override
-    public Optional<Hashtag> findByHashtagStr(String hashtagStr) {
-        return hashtagJpaRepository.findByHashtagStr(hashtagStr)
-            .map(Hashtag::from);
-    }
-
+    
     @Override
     public List<Hashtag> findByHashtagStrIn(List<String> hashTagStrings) {
         return hashtagJpaRepository.findByHashtagStrIn(hashTagStrings)
@@ -70,15 +56,7 @@ public class HashtagRepositoryImpl implements HashtagRepository {
             .map(Hashtag::from)
             .toList();
     }
-
-    @Override
-    public List<Hashtag> findByHashtagIdIn(List<Long> hashtagIds) {
-        return hashtagJpaRepository.findByHashtagIdIn(hashtagIds)
-            .stream()
-            .map(Hashtag::from)
-            .toList();
-    }
-
+    
     @Override
     public List<Hashtag> findByHashtagStrContaining(String substring) {
         return hashtagJpaRepository.findByHashtagStrContaining(substring)
