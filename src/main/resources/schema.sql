@@ -3,9 +3,9 @@ CREATE TABLE IF NOT EXISTS tb_users
 (
     user_id                VARCHAR(36)                      DEFAULT (UUID()) PRIMARY KEY NOT NULL,
     nickname               VARCHAR(16)                      DEFAULT NULL,
-    email                  VARCHAR(255)            NOT NULL,
+    email                  VARCHAR(255)                     DEFAULT NULL,
     identity_authenticated BOOLEAN                          DEFAULT FALSE,
-    provider               ENUM ('naver', 'kakao') NOT NULL,
+    provider               ENUM ('naver', 'kakao', 'smart_wallet') NOT NULL,
     blacklisted            BOOLEAN                          DEFAULT FALSE,
     created_date           TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_date        TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,

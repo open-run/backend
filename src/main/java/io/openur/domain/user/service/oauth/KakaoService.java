@@ -53,7 +53,7 @@ public class KakaoService extends LoginService {
 
         // 4. JWT 토큰 생성 및 반환
         return new GetUsersLoginDto(
-            kakaoUser.getEmail(),
+            kakaoUser.getEmail(),  // Using email as identifier for OAuth services
             kakaoUser.getNickname(),
             jwtUtil.createToken(kakaoUser.getEmail())
         );
