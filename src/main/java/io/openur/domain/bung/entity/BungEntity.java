@@ -1,6 +1,8 @@
 package io.openur.domain.bung.entity;
 
+import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.hashtag.entity.HashtagEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,8 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,13 +56,7 @@ public class BungEntity {
     @Column(name = "is_completed")
     private boolean completed;
     private String mainImage;
-
-    @ManyToMany
-    @JoinTable(
-        name = "tb_bungs_hashtags",
-        joinColumns = @JoinColumn(name = "bung_id"),
-        inverseJoinColumns = @JoinColumn(name = "hashtag_id")
-    )
-
-    private Set<HashtagEntity> hashtags;
+    
+    @OneToMany(mappedBy = "bungEntity", cascade = CascadeType.ALL)
+    private List<BungHashtagEntity> bungHashtags;
 }

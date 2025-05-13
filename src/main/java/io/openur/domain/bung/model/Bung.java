@@ -20,6 +20,7 @@ public class Bung {
     private String bungId;
     private String name;
     private String description;
+    private String mainImage;
     private String location;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
@@ -28,9 +29,8 @@ public class Bung {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
-    private List<String> hashtags;
     private boolean isCompleted;
-    private String mainImage;
+    private List<String> hashtags;
 
     public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
