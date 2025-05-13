@@ -5,6 +5,7 @@ import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.SmartWalletUserInfoDto;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.global.common.validation.ValidEthereumAddress;
 import io.openur.global.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class SmartWalletService extends LoginService {
     }
 
     @Override
-    public GetUsersLoginDto login(String walletAddress, String signature) throws JsonProcessingException {
+    public GetUsersLoginDto login(@ValidEthereumAddress String walletAddress, String signature) throws JsonProcessingException {
         try {
             log.info("Starting Smart Wallet login process for address: {}", walletAddress);
 
