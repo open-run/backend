@@ -30,6 +30,7 @@ import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -51,19 +52,41 @@ public class BungService {
     private final HashtagRepositoryImpl hashtagRepository;
     private final BungHashtagRepositoryImpl bungHashtagRepository;
     private final ChallengeEventsPublisher challengeEventsPublisher;
-
-    private Bung saveNewBung(UserDetailsImpl userDetails, CreateBungDto dto) {
+    
+    @Transactional
+    public BungInfoDto createBung(
+        @AuthenticationPrincipal UserDetailsImpl userDetails, CreateBungDto dto)
+    {
+        List<Hashtag> hashtags = this.saveHashtags(dto.getHashtags());
+        Bung bung = this.saveNewBung(userDetails, dto, hashtags);
+        
+        return new BungInfoDto(bung);
+    }
+    
+    /**
+     * 문자열 리스트를 받아 없는 경우 생성 & 있는 경우 조회해서 HashTag 목록을 반환합니다.
+     * 빈 문자열 입력시 빈 리스트 반환
+     * @param hashtagStrList
+     * @return List<Hashtag></HashTag>
+     */
+    private List<Hashtag> saveHashtags(List<String> hashtagStrList) {
+        if(hashtagStrList.isEmpty()) return Collections.emptyList();
+        
+        return hashtagRepository.saveAll(hashtagStrList);
+    }
+    
+    private Bung saveNewBung(
+        UserDetailsImpl userDetails, CreateBungDto dto, List<Hashtag> hashtags
+    ) {
         User user = userRepository.findUser(userDetails.getUser());
-        Bung bung = bungRepository.save(new Bung(dto));
+        Bung bung = bungRepository.save(new Bung(dto), Collections.emptyList());
+        
+        bung = bungHashtagRepository.saveNewBungHashtag(bung, hashtags);
         userBungRepository.save(UserBung.isOwnerBung(user, bung));
+        
         return bung;
     }
-
-    private void saveHashtags(List<String> hashtagStrList) {
-        List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagStrList);
-//        bungHashtagRepository.bulkInsertHashtags(bung, hashtags);
-    }
-
+    
     private void updateHashtags(Bung bung, List<String> hashtagStrList) {
         if(hashtagStrList.isEmpty()) {
             return;
@@ -74,14 +97,6 @@ public class BungService {
             List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
             bungHashtagRepository.updateHashtags(bung, hashtags);
         });
-    }
-
-    @Transactional
-    public BungInfoDto createBung(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        CreateBungDto dto) {
-        Bung bung = this.saveNewBung(userDetails, dto);
-        this.saveHashtags(dto.getHashtags());
-        return new BungInfoDto(bung, dto.getHashtags());
     }
 
     public BungInfoWithMemberListDto getBungDetail(String bungId) {
@@ -171,7 +186,7 @@ public class BungService {
 
         bung.update(editBungDto);
         updateHashtags(bung, editBungDto.getHashtags());
-        bungRepository.save(bung);
+        bungRepository.save(bung, Collections.emptyList());
         return EditBungResultEnum.SUCCESSFULLY_EDITED;
     }
     
@@ -199,7 +214,7 @@ public class BungService {
         challengeEventsPublisher.bungIsComplete(bung, memberIds);
 
         bung.completeBung();
-        bungRepository.save(bung);
+        bungRepository.save(bung, Collections.emptyList());
         return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }
 }
