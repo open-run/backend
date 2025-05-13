@@ -13,6 +13,8 @@ public interface UserRepository {
 
     User findByEmail(String email);
 
+    User findByBlockchainAddress(String blockchainAddress);
+
     User findById(String userId);
 
     List<User> findByUserNickname(String nickName);
