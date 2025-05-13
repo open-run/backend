@@ -5,6 +5,7 @@ import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.model.BungStatus.ACCOMPLISHED;
+import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
 import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
@@ -17,6 +18,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.model.BungStatus;
+import io.openur.domain.bunghashtag.entity.QBungHashtagEntity;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
@@ -126,7 +128,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .selectDistinct(userBungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-            .leftJoin(bungEntity.hashtags, hashtagEntity).fetchJoin()
+            .leftJoin(bungEntity.bungHashtags, bungHashtagEntity).fetchJoin()
+            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity).fetchJoin()
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),
