@@ -72,7 +72,8 @@ public class Bung {
         applyIfNotNull(dto.getHasAfterRun(), newAfterRun -> this.hasAfterRun = newAfterRun);
         applyIfNotNull(
             dto.getAfterRunDescription(),
-            newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
+            newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc
+        );
     }
     
     public static Bung from(final BungEntity bungEntity) {

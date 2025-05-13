@@ -1,7 +1,6 @@
 package io.openur.domain.hashtag.model;
 
 import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
-import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.util.List;
 import lombok.AllArgsConstructor;

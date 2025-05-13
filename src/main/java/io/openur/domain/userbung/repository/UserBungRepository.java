@@ -2,7 +2,7 @@ package io.openur.domain.userbung.repository;
 
 import com.querydsl.core.Tuple;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
-import io.openur.domain.bung.model.BungStatus;
+import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.model.UserBung;
 import java.util.List;

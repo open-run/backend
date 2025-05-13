@@ -5,9 +5,10 @@ import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.model.Hashtag;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -17,9 +18,6 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
 
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
     private final BungRepositoryImpl bungRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
     
     /***
      * Bung 의 변동된 해시태그를 저장합니다
@@ -43,6 +41,47 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
         bung = bungRepository.save(bung, bungHashtags);
         return bung;
     }
+    
+    @Override
+    public Bung updateBungHashtag(Bung bung, List<Hashtag> hashtags) {
+        // Hashtags 중 연결관계가 존재하는 것만 돌아오는 목록
+        List<BungHashtag> existBungHashTag =
+            bungHashtagJpaRepository
+                .findAllByBungEntity_BungIdAndHashtagEntity_HashtagStrIn(
+                    bung.getBungId(),
+                    hashtags.stream().map(Hashtag::getHashtagStr).toList()
+                )
+                .stream()
+                .map(BungHashtag::from)
+                .toList();
+        // HashTag String 을 세트로
+        Set<String> existBungHashtagStrSet = existBungHashTag.stream()
+            .map(bungHashtag -> bungHashtag.getHashtag().getHashtagStr())
+            .collect(Collectors.toSet());
+        
+        Bung finalBung = bung;
+        // 기 존재 해시태그 연결관계를 제외하고 생성 및 저장합니다
+        List<BungHashtag> newBungHashTag = bungHashtagJpaRepository
+            .saveAll(
+                hashtags.stream()
+                    .filter(hashtag ->
+                        !existBungHashtagStrSet.contains(hashtag.getHashtagStr())
+                    )
+                    .map(hashtag ->
+                        new BungHashtag(finalBung, hashtag).toEntity()
+                    )
+                    .toList()
+            )
+            .stream().map(BungHashtag::from).toList();
+        
+        // 수정하려는 연결관계 목록
+        List<BungHashtag> bungHashtags = new ArrayList<>(existBungHashTag);
+        bungHashtags.addAll(newBungHashTag);
+        
+        // 목록을 통째로 교체 후 저장 리천
+        bung = bungRepository.save(bung, bungHashtags);
+        return bung;
+    }
 
     @Override
     public void updateHashtags(Bung bung, List<Hashtag> hashtags) {
@@ -56,18 +95,6 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
             .map(BungHashtagEntity::getHashtagEntity)
             .map(Hashtag::from)
             .toList();
-    }
-
-    @Override
-    public List<Bung> findBungByHashtag(String hashtagStr) {
-        return bungHashtagJpaRepository.findBungEntityByHashtagEntity_HashtagStr(hashtagStr)
-            .stream().map(Bung::from).toList();
-    }
-
-    @Override
-    public List<Bung> findBungByHashtags(List<String> hashtagStrs) {
-        return bungHashtagJpaRepository.findBungEntityByHashtagEntity_HashtagStrIn(hashtagStrs)
-            .stream().map(Bung::from).toList();
     }
 
     @Override

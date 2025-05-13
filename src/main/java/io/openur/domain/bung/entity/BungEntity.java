@@ -52,6 +52,6 @@ public class BungEntity {
     private boolean completed;
     private String mainImage;
     
-    @OneToMany(mappedBy = "bungEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "bungEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BungHashtagEntity> bungHashtags;
 }

@@ -1,12 +1,11 @@
 package io.openur.domain.bung.service;
 
-import static io.openur.global.common.UtilController.applyIfNotNull;
-
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.GetBungResultEnum;
@@ -17,7 +16,6 @@ import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.bung.model.BungStatus;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.challenge.event.ChallengeEventsPublisher;
@@ -88,15 +86,27 @@ public class BungService {
     }
     
     private void updateHashtags(Bung bung, List<String> hashtagStrList) {
+        // 변경 요청 해시태그가 공백인데, 원래도 공백이면 할거 없고
         if(hashtagStrList.isEmpty()) {
+            if(bung.getHashtags().isEmpty()) return;
+            
+            // 공백인데 원래는 있었으면 지워야 하는거고
+            bungHashtagRepository.deleteByBungId(bung.getBungId());
+            bungRepository.save(bung, Collections.emptyList());
             return;
         }
-//         bung.toEntity()
         
-        applyIfNotNull(hashtagStrList, hashtagsStr -> {
-            List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
-            bungHashtagRepository.updateHashtags(bung, hashtags);
-        });
+        // 변경 이력이 있다면,
+        // 1. 새로 들어오는 건 해시태그 생성
+        List<Hashtag> newHashtags = hashtagRepository.saveAll(hashtagStrList);
+        // 2. 연결 관계 정리 ( 생긴건 추가하고), orphanRemoval 로 사라진거 지울 필요 x
+        // 3. bung 내 해시태그 상기와 같이 ( 사라진건 지우고, 생긴건 추가하고) .
+        bungHashtagRepository.updateBungHashtag(bung, newHashtags);
+//
+//        applyIfNotNull(hashtagStrList, hashtagsStr -> {
+//            List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
+//            bungHashtagRepository.updateHashtags(bung, hashtags);
+//        });
     }
 
     public BungInfoWithMemberListDto getBungDetail(String bungId) {
