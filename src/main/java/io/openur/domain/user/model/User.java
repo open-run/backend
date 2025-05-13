@@ -47,6 +47,21 @@ public class User {
         this.feedback = 0;
     }
 
+    public User(String blockchainAddress) {
+        this.userId = UUID.randomUUID().toString();
+        this.nickname = null;
+        this.email = null;
+        this.identityAuthenticated = false;
+        this.provider = Provider.smart_wallet;
+        this.blacklisted = false;
+        this.createdDate = LocalDateTime.now();
+        this.lastLoginDate = LocalDateTime.now();
+        this.blockchainAddress = blockchainAddress;
+        this.runningPace = null;
+        this.runningFrequency = null;
+        this.feedback = 0;
+    }
+
     public static User from(final UserEntity userEntity) {
         return new User(
             userEntity.getUserId(),
@@ -78,10 +93,8 @@ public class User {
             runningPace,
             runningFrequency,
             feedback
-
         );
     }
-
 
     public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         applyIfNotNull(patchUserSurveyRequestDto.getNickname(), newNickname -> this.nickname = newNickname);

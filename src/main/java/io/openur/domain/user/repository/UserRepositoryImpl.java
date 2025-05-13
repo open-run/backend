@@ -30,6 +30,16 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public User findByBlockchainAddress(String blockchainAddress) {
+        UserEntity userEntity = userJpaRepository.findByBlockchainAddress(blockchainAddress).orElse(null);
+        if (userEntity == null) {
+            return null;
+        } else {
+            return User.from(userEntity);
+        }
+    }
+
+    @Override
     public User findById(String userId) {
         UserEntity userEntity = userJpaRepository.findByUserId(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found"));
