@@ -15,10 +15,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(userEmail);
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+        // Create a temporary User object with the identifier
+        // The repository will determine if it's an email or blockchain address
+        User tempUser = new User(identifier);
+        User user = userRepository.findUser(tempUser);
         if (user == null) {
-            throw new UsernameNotFoundException("Not Found " + userEmail);
+            throw new UsernameNotFoundException("Not Found " + identifier);
         }
 
         return new UserDetailsImpl(user);

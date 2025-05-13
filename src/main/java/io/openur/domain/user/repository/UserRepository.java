@@ -1,9 +1,7 @@
 package io.openur.domain.user.repository;
 
-
 import io.openur.domain.user.model.User;
 import java.util.List;
-
 
 public interface UserRepository {
     // QUESTION: What is the purpose of this interface repository?
@@ -11,9 +9,7 @@ public interface UserRepository {
 
     User save(User user);
 
-    User findByEmail(String email);
-
-    User findByBlockchainAddress(String blockchainAddress);
+    User findUser(User user);  // Will use email or blockchain address based on what's available
 
     User findById(String userId);
 

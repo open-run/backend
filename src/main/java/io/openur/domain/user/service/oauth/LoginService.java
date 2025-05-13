@@ -68,7 +68,7 @@ public abstract class LoginService {
     protected User registerUserIfNew(OauthUserInfoDto oauthUserInfoDto) {
         // DB 에 중복된 이메일의 유저가 있는지 확인
         String email = oauthUserInfoDto.getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(new User(email, oauthUserInfoDto.getProvider()));
         if (user == null) {
             // 없으면 회원가입
             User newUser = new User(email, oauthUserInfoDto.getProvider());
@@ -81,7 +81,7 @@ public abstract class LoginService {
     protected User registerUserIfNew(SmartWalletUserInfoDto smartWalletUserInfoDto) {
         // DB 에 중복된 블록체인 주소의 유저가 있는지 확인
         String blockchainAddress = smartWalletUserInfoDto.getBlockchainAddress();
-        User user = userRepository.findByBlockchainAddress(blockchainAddress);
+        User user = userRepository.findUser(new User(blockchainAddress));
         if (user == null) {
             // 없으면 회원가입
             User newUser = new User(blockchainAddress);
