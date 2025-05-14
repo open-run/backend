@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
-@Getter
+@Getter @Setter
 @AllArgsConstructor
 public class Bung {
 
@@ -63,17 +64,15 @@ public class Bung {
         this.afterRunDescription = dto.getAfterRunDescription();
         this.mainImage = dto.getMainImage();
     }
-
+    
+    // 기본적으로 bung hashtag 는 엔티티기 때문에, 해당 메서드로 업데이트 불가
     public void update(EditBungDto dto) {
-        applyIfNotNull(dto.getName(), newName -> this.name = newName);
-        applyIfNotNull(dto.getDescription(), newDesc -> this.description = newDesc);
-        applyIfNotNull(dto.getMainImage(), newMainImage -> this.mainImage = newMainImage);
-        applyIfNotNull(dto.getMemberNumber(), newNumber -> this.memberNumber = newNumber);
-        applyIfNotNull(dto.getHasAfterRun(), newAfterRun -> this.hasAfterRun = newAfterRun);
-        applyIfNotNull(
-            dto.getAfterRunDescription(),
-            newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc
-        );
+        applyIfNotNull(dto.getName(), this::setName);
+        applyIfNotNull(dto.getDescription(), this::setDescription);
+        applyIfNotNull(dto.getMainImage(), this::setMainImage);
+        applyIfNotNull(dto.getMemberNumber(), this::setMemberNumber);
+        applyIfNotNull(dto.getHasAfterRun(), this::setHasAfterRun);
+        applyIfNotNull(dto.getAfterRunDescription(), this::setAfterRunDescription);
     }
     
     public static Bung from(final BungEntity bungEntity) {

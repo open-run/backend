@@ -3,10 +3,13 @@ package io.openur.domain.bung.repository;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
+import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
+import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -106,6 +109,47 @@ public class BungRepositoryImpl implements BungRepository {
             .select(bungEntity.count())
             .from(bungEntity)
             .where(bungEntity.location.containsIgnoreCase(keyword));
+        
+        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
+    }
+    
+    
+    public Page<BungInfoWithMemberListDto> findBungWithHashtag(
+        String keyword, Pageable pageable
+    ) {
+        List<String> bungIds = queryFactory
+            .selectDistinct(bungEntity.bungId)
+            .from(bungHashtagEntity)
+            .join(bungHashtagEntity.bungEntity, bungEntity)
+            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+            .where(
+                bungEntity.startDateTime.gt(LocalDateTime.now()),
+                hashtagEntity.hashtagStr.containsIgnoreCase(keyword)
+            )
+            .orderBy(bungEntity.startDateTime.asc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+        
+        List<BungInfoWithMemberListDto> contents = !bungIds.isEmpty() ?
+            queryFactory
+                .selectFrom(bungEntity)
+                .join(bungEntity.bungHashtags, bungHashtagEntity)
+                .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+                .where(bungEntity.bungId.in(bungIds))
+                .orderBy(bungEntity.startDateTime.asc())
+                .fetch().stream().map(BungInfoWithMemberListDto::new).toList() :
+            Collections.emptyList();
+        
+        JPAQuery<Long> countQuery = queryFactory
+            .select(bungEntity.countDistinct())
+            .from(bungHashtagEntity)
+            .join(bungHashtagEntity.bungEntity, bungEntity)
+            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+            .where(
+                bungEntity.startDateTime.gt(LocalDateTime.now()),
+                hashtagEntity.hashtagStr.containsIgnoreCase(keyword)
+            );
         
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
