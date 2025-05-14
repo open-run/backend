@@ -25,8 +25,7 @@ public class UserService {
     private final UserBungRepositoryImpl userBungRepositoryImpl;
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String email = userDetails.getUser().getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(userDetails.getUser());
         return user.getUserId();
     }
 
@@ -35,8 +34,7 @@ public class UserService {
     }
 
     public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String email = userDetails.getUser().getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(userDetails.getUser());
         return new GetUserResponseDto(user);
     }
 
@@ -56,15 +54,14 @@ public class UserService {
 
     @Transactional
     public void deleteUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
         userRepository.deleteUserInfo(user);
     }
 
     @Transactional
     public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails,
         PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
-        String email = userDetails.getUser().getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(userDetails.getUser());
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
     }

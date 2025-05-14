@@ -6,8 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class GetUsersLoginDto {
-
-    private final String email;
+    @Deprecated
+    private final String email;       // TODO: 삭제 예정
+    private final String identifier;  // Can be email or blockchain address
     private final String nickname;
     private final String jwtToken;
 }
