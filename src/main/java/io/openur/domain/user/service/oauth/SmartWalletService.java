@@ -39,6 +39,7 @@ public class SmartWalletService extends LoginService {
             log.debug("JWT token generated successfully");
 
             return new GetUsersLoginDto(
+                null,
                 walletAddress,  // Use wallet address as identifier
                 user.getNickname(),
                 token

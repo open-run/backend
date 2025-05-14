@@ -51,6 +51,7 @@ public class NaverService extends LoginService {
 
         // 4. JWT 토큰 반환
         return new GetUsersLoginDto(
+            naverUser.getEmail(),
             naverUser.getEmail(),  // Using email as identifier for OAuth services
             naverUser.getNickname(),
             jwtUtil.createToken(naverUser.getEmail())
