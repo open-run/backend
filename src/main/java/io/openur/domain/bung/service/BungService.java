@@ -85,28 +85,30 @@ public class BungService {
         return bung;
     }
     
-    private void updateHashtags(Bung bung, List<String> hashtagStrList) {
+    private Bung updateHashtags(Bung bung, List<String> hashtagStrList) {
         // 변경 요청 해시태그가 공백인데, 원래도 공백이면 할거 없고
         if(hashtagStrList.isEmpty()) {
-            if(bung.getHashtags().isEmpty()) return;
+            if(bung.getHashtags().isEmpty()) return bung;
             
             // 공백인데 원래는 있었으면 지워야 하는거고
-            bungHashtagRepository.deleteByBungId(bung.getBungId());
+//            bungHashtagRepository.deleteByBungId(bung.getBungId());
+            // OrphanRemoval 을 활용해 볼 예정
             bungRepository.save(bung, Collections.emptyList());
-            return;
+            return bung;
         }
         
         // 변경 이력이 있다면,
         // 1. 새로 들어오는 건 해시태그 생성
-        List<Hashtag> newHashtags = hashtagRepository.saveAll(hashtagStrList);
+        List<Hashtag> newHashtags = this.saveHashtags(hashtagStrList);
         // 2. 연결 관계 정리 ( 생긴건 추가하고), orphanRemoval 로 사라진거 지울 필요 x
         // 3. bung 내 해시태그 상기와 같이 ( 사라진건 지우고, 생긴건 추가하고) .
-        bungHashtagRepository.updateBungHashtag(bung, newHashtags);
+        bung = bungHashtagRepository.updateBungHashtag(bung, newHashtags);
 //
 //        applyIfNotNull(hashtagStrList, hashtagsStr -> {
 //            List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
 //            bungHashtagRepository.updateHashtags(bung, hashtags);
 //        });
+        return bung;
     }
 
     public BungInfoWithMemberListDto getBungDetail(String bungId) {
@@ -133,7 +135,7 @@ public class BungService {
         return switch (type) {
             case ALL -> bungRepository.findBungsWithStatus(user, isJoinedOnly, pageable);
             case MEMBER_NAME -> userBungRepository.findBungWithUserName(keyword, pageable);
-            case HASHTAG ->  null; //bungRepository.findBungsWithHashtag(keyword, pageable);
+            case HASHTAG ->  bungRepository.findBungWithHashtag(keyword, pageable);
             case LOCATION -> bungRepository.findBungsWithLocation(keyword, pageable);
         };
     }
@@ -195,7 +197,7 @@ public class BungService {
         }
 
         bung.update(editBungDto);
-        updateHashtags(bung, editBungDto.getHashtags());
+        bung = updateHashtags(bung, editBungDto.getHashtags());
         bungRepository.save(bung, Collections.emptyList());
         return EditBungResultEnum.SUCCESSFULLY_EDITED;
     }

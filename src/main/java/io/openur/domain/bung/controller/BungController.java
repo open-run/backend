@@ -9,7 +9,7 @@ import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.enums.SearchBungTypeEnum;
-import io.openur.domain.bung.model.BungStatus;
+import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
@@ -85,23 +85,6 @@ public class BungController {
             PagedResponse.build(contents, "success"));
     }
     
-//    @GetMapping("/search")
-//    @Operation(summary = "벙 검색하기")
-//    public ResponseEntity<PagedResponse<BungInfoDto>> searchBungList(
-//        @AuthenticationPrincipal UserDetailsImpl userDetails,
-//        @RequestParam(required = false, defaultValue = "ALL") SearchBungTypeEnum type,
-//        @RequestParam(required = false, defaultValue = "") String keyword,
-//        @RequestParam(required = false, defaultValue = "0") int page,
-//        @RequestParam(required = false, defaultValue = "10") int limit
-//    ) {
-//        Pageable pageable = PageRequest.of(page, limit);
-//        Page<BungInfoDto> contents = bungService.searchBungLists(
-//            userDetails, keyword, pageable);
-//
-//        return ResponseEntity.ok().body(
-//            PagedResponse.build(contents, "success"));
-//    }
-
     @GetMapping("/my-bungs")
     @Operation(summary = """
         내가 소유 및 참가했던 벙 목록.

@@ -1,15 +1,30 @@
 package io.openur.domain.bunghashtag.repository;
 
+import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
+import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
+import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
+
+import com.querydsl.core.QueryFactory;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
+import io.openur.domain.bung.entity.QBungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
+import io.openur.domain.bunghashtag.entity.QBungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
+import io.openur.domain.hashtag.entity.QHashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,6 +33,7 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
 
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
     private final BungRepositoryImpl bungRepository;
+    private final JPAQueryFactory queryFactory;
     
     /***
      * Bung 의 변동된 해시태그를 저장합니다
