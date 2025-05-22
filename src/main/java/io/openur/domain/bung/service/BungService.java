@@ -55,22 +55,10 @@ public class BungService {
     public BungInfoDto createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails, CreateBungDto dto)
     {
-        List<Hashtag> hashtags = this.saveHashtags(dto.getHashtags());
+        List<Hashtag> hashtags = hashtagRepository.saveNotListedTags(dto.getHashtags());
         Bung bung = this.saveNewBung(userDetails, dto, hashtags);
         
         return new BungInfoDto(bung);
-    }
-    
-    /**
-     * 문자열 리스트를 받아 없는 경우 생성 & 있는 경우 조회해서 HashTag 목록을 반환합니다.
-     * 빈 문자열 입력시 빈 리스트 반환
-     * @param hashtagStrList
-     * @return List<Hashtag></HashTag>
-     */
-    private List<Hashtag> saveHashtags(List<String> hashtagStrList) {
-        if(hashtagStrList.isEmpty()) return Collections.emptyList();
-        
-        return hashtagRepository.saveAll(hashtagStrList);
     }
     
     private Bung saveNewBung(
@@ -85,37 +73,11 @@ public class BungService {
         return bung;
     }
     
-    private Bung updateHashtags(Bung bung, List<String> hashtagStrList) {
-        // 변경 요청 해시태그가 공백인데, 원래도 공백이면 할거 없고
-        if(hashtagStrList.isEmpty()) {
-            if(bung.getHashtags().isEmpty()) return bung;
-            
-            // 공백인데 원래는 있었으면 지워야 하는거고
-//            bungHashtagRepository.deleteByBungId(bung.getBungId());
-            // OrphanRemoval 을 활용해 볼 예정
-            bungRepository.save(bung, Collections.emptyList());
-            return bung;
-        }
-        
-        // 변경 이력이 있다면,
-        // 1. 새로 들어오는 건 해시태그 생성
-        List<Hashtag> newHashtags = this.saveHashtags(hashtagStrList);
-        // 2. 연결 관계 정리 ( 생긴건 추가하고), orphanRemoval 로 사라진거 지울 필요 x
-        // 3. bung 내 해시태그 상기와 같이 ( 사라진건 지우고, 생긴건 추가하고) .
-        bung = bungHashtagRepository.updateBungHashtag(bung, newHashtags);
-//
-//        applyIfNotNull(hashtagStrList, hashtagsStr -> {
-//            List<Hashtag> hashtags = hashtagRepository.saveAll(hashtagsStr);
-//            bungHashtagRepository.updateHashtags(bung, hashtags);
-//        });
-        return bung;
-    }
-
     public BungInfoWithMemberListDto getBungDetail(String bungId) {
         return userBungRepository.findBungWithUsersById(bungId)
             .orElseThrow(() -> new GetBungException(GetBungResultEnum.BUNG_NOT_FOUND));
     }
-
+    
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public void deleteBung(UserDetailsImpl userDetails, String bungId) {
@@ -149,8 +111,8 @@ public class BungService {
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
             .map(BungInfoWithOwnershipDto::new);
     }
-    // 전체, 멤버 해시태그
     
+    // 전체, 멤버 해시태그
     @Transactional
     public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
         throws JoinBungException {
@@ -176,30 +138,49 @@ public class BungService {
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public EditBungResultEnum editBung(
-        UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto) {
+        UserDetailsImpl userDetails, String bungId, EditBungDto editBungDto
+    ) {
         Bung bung = bungRepository.findBungById(bungId);
 
-        if (bung.isCompleted()) {
+        if (bung.isCompleted()) { // 완료된 벙은 수정할 수 없다
             throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_COMPLETED);
         }
-
+        
+        // 이미 수행 중인 벙 이벤트 또한 수정할 수 없다
         if (bung.getStartDateTime().isBefore(LocalDateTime.now())) {
             throw new EditBungException(EditBungResultEnum.BUNG_HAS_ALREADY_STARTED);
         }
         
+        // 수정시, 뒤풀이가 있는데 설명을 적지 않는 것은 허용하지 않는다
         if (editBungDto.getHasAfterRun() && !StringUtils.hasText(editBungDto.getAfterRunDescription())) {
             throw new EditBungException(EditBungResultEnum.BUNG_AFTER_RUN_DESCRIPTION_MISSING);
         }
-
+        
+        // 수정시, 이미 함께하고 있는 인원보다 적게 수정할 수는 없다
         int numberOfCurrentMember = userBungRepository.countParticipantsByBungId(bungId);
         if (editBungDto.getMemberNumber() < numberOfCurrentMember) {
             throw new EditBungException(EditBungResultEnum.BUNG_PARTICIPANTS_EXCEEDED);
         }
 
         bung.update(editBungDto);
-        bung = updateHashtags(bung, editBungDto.getHashtags());
-        bungRepository.save(bung, Collections.emptyList());
+        bung = bungRepository.save(bung, Collections.emptyList());
+        
+        this.updateHashtagConnection(bung, editBungDto.getHashtags());
         return EditBungResultEnum.SUCCESSFULLY_EDITED;
+    }
+    
+    private void updateHashtagConnection(Bung bung, List<String> hashtagStrList) {
+        // 변경 요청 해시태그가 공백인데, 원래도 공백이면 할거 없고
+        if(hashtagStrList.isEmpty()) {
+            if(bung.getHashtags().isEmpty()) return;
+            
+            bungHashtagRepository.deleteByBungId(bung.getBungId());
+            return;
+        }
+        
+        // hashtag 문자열에 해당하는 hashtag 비 영속성 객체로 얻어옴 ( 생성을 하던지 간에 )
+        List<Hashtag> hashtags = hashtagRepository.saveNotListedTags(hashtagStrList);
+        bungHashtagRepository.insertHashtagConnection(bung, hashtags);
     }
     
     @Transactional
