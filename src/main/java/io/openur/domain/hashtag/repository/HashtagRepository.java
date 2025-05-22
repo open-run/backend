@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface HashtagRepository {
 
-    List<Hashtag> saveAll(List<String> hashtagStrs);
+    List<Hashtag> saveNotListedTags(List<String> hashtagStrs);
     
     List<Hashtag> findByHashtagStrIn(List<String> hashtagStrs);
     

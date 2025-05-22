@@ -16,6 +16,10 @@ public interface BungRepository {
     Page<BungInfoWithMemberListDto> findBungsWithLocation(
         String keyword, Pageable pageable);
     
+    Page<BungInfoWithMemberListDto> findBungWithHashtag(
+        String keyword, Pageable pageable
+    );
+    
     Bung findBungById(String bungId);
 
     void deleteByBungId(String bungId);

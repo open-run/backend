@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BungJpaRepository extends JpaRepository<BungEntity, String> {
 
     void deleteByBungId(String bungId);
-
-    @EntityGraph(attributePaths = {"bungHashtags", "hashtagEntity"})
+    
+    @EntityGraph(attributePaths = {"bungHashtags", "bungHashtags.hashtagEntity"})
     BungEntity findBungEntityByBungId(String bungId);
 }
