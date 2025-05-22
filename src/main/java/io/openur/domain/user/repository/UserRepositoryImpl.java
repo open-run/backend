@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
 
 @Repository
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User findUser(User user) {
         // Try to find by email first if available
-        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+        if (StringUtils.hasText(user.getEmail())) {
             User foundUser = findByEmail(user.getEmail());
             if (foundUser != null) {
                 return foundUser;
