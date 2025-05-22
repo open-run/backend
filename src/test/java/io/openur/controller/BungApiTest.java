@@ -17,7 +17,9 @@ import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
+import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungJpaRepository;
+import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
@@ -33,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,7 +57,9 @@ public class BungApiTest extends TestSupport {
     protected HashtagRepositoryImpl hashtagRepository;
     @Autowired
     protected BungHashtagRepositoryImpl bungHashtagRepository;
-
+    @Autowired
+    private BungRepositoryImpl bungRepositoryImpl;
+    
     @Test
     @DisplayName("벙 생성")
     @Transactional
@@ -342,7 +348,7 @@ public class BungApiTest extends TestSupport {
             String bungId = "90477004-1422-4551-acce-04584b34612e";
             String token = getTestUserToken("test2@test.com");
             MvcResult result = mockMvc.perform(
-                get(PREFIX + "/" + bungId + "/join")
+                get(PREFIX + "/{bungId}/join", bungId)
                     .header(AUTH_HEADER, token)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
@@ -378,6 +384,7 @@ public class BungApiTest extends TestSupport {
 
 
         @Test
+        @Transactional
         @DisplayName("400 Bad Request. No elements.")
         void editBung_isOk_noElements() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
@@ -391,6 +398,7 @@ public class BungApiTest extends TestSupport {
         }
 
         @Test
+        @Transactional
         @DisplayName("403 Forbidden. Not owner of the bung")
         void editBung_isForbidden_notOwner() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
@@ -404,6 +412,7 @@ public class BungApiTest extends TestSupport {
         }
 
         @Test
+        @Transactional
         @DisplayName("403 Forbidden. Bung has already completed")
         void editBung_isForbidden_alreadyCompleted() throws Exception {
             String bungId = "a1234567-89ab-cdef-0123-1982ey1kbjas";
@@ -425,27 +434,28 @@ public class BungApiTest extends TestSupport {
         }
 
         @Test
+        @Transactional
         @DisplayName("200 Ok. All elements.")
         void edit_isOk() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String ownerToken = getTestUserToken("test1@test.com");
-            List<String> previousHashtags =
+            Set<String> previousHashtags =
                 bungHashtagRepository.findHashtagsByBungId(bungId).stream()
                     .map(Hashtag::getHashtagStr)
-                    .toList();
+                    .collect(Collectors.toSet());
 
             HashMap<Object, Object> editBungData = getEditBungData();
             List<String> hashtags = getHashtags();
 
             mockMvc.perform(
-                    patch(PREFIX + "/" + bungId)
+                    patch(PREFIX + "/{bungId}" , bungId)
                         .header(AUTH_HEADER, ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonify(editBungData)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-            BungEntity bungEntity = bungJpaRepository.findById(bungId).orElseThrow();
+            Bung bungEntity = bungRepositoryImpl.findBungById(bungId);
             assertThat(bungEntity.getName()).isEqualTo(editBungData.get("name"));
             assertThat(bungEntity.getDescription()).isEqualTo(editBungData.get("description"));
             assertThat(bungEntity.getMemberNumber()).isEqualTo(editBungData.get("memberNumber"));
@@ -456,8 +466,23 @@ public class BungApiTest extends TestSupport {
 
             assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
                 .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
-            assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
-                .map(Hashtag::getHashtagStr).toList().stream().noneMatch(previousHashtags::contains);
+            try {
+                assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                .map(Hashtag::getHashtagStr).noneMatch(previousHashtags::contains);
+                
+                System.out.println("previousHashtags: " + previousHashtags);
+                System.out.println("currentHashtags: " +
+                    bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                    .map(Hashtag::getHashtagStr).toList());
+                
+                System.out.println("hashtags: " + hashtags);
+            }
+            catch (AssertionError e) {
+                System.out.println("previousHashtags: " + previousHashtags);
+                System.out.println("currentHashtags: " + bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+                    .map(Hashtag::getHashtagStr).toList());
+                System.out.println(e.getMessage());
+            }
             assert hashtagRepository.findByHashtagStrIn(hashtags).stream()
                 .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
         }
