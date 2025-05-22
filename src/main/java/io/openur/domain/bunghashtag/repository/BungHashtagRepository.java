@@ -8,10 +8,8 @@ public interface BungHashtagRepository {
 
     Bung saveNewBungHashtag(Bung bung, List<Hashtag> hashtags);
     
-    Bung updateBungHashtag(Bung bung, List<Hashtag> hashtags);
+    void insertHashtagConnection(Bung bung, List<Hashtag> hashtags);
     
-    void updateHashtags(Bung bung, List<Hashtag> hashtags);
-
     List<Hashtag> findHashtagsByBungId(String bungId);
 
     void deleteByBungId(String bungId);

@@ -1,31 +1,18 @@
 package io.openur.domain.bunghashtag.repository;
 
-import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
-import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
-import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
-
-import com.querydsl.core.QueryFactory;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
-import io.openur.domain.bung.entity.QBungEntity;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepositoryImpl;
 import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
-import io.openur.domain.bunghashtag.entity.QBungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
-import io.openur.domain.hashtag.entity.QHashtagEntity;
+import io.openur.domain.hashtag.entity.HashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -33,15 +20,8 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
 
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
     private final BungRepositoryImpl bungRepository;
-    private final JPAQueryFactory queryFactory;
+    private final EntityManager entityManager;
     
-    /***
-     * Bung 의 변동된 해시태그를 저장합니다
-     * 목록이 빈 경우 제거 혹은 아무 동작도 않고 종료합니다.
-     * @param bung
-     * @param hashtags
-     * @return Bung
-     */
     @Override
     public Bung saveNewBungHashtag(Bung bung, List<Hashtag> hashtags) {
         if(hashtags.isEmpty()) return bung;
@@ -54,55 +34,41 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
                 ).toList()
         ).stream().map(BungHashtag::from).toList();
         
-        bung = bungRepository.save(bung, bungHashtags);
-        return bung;
+        bungRepository.save(bung, bungHashtags);
+        
+        return bungRepository.findBungById(bung.getBungId());
     }
     
     @Override
-    public Bung updateBungHashtag(Bung bung, List<Hashtag> hashtags) {
-        // Hashtags 중 연결관계가 존재하는 것만 돌아오는 목록
-        List<BungHashtag> existBungHashTag =
-            bungHashtagJpaRepository
-                .findAllByBungEntity_BungIdAndHashtagEntity_HashtagStrIn(
-                    bung.getBungId(),
-                    hashtags.stream().map(Hashtag::getHashtagStr).toList()
-                )
-                .stream()
-                .map(BungHashtag::from)
-                .toList();
-        // HashTag String 을 세트로
-        Set<String> existBungHashtagStrSet = existBungHashTag.stream()
-            .map(bungHashtag -> bungHashtag.getHashtag().getHashtagStr())
+    @Transactional
+    public void insertHashtagConnection(Bung bung, List<Hashtag> newHashtags) {
+        // 2. 기존/신규 해시태그 문자열 세트
+        Set<String> existingStrs = bungHashtagJpaRepository
+            .findAllByBungEntity_BungId(bung.getBungId()).stream()
+            .map(BungHashtagEntity::getHashtagEntity)
+            .map(HashtagEntity::getHashtagStr)
             .collect(Collectors.toSet());
         
-        Bung finalBung = bung;
-        // 기 존재 해시태그 연결관계를 제외하고 생성 및 저장합니다
-        List<BungHashtag> newBungHashTag = bungHashtagJpaRepository
-            .saveAll(
-                hashtags.stream()
-                    .filter(hashtag ->
-                        !existBungHashtagStrSet.contains(hashtag.getHashtagStr())
-                    )
-                    .map(hashtag ->
-                        new BungHashtag(finalBung, hashtag).toEntity()
-                    )
-                    .toList()
-            )
-            .stream().map(BungHashtag::from).toList();
+        Set<String> newStrs = newHashtags.stream()
+            .map(Hashtag::getHashtagStr)
+            .collect(Collectors.toSet());
         
-        // 수정하려는 연결관계 목록
-        List<BungHashtag> bungHashtags = new ArrayList<>(existBungHashTag);
-        bungHashtags.addAll(newBungHashTag);
+        bungHashtagJpaRepository.
+            deleteAllByBungEntity_BungIdAndHashtagEntity_HashtagStrNotIn(
+                bung.getBungId(), newStrs
+            );
         
-        // 목록을 통째로 교체 후 저장 리천
-        bung = bungRepository.save(bung, bungHashtags);
-        return bung;
-    }
-
-    @Override
-    public void updateHashtags(Bung bung, List<Hashtag> hashtags) {
-        bungHashtagJpaRepository.deleteByBungEntity_BungId(bung.getBungId());
-//        saveBungHashtag(bung, hashtags);
+        entityManager.flush();
+        entityManager.clear();
+        
+        // 4. 추가 대상 처리 (벌크 연산)
+        List<BungHashtagEntity> toSave = newHashtags.stream()
+            .filter(h -> !existingStrs.contains(h.getHashtagStr()))
+            .map(h -> new BungHashtag(bung, h))
+            .map(BungHashtag::toEntity)
+            .toList();
+        
+        bungHashtagJpaRepository.saveAll(toSave);
     }
 
     @Override

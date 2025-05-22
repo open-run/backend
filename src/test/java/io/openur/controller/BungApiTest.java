@@ -466,23 +466,8 @@ public class BungApiTest extends TestSupport {
 
             assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
                 .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
-            try {
-                assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
+            assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
                 .map(Hashtag::getHashtagStr).noneMatch(previousHashtags::contains);
-                
-                System.out.println("previousHashtags: " + previousHashtags);
-                System.out.println("currentHashtags: " +
-                    bungHashtagRepository.findHashtagsByBungId(bungId).stream()
-                    .map(Hashtag::getHashtagStr).toList());
-                
-                System.out.println("hashtags: " + hashtags);
-            }
-            catch (AssertionError e) {
-                System.out.println("previousHashtags: " + previousHashtags);
-                System.out.println("currentHashtags: " + bungHashtagRepository.findHashtagsByBungId(bungId).stream()
-                    .map(Hashtag::getHashtagStr).toList());
-                System.out.println(e.getMessage());
-            }
             assert hashtagRepository.findByHashtagStrIn(hashtags).stream()
                 .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
         }

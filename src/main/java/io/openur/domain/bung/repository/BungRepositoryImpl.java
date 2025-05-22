@@ -9,7 +9,6 @@ import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -113,7 +112,7 @@ public class BungRepositoryImpl implements BungRepository {
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
     
-    
+    @Override
     public Page<BungInfoWithMemberListDto> findBungWithHashtag(
         String keyword, Pageable pageable
     ) {
@@ -121,7 +120,7 @@ public class BungRepositoryImpl implements BungRepository {
             .selectDistinct(bungEntity.bungId)
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
-            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .where(
                 bungEntity.startDateTime.gt(LocalDateTime.now()),
                 hashtagEntity.hashtagStr.containsIgnoreCase(keyword)
@@ -135,7 +134,7 @@ public class BungRepositoryImpl implements BungRepository {
             queryFactory
                 .selectFrom(bungEntity)
                 .join(bungEntity.bungHashtags, bungHashtagEntity)
-                .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+                .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
                 .where(bungEntity.bungId.in(bungIds))
                 .orderBy(bungEntity.startDateTime.asc())
                 .fetch().stream().map(BungInfoWithMemberListDto::new).toList() :
@@ -145,7 +144,7 @@ public class BungRepositoryImpl implements BungRepository {
             .select(bungEntity.countDistinct())
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
-            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .where(
                 bungEntity.startDateTime.gt(LocalDateTime.now()),
                 hashtagEntity.hashtagStr.containsIgnoreCase(keyword)
@@ -171,7 +170,7 @@ public class BungRepositoryImpl implements BungRepository {
 
     @Override
     public Boolean isBungStarted(String bungId) {
-        Bung bung = Bung.from(bungJpaRepository.findBungEntityByBungId(bungId));
+        Bung bung = this.findBungById(bungId);
         return bung.getStartDateTime().isBefore(LocalDateTime.now());
     }
 

@@ -2,7 +2,6 @@ package io.openur.domain.userbung.repository;
 
 
 import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.enums.BungStatus.ACCOMPLISHED;
 import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
