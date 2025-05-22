@@ -29,7 +29,7 @@ public class BungHashtagEntity {
     @JoinColumn(name = "bung_id")
     private BungEntity bungEntity;
 
-    @ManyToOne(targetEntity = HashtagEntity.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = HashtagEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "hashtag_id")
     private HashtagEntity hashtagEntity;
 }
