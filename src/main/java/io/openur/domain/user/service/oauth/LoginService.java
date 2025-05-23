@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.OauthUserInfoDto;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public abstract class LoginService {
 
-    private final UserRepositoryImpl userRepository;
+    private final UserRepository userRepository;
     private final RestTemplate restTemplate;
 
     public abstract GetUsersLoginDto login(String code, String state) throws JsonProcessingException;

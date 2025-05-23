@@ -2,6 +2,7 @@ package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,16 +14,16 @@ import io.openur.config.TestSupport;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
-import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
+import io.openur.domain.bung.enums.GetBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
+import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.bung.repository.BungJpaRepository;
-import io.openur.domain.bung.repository.BungRepositoryImpl;
-import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
+import io.openur.domain.bung.repository.BungRepository;
+import io.openur.domain.bunghashtag.repository.BungHashtagRepository;
 import io.openur.domain.hashtag.model.Hashtag;
-import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
+import io.openur.domain.hashtag.repository.HashtagRepository;
 import io.openur.domain.userbung.repository.UserBungJpaRepository;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
@@ -34,7 +35,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
@@ -50,15 +50,13 @@ public class BungApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/bungs";
     @Autowired
-    protected BungJpaRepository bungJpaRepository;
-    @Autowired
     protected UserBungJpaRepository userBungJpaRepository;
     @Autowired
-    protected HashtagRepositoryImpl hashtagRepository;
+    protected HashtagRepository hashtagRepository;
     @Autowired
-    protected BungHashtagRepositoryImpl bungHashtagRepository;
+    protected BungHashtagRepository bungHashtagRepository;
     @Autowired
-    private BungRepositoryImpl bungRepositoryImpl;
+    private BungRepository bungRepository;
     
     @Test
     @DisplayName("벙 생성")
@@ -92,15 +90,14 @@ public class BungApiTest extends TestSupport {
         assertNotNull(location, "Location header must not be null");
 
         String bungId = location.substring(location.lastIndexOf('/') + 1);
-        Optional<BungEntity> bungEntity = bungJpaRepository.findById(bungId);
-        assert bungEntity.isPresent();
-        assert bungId.equals(bungEntity.get().getBungId());
+        Bung bungEntity = bungRepository.findBungById(bungId);
+        assert bungId.equals(bungEntity.getBungId());
 
         assert bungHashtagRepository.findHashtagsByBungId(bungId).stream()
             .map(Hashtag::getHashtagStr).toList().containsAll(hashtags);
         assert hashtagRepository.findByHashtagStrIn(hashtags).stream().map(Hashtag::getHashtagStr)
             .toList().containsAll(hashtags);
-        assert bungEntity.get().getMainImage().equals("image1.jpg");
+        assert bungEntity.getMainImage().equals("image1.jpg");
     }
 
     @Nested
@@ -274,8 +271,12 @@ public class BungApiTest extends TestSupport {
                 delete(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, token)
             ).andExpect(status().isOk());
+            
+            GetBungException exception = assertThrows(
+                GetBungException.class, () -> bungRepository.findBungById(bungId)
+            );
 
-            assertThat(bungJpaRepository.findById(bungId)).isEmpty();
+            assertThat(exception.getMessage().equals(GetBungResultEnum.BUNG_NOT_FOUND.toString()));
             assertThat(userBungJpaRepository.findByBungEntity_BungId(bungId)).isEmpty();
         }
 
@@ -455,7 +456,7 @@ public class BungApiTest extends TestSupport {
                 .andExpect(status().isOk())
                 .andReturn();
 
-            Bung bungEntity = bungRepositoryImpl.findBungById(bungId);
+            Bung bungEntity = bungRepository.findBungById(bungId);
             assertThat(bungEntity.getName()).isEqualTo(editBungData.get("name"));
             assertThat(bungEntity.getDescription()).isEqualTo(editBungData.get("description"));
             assertThat(bungEntity.getMemberNumber()).isEqualTo(editBungData.get("memberNumber"));

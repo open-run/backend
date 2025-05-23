@@ -16,16 +16,16 @@ import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.bung.repository.BungRepositoryImpl;
-import io.openur.domain.bunghashtag.repository.BungHashtagRepositoryImpl;
+import io.openur.domain.bung.repository.BungRepository;
+import io.openur.domain.bunghashtag.repository.BungHashtagRepository;
 import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.hashtag.model.Hashtag;
-import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
+import io.openur.domain.hashtag.repository.HashtagRepository;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
 import io.openur.domain.userbung.dto.UserBungInfoDto;
 import io.openur.domain.userbung.model.UserBung;
-import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -44,11 +44,11 @@ import org.springframework.util.StringUtils;
 @Transactional(readOnly = true)
 public class BungService {
 
-    private final BungRepositoryImpl bungRepository;
-    private final UserRepositoryImpl userRepository;
-    private final UserBungRepositoryImpl userBungRepository;
-    private final HashtagRepositoryImpl hashtagRepository;
-    private final BungHashtagRepositoryImpl bungHashtagRepository;
+    private final BungRepository bungRepository;
+    private final UserBungRepository userBungRepository;
+    private final UserRepository userRepository;
+    private final HashtagRepository hashtagRepository;
+    private final BungHashtagRepository bungHashtagRepository;
     private final ChallengeEventsPublisher challengeEventsPublisher;
     
     @Transactional
