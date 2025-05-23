@@ -2,9 +2,9 @@ package io.openur.domain.challenge.event;
 
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.challenge.model.CompletedType;
-import io.openur.domain.challenge.repository.ChallengeRepositoryImpl;
+import io.openur.domain.challenge.repository.ChallengeRepository;
 import io.openur.domain.userchallenge.model.UserChallenge;
-import io.openur.domain.userchallenge.repository.UserChallengeRepositoryImpl;
+import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 public class ChallengeEventsPublisher {
 
     private final ApplicationEventPublisher publisher;
-    private final UserChallengeRepositoryImpl userChallengeRepository;
-    private final ChallengeRepositoryImpl challengeRepository;
+    private final UserChallengeRepository userChallengeRepository;
+    private final ChallengeRepository challengeRepository;
 
     /**
      * Processes challenge completion events when a Bung is completed.

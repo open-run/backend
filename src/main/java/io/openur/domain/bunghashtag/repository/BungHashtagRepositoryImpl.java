@@ -1,7 +1,7 @@
 package io.openur.domain.bunghashtag.repository;
 
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.bung.repository.BungRepositoryImpl;
+import io.openur.domain.bung.repository.BungRepository;
 import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.entity.HashtagEntity;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BungHashtagRepositoryImpl implements BungHashtagRepository {
 
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
-    private final BungRepositoryImpl bungRepository;
+    private final BungRepository bungRepository;
     private final EntityManager entityManager;
     
     @Override

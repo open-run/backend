@@ -7,7 +7,7 @@ import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.OauthUserInfoDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
 import io.openur.global.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ public class KakaoService extends LoginService {
     private String userInfoUri;
 
     public KakaoService(
-        UserRepositoryImpl userRepository,
+        UserRepository userRepository,
         RestTemplate restTemplate,
         JwtUtil jwtUtil
     ) {

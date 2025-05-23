@@ -17,7 +17,10 @@ public interface UserBungRepository {
     Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId);
 
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
-
+    
+    Page<BungInfoWithMemberListDto> findBungWithUserName(
+        String keyword, Pageable pageable);
+    
     Page<UserBung> findJoinedBungsByUserWithStatus(
         User user, Boolean isOwned, BungStatus status, Pageable pageable);
 
