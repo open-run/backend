@@ -15,6 +15,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.enums.GetBungResultEnum;
+import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.user.model.User;
@@ -24,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -155,7 +158,14 @@ public class BungRepositoryImpl implements BungRepository {
     
     @Override
     public Bung findBungById(String bungId) {
-        return Bung.from(bungJpaRepository.findBungEntityByBungId(bungId));
+        Optional<BungEntity> optionalBungEntity = bungJpaRepository
+            .findBungEntityByBungId(bungId);
+        
+        if (optionalBungEntity.isEmpty()) {
+            throw new GetBungException(GetBungResultEnum.BUNG_NOT_FOUND);
+        }
+        
+        return Bung.from(optionalBungEntity.get());
     }
 
     @Override
