@@ -33,9 +33,6 @@ out/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
-
 ### secret files ###
 src/main/resources/application.yml
 src/main/generated/*

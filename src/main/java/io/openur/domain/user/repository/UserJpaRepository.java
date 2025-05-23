@@ -9,6 +9,8 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, String> {
 
     Optional<UserEntity> findByEmail(String email);
 
+    Optional<UserEntity> findByBlockchainAddress(String blockchainAddress);
+
     Optional<UserEntity> findByUserId(String userId);
 
     List<UserEntity> findAllByNicknameContains(String nickname);

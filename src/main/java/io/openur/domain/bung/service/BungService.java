@@ -50,7 +50,7 @@ public class BungService {
     private final HashtagRepository hashtagRepository;
     private final BungHashtagRepository bungHashtagRepository;
     private final ChallengeEventsPublisher challengeEventsPublisher;
-    
+  
     @Transactional
     public BungInfoDto createBung(
         @AuthenticationPrincipal UserDetailsImpl userDetails, CreateBungDto dto)
@@ -68,8 +68,7 @@ public class BungService {
         Bung bung = bungRepository.save(new Bung(dto), Collections.emptyList());
         
         bung = bungHashtagRepository.saveNewBungHashtag(bung, hashtags);
-        userBungRepository.save(UserBung.isOwnerBung(user, bung));
-        
+
         return bung;
     }
     
@@ -92,7 +91,7 @@ public class BungService {
         if(SearchBungTypeEnum.needToSearch(type) && !StringUtils.hasText(keyword))
             throw new GetBungException(GetBungResultEnum.EMPTY_KEYWORD);
         
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
 
         return switch (type) {
             case ALL -> bungRepository.findBungsWithStatus(user, isJoinedOnly, pageable);
@@ -105,7 +104,7 @@ public class BungService {
     public Page<BungInfoWithOwnershipDto> getMyBungLists(
         UserDetailsImpl userDetails, Boolean isOwned, BungStatus status, Pageable pageable
     ) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
 
         return userBungRepository
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)

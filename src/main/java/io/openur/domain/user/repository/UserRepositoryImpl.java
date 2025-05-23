@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
 
 @Repository
 @RequiredArgsConstructor
@@ -20,8 +22,34 @@ public class UserRepositoryImpl implements UserRepository {
     private EntityManager entityManager;
 
     @Override
-    public User findByEmail(String email) {
+    public User findUser(User user) {
+        // Try to find by email first if available
+        if (StringUtils.hasText(user.getEmail())) {
+            User foundUser = findByEmail(user.getEmail());
+            if (foundUser != null) {
+                return foundUser;
+            }
+        }
+        
+        // If email not found or not available, try blockchain address
+        if (user.getBlockchainAddress() != null && !user.getBlockchainAddress().matches("0x")) {
+            return findByBlockchainAddress(user.getBlockchainAddress());
+        }
+        
+        return null;
+    }
+
+    private User findByEmail(String email) {
         UserEntity userEntity = userJpaRepository.findByEmail(email).orElse(null);
+        if (userEntity == null) {
+            return null;
+        } else {
+            return User.from(userEntity);
+        }
+    }
+
+    private User findByBlockchainAddress(String blockchainAddress) {
+        UserEntity userEntity = userJpaRepository.findByBlockchainAddress(blockchainAddress).orElse(null);
         if (userEntity == null) {
             return null;
         } else {
