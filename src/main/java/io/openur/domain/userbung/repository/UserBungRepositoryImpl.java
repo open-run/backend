@@ -71,6 +71,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         return Optional.of(new BungInfoWithMemberListDto(bung, members));
     }
     
+    @Override
     public Page<BungInfoWithMemberListDto> findBungWithUserName(
         String keyword, Pageable pageable)
     {
