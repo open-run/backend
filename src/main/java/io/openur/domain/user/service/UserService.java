@@ -4,8 +4,8 @@ import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
-import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
+import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final UserRepositoryImpl userRepository;
-    private final UserBungRepositoryImpl userBungRepositoryImpl;
+    private final UserRepository userRepository;
+    private final UserBungRepository userBungRepository;
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userRepository.findUser(userDetails.getUser());
@@ -46,9 +46,9 @@ public class UserService {
     public Page<GetUsersResponseDto> getUserSuggestion(
         @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
 
-        List<String> bungIds = userBungRepositoryImpl.findJoinedBungsId(userDetails.getUser());
+        List<String> bungIds = userBungRepository.findJoinedBungsId(userDetails.getUser());
 
-        return userBungRepositoryImpl
+        return userBungRepository
             .findAllFrequentUsers(bungIds, userDetails.getUser(), pageable).map(GetUsersResponseDto::new);
     }
 

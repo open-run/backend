@@ -8,7 +8,8 @@ import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
-import io.openur.domain.bung.model.BungStatus;
+import io.openur.domain.bung.enums.SearchBungTypeEnum;
+import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.bung.service.BungService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
@@ -61,6 +62,15 @@ public class BungController {
     @Operation(summary = "현재 시각 기준 벙 시작 시각이 미래인 벙 목록, 시작 시간 오름차순 (가장 임박한 벙 먼저)")
     public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Parameter(
+            description = "ALL : 기존 기능과 동일"
+                + "MEMBER_NAME : 멤버 이름 검색"
+                + "LOCATION : 위치 검색"
+                + "HASHTAG : 해시태그 검색"
+        )
+        @RequestParam(required = false, defaultValue = "ALL") SearchBungTypeEnum type,
+        @Parameter(description = "type에 따라 검색할 내용, ALL ")
+        @RequestParam(required = false, defaultValue = "") String keyword,
         @Parameter(description = "true : 참가하지 않은 || false : 참가 유무와 상관 없이 전체 벙 목록")
         @RequestParam(required = false, defaultValue = "false") boolean isAvailableOnly,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -68,12 +78,13 @@ public class BungController {
     ) {
         Pageable pageable = PageRequest.of(page, limit);
         Page<BungInfoWithMemberListDto> contents = bungService.getBungLists(
-            userDetails, isAvailableOnly, pageable);
+            userDetails, type, keyword, isAvailableOnly, pageable
+        );
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
     }
-
+    
     @GetMapping("/my-bungs")
     @Operation(summary = """
         내가 소유 및 참가했던 벙 목록.

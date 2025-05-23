@@ -44,9 +44,4 @@ public class BungInfoDto {
         this.hashtags = bung.getHashtags();
         this.mainImage = bung.getMainImage();
     }
-
-    public BungInfoDto(Bung bung, List<String> hashtags) {
-        this(bung);
-        this.hashtags = hashtags;
-    }
 }

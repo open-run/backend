@@ -1,7 +1,7 @@
 package io.openur.domain.hashtag.service;
 
 import io.openur.domain.hashtag.model.Hashtag;
-import io.openur.domain.hashtag.repository.HashtagRepositoryImpl;
+import io.openur.domain.hashtag.repository.HashtagRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class HashtagService {
 
-    private final HashtagRepositoryImpl hashtagRepository;
+    private final HashtagRepository hashtagRepository;
 
     public List<String> getHashtagList(String substring) {
         return hashtagRepository.findByHashtagStrContaining(substring)

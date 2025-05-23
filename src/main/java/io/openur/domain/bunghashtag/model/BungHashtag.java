@@ -3,6 +3,7 @@ package io.openur.domain.bunghashtag.model;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
+import java.util.Collections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,9 +27,10 @@ public class BungHashtag {
     }
 
     public BungHashtagEntity toEntity() {
-        return new BungHashtagEntity(this.bungHashtagId, this.bung.toEntity(),
-            this.hashtag.toEntity());
+        return new BungHashtagEntity(
+            this.bungHashtagId,
+            this.bung.toEntity(Collections.emptyList()),
+            this.hashtag.toEntity()
+        );
     }
-
-
 }

@@ -1,9 +1,9 @@
 package io.openur.domain.challenge.event;
 
 import io.openur.domain.challenge.model.Challenge;
-import io.openur.domain.challenge.repository.ChallengeRepositoryImpl;
+import io.openur.domain.challenge.repository.ChallengeRepository;
 import io.openur.domain.userchallenge.model.UserChallenge;
-import io.openur.domain.userchallenge.repository.UserChallengeRepositoryImpl;
+import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ChallengeEventsListener {
 
-    private final UserChallengeRepositoryImpl userChallengeRepository;
-    private final ChallengeRepositoryImpl challengeRepository;
+    private final UserChallengeRepository userChallengeRepository;
+    private final ChallengeRepository challengeRepository;
 
     private void airdropNFT(UserChallenge userChallenge) {
         // TODO: NFT 에어드랍
