@@ -9,9 +9,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class HashtagRepositoryImpl implements HashtagRepository {
 
     private final HashtagJpaRepository hashtagJpaRepository;

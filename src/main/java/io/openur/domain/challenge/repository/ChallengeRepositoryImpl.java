@@ -4,9 +4,11 @@ import io.openur.domain.challenge.model.Challenge;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChallengeRepositoryImpl implements ChallengeRepository {
     
     private final ChallengeJpaRepository challengeJpaRepository;
