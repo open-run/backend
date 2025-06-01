@@ -10,11 +10,13 @@ import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.GetBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
+import io.openur.domain.bung.enums.SearchBungResultEnum;
 import io.openur.domain.bung.enums.SearchBungTypeEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
+import io.openur.domain.bung.exception.SearchBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepository;
@@ -69,7 +71,6 @@ public class BungService {
         
         bung = bungHashtagRepository.saveNewBungHashtag(bung, hashtags);
         userBungRepository.save(UserBung.isOwnerBung(user, bung));
-        
         return bung;
     }
     
@@ -90,7 +91,7 @@ public class BungService {
         boolean isJoinedOnly, Pageable pageable
     ) {
         if(SearchBungTypeEnum.needToSearch(type) && !StringUtils.hasText(keyword))
-            throw new GetBungException(GetBungResultEnum.EMPTY_KEYWORD);
+            throw new SearchBungException(SearchBungResultEnum.EMPTY_KEYWORD);
         
         User user = userRepository.findUser(userDetails.getUser());
 
@@ -112,7 +113,6 @@ public class BungService {
             .map(BungInfoWithOwnershipDto::new);
     }
     
-    // 전체, 멤버 해시태그
     @Transactional
     public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
         throws JoinBungException {
