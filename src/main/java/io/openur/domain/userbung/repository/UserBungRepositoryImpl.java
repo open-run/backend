@@ -33,10 +33,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserBungRepositoryImpl implements UserBungRepository {
 
     private final UserBungJpaRepository userBungJpaRepository;

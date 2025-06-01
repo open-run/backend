@@ -41,7 +41,4 @@ public class Hashtag {
         );
     }
     
-    private List<BungHashtagEntity> getBungHashtags() {
-        return bungHashtags;
-    }
 }

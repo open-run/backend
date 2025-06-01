@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BungHashtagRepositoryImpl implements BungHashtagRepository {
 
     private final BungHashtagJpaRepository bungHashtagJpaRepository;
@@ -41,7 +42,7 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
     
     @Override
     @Transactional
-    public void insertHashtagConnection(Bung bung, List<Hashtag> newHashtags) {
+    public void insertHashtagConnection(Bung bung, List<Hashtag> hashTags) {
         // 2. 기존/신규 해시태그 문자열 세트
         Set<String> existingStrs = bungHashtagJpaRepository
             .findAllByBungEntity_BungId(bung.getBungId()).stream()
@@ -49,7 +50,7 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
             .map(HashtagEntity::getHashtagStr)
             .collect(Collectors.toSet());
         
-        Set<String> newStrs = newHashtags.stream()
+        Set<String> newStrs = hashTags.stream()
             .map(Hashtag::getHashtagStr)
             .collect(Collectors.toSet());
         
@@ -62,7 +63,7 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
         entityManager.clear();
         
         // 4. 추가 대상 처리 (벌크 연산)
-        List<BungHashtagEntity> toSave = newHashtags.stream()
+        List<BungHashtagEntity> toSave = hashTags.stream()
             .filter(h -> !existingStrs.contains(h.getHashtagStr()))
             .map(h -> new BungHashtag(bung, h))
             .map(BungHashtag::toEntity)
