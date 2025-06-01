@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     private final UserChallengeJpaRepository userChallengeJpaRepository;
