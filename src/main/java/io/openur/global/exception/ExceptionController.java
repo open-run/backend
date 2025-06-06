@@ -2,6 +2,7 @@ package io.openur.global.exception;
 
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
+import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.exception.SearchBungException;
 import io.openur.domain.user.exception.UserNotFoundException;
@@ -32,7 +33,8 @@ public class ExceptionController {
     @ExceptionHandler({
         NullPointerException.class,
         NoSuchElementException.class,
-        UserNotFoundException.class
+        UserNotFoundException.class,
+        GetBungException.class
     })
     public ResponseEntity<ExceptionDto> handleNotFoundException(Exception ex) {
         return createResponse(HttpStatus.NOT_FOUND, ex.getMessage());
