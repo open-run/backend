@@ -1,0 +1,42 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "34.22.96.162",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "mysql-gcp",
+            "group": "openrun",
+            "database": "openur",
+            "username": "openur",
+            "askForPassword": true
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "127.0.0.1",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "openrun-local",
+            "group": "openrun",
+            "database": "openuR_db",
+            "username": "openur",
+            "askForPassword": true
+        }
+    ],
+    "java.format.settings.url": ".vscode/java-google-style.xml",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "[java]": {
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": true
+    },
+    "java.debug.settings.onBuildFailureProceed": true,
+}
