@@ -15,7 +15,10 @@ public class ChallengeRepositoryImpl implements ChallengeRepository {
 
     @Override
     public Challenge findById(Long challengeId) {
-        return null;
+        return Challenge.from(
+            challengeJpaRepository.findById(challengeId)
+                .orElseThrow( ()-> new RuntimeException("Challenge not found"))
+        );
     }
 
     @Override

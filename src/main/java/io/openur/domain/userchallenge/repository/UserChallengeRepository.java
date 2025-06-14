@@ -1,8 +1,10 @@
 package io.openur.domain.userchallenge.repository;
 
+import io.openur.domain.challenge.model.CompletedType;
 import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,10 @@ public interface UserChallengeRepository {
         Pageable pageable);
     
     List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds);
+
+    Map<CompletedType, List<UserChallenge>> findByUserIdsAndChallengeIdsGroupByCompletedType(
+        List<String> userIds, List<Long> challengeIds
+    );
 
     Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId);
 
