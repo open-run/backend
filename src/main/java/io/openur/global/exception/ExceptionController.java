@@ -2,7 +2,9 @@ package io.openur.global.exception;
 
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
+import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
+import io.openur.domain.bung.exception.SearchBungException;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.domain.userbung.exception.RemoveUserFromBungException;
 import io.openur.global.dto.ExceptionDto;
@@ -22,7 +24,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ExceptionController {
 
     @ExceptionHandler({IllegalArgumentException.class,
-        MissingServletRequestParameterException.class})
+        MissingServletRequestParameterException.class,
+        SearchBungException.class })
     public ResponseEntity<ExceptionDto> handleBadRequestException(Exception e) {
         return createResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
@@ -30,7 +33,8 @@ public class ExceptionController {
     @ExceptionHandler({
         NullPointerException.class,
         NoSuchElementException.class,
-        UserNotFoundException.class
+        UserNotFoundException.class,
+        GetBungException.class
     })
     public ResponseEntity<ExceptionDto> handleNotFoundException(Exception ex) {
         return createResponse(HttpStatus.NOT_FOUND, ex.getMessage());

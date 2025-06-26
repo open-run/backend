@@ -2,12 +2,10 @@ package io.openur.domain.challenge.event;
 
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.challenge.model.CompletedType;
-import io.openur.domain.challenge.repository.ChallengeRepositoryImpl;
 import io.openur.domain.userchallenge.model.UserChallenge;
-import io.openur.domain.userchallenge.repository.UserChallengeRepositoryImpl;
+import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -17,8 +15,7 @@ import org.springframework.stereotype.Component;
 public class ChallengeEventsPublisher {
 
     private final ApplicationEventPublisher publisher;
-    private final UserChallengeRepositoryImpl userChallengeRepository;
-    private final ChallengeRepositoryImpl challengeRepository;
+    private final UserChallengeRepository userChallengeRepository;
 
     /**
      * Processes challenge completion events when a Bung is completed.
@@ -46,16 +43,9 @@ public class ChallengeEventsPublisher {
         // TODO: 벙이 완료됐을 떄 트리거 되어야 하는 challengeID 만 필터링 필요. 
         List<Long> challengeIds = List.of(1L, 2L, 3L);
 
-        // TODO: UserChallenge 첫 생성 과정 필요. 일단은 시작이 이미 되어있는 상태라고 가정함.
-        List<UserChallenge> userChallenges = userChallengeRepository.findByUserIdsAndChallengeIds(userIds,
-            challengeIds);
-
         // Filter out completed challenges and group by completion type
-        Map<CompletedType, List<UserChallenge>> challengesByType = userChallenges.stream()
-            .filter(uc -> !uc.getNftCompleted())
-            .collect(Collectors.groupingBy(uc ->
-                challengeRepository.findById(uc.getChallenge().getChallengeId()).getCompletedType())
-            );
+        Map<CompletedType, List<UserChallenge>> challengesByType = userChallengeRepository
+            .findByUserIdsAndChallengeIdsGroupByCompletedType(userIds, challengeIds);
 
         // Publish events for each group
         if (challengesByType.containsKey(CompletedType.date)) {

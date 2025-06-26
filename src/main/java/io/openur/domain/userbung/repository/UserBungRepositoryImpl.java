@@ -1,9 +1,10 @@
 package io.openur.domain.userbung.repository;
 
+
 import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
-import static io.openur.domain.bung.model.BungStatus.ACCOMPLISHED;
+import static io.openur.domain.bung.enums.BungStatus.ACCOMPLISHED;
+import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
 import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
@@ -15,32 +16,35 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
-import io.openur.domain.bung.model.BungStatus;
+import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserBungRepositoryImpl implements UserBungRepository {
 
     private final UserBungJpaRepository userBungJpaRepository;
     private final JPAQueryFactory queryFactory;
 
     @Override
-    @Transactional(readOnly = true)
     public int countParticipantsByBungId(String bungId) {
         return queryFactory
             .select(userBungEntity.count())
@@ -51,21 +55,71 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public BungInfoWithMemberListDto findBungWithUsersById(String bungId) {
-        Map<BungEntity, List<UserBungEntity>> contents = queryFactory
-            .select(userBungEntity, bungEntity)
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .join(userBungEntity.userEntity, userEntity)
+    public Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId) {
+        BungEntity bung = queryFactory
+            .selectFrom(bungEntity)
             .where(bungEntity.bungId.eq(bungId))
-            .transform(groupBy(bungEntity).as(list(userBungEntity)));
-
-        for (Entry<BungEntity, List<UserBungEntity>> entry : contents.entrySet()) {
-            return new BungInfoWithMemberListDto(entry);
+            .fetchOne();
+        
+        if(bung == null) return Optional.empty();
+        
+        // Bung 이 존재하지 않았다면, 유저들을 복잡하게 조인해서 찾을 이유 없음.
+        List<UserBungEntity> members = queryFactory
+            .selectFrom(userBungEntity)
+            .join(userBungEntity.userEntity).fetchJoin()  // 페치 조인 추가
+            .where(userBungEntity.bungEntity.eq(bung))
+            .fetch();
+        
+        return Optional.of(new BungInfoWithMemberListDto(bung, members));
+    }
+    
+    @Override
+    public Page<BungInfoWithMemberListDto> findBungWithUserName(
+        String keyword, Pageable pageable)
+    {
+        if (!StringUtils.hasText(keyword)) {
+            return Page.empty(pageable);
         }
-
-        return null;
+        
+        // 닉네임 일치 / 참가 닫히지 않은 것
+        List<String> bungIds = queryFactory
+            .selectDistinct(userBungEntity.bungEntity.bungId)
+            .from(userBungEntity)
+            .where(
+                userBungEntity.userEntity.nickname.containsIgnoreCase(keyword),
+                userBungEntity.bungEntity.startDateTime.gt(LocalDateTime.now())
+            )
+            .orderBy(userBungEntity.bungEntity.startDateTime.asc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+        
+        Map<BungEntity, UserBungEntity> bungMap = !bungIds.isEmpty() ? queryFactory
+            .selectFrom(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+            .join(userBungEntity.userEntity, userEntity).fetchJoin()
+            .where(userBungEntity.bungEntity.bungId.in(bungIds))
+            .transform(groupBy(userBungEntity.bungEntity).as(userBungEntity))
+            : Collections.emptyMap();
+        
+        List<BungInfoWithMemberListDto> contents = bungMap.entrySet().stream()
+            .sorted(
+                Comparator.comparing(e ->
+                    bungIds.indexOf(e.getKey().getBungId())
+                )
+            )
+            .map(BungInfoWithMemberListDto::new)
+            .toList();
+        
+        JPAQuery<Long> countQuery = queryFactory
+            .select(userBungEntity.bungEntity.bungId.countDistinct())
+            .from(userBungEntity)
+            .where(
+                userBungEntity.userEntity.nickname.containsIgnoreCase(keyword),
+                userBungEntity.bungEntity.startDateTime.gt(LocalDateTime.now())
+            );
+        
+        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
 
     @Override
@@ -75,7 +129,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .selectDistinct(userBungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-            .leftJoin(bungEntity.hashtags, hashtagEntity).fetchJoin()
+            .leftJoin(bungEntity.bungHashtags, bungHashtagEntity).fetchJoin()
+            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity).fetchJoin()
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),

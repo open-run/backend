@@ -4,8 +4,8 @@ import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
-import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
+import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +21,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final UserRepositoryImpl userRepository;
-    private final UserBungRepositoryImpl userBungRepositoryImpl;
+    private final UserRepository userRepository;
+    private final UserBungRepository userBungRepository;
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String email = userDetails.getUser().getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(userDetails.getUser());
         return user.getUserId();
     }
 
@@ -35,8 +34,7 @@ public class UserService {
     }
 
     public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String email = userDetails.getUser().getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(userDetails.getUser());
         return new GetUserResponseDto(user);
     }
 
@@ -48,23 +46,22 @@ public class UserService {
     public Page<GetUsersResponseDto> getUserSuggestion(
         @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
 
-        List<String> bungIds = userBungRepositoryImpl.findJoinedBungsId(userDetails.getUser());
+        List<String> bungIds = userBungRepository.findJoinedBungsId(userDetails.getUser());
 
-        return userBungRepositoryImpl
+        return userBungRepository
             .findAllFrequentUsers(bungIds, userDetails.getUser(), pageable).map(GetUsersResponseDto::new);
     }
 
     @Transactional
     public void deleteUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userRepository.findByEmail(userDetails.getUser().getEmail());
+        User user = userRepository.findUser(userDetails.getUser());
         userRepository.deleteUserInfo(user);
     }
 
     @Transactional
     public void saveSurveyResult(@AuthenticationPrincipal UserDetailsImpl userDetails,
         PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
-        String email = userDetails.getUser().getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(userDetails.getUser());
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
     }

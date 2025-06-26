@@ -1,4 +1,4 @@
-package io.openur.domain.bung.model;
+package io.openur.domain.bung.enums;
 
 public enum BungStatus {
     // 종료되지 않은 모든,

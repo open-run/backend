@@ -1,15 +1,23 @@
 package io.openur.domain.userchallenge.repository;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.list;
+import static com.querydsl.core.group.GroupBy.map;
+import static io.openur.domain.challenge.entity.QChallengeEntity.challengeEntity;
 import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.challenge.model.CompletedType;
 import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
+import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     private final UserChallengeJpaRepository userChallengeJpaRepository;
@@ -93,6 +102,32 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .stream()
             .map(UserChallenge::from)
             .toList();
+    }
+
+    @Override
+    public Map<CompletedType, List<UserChallenge>>
+    findByUserIdsAndChallengeIdsGroupByCompletedType(List<String> userIds, List<Long> challengeIds)
+    {
+        Map<CompletedType, List<UserChallengeEntity>> entityMap = queryFactory
+            .selectFrom(userChallengeEntity)
+            .join(userChallengeEntity.challengeEntity, challengeEntity).fetchJoin()
+            .where(
+                userChallengeEntity.userEntity.userId.in(userIds),
+                userChallengeEntity.nftCompleted.isFalse(),
+                challengeEntity.challengeId.in(challengeIds)
+            )
+            .transform(
+                groupBy(challengeEntity.completedType)
+                    .as(list(userChallengeEntity))
+            );
+
+        // 2. DTO 변환
+        return entityMap.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().stream()
+                    .map(UserChallenge::from).toList()
+            ));
     }
 
     @Override

@@ -6,20 +6,24 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
+import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
-@Getter
+@Getter @Setter
 @AllArgsConstructor
 public class Bung {
 
     private String bungId;
     private String name;
     private String description;
+    private String mainImage;
     private String location;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
@@ -28,9 +32,8 @@ public class Bung {
     private Integer memberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
-    private List<String> hashtags;
     private boolean isCompleted;
-    private String mainImage;
+    private List<String> hashtags;
 
     public Bung(CreateBungDto dto) {
         this.bungId = UUID.randomUUID().toString();
@@ -61,12 +64,23 @@ public class Bung {
         this.afterRunDescription = dto.getAfterRunDescription();
         this.mainImage = dto.getMainImage();
     }
-
+    
+    // 기본적으로 bung hashtag 는 엔티티기 때문에, 해당 메서드로 업데이트 불가
+    public void update(EditBungDto dto) {
+        applyIfNotNull(dto.getName(), this::setName);
+        applyIfNotNull(dto.getDescription(), this::setDescription);
+        applyIfNotNull(dto.getMainImage(), this::setMainImage);
+        applyIfNotNull(dto.getMemberNumber(), this::setMemberNumber);
+        applyIfNotNull(dto.getHasAfterRun(), this::setHasAfterRun);
+        applyIfNotNull(dto.getAfterRunDescription(), this::setAfterRunDescription);
+    }
+    
     public static Bung from(final BungEntity bungEntity) {
-        Bung bung = new Bung(
+        return new Bung(
             bungEntity.getBungId(),
             bungEntity.getName(),
             bungEntity.getDescription(),
+            bungEntity.getMainImage(),
             bungEntity.getLocation(),
             bungEntity.getStartDateTime(),
             bungEntity.getEndDateTime(),
@@ -75,33 +89,15 @@ public class Bung {
             bungEntity.getMemberNumber(),
             bungEntity.getHasAfterRun(),
             bungEntity.getAfterRunDescription(),
-            null,
             bungEntity.isCompleted(),
-            bungEntity.getMainImage()
-        );
-
-        if (bungEntity.getHashtags() != null) {
-            bung.hashtags = bungEntity.getHashtags()
-                .stream()
+            bungEntity.getBungHashtags().stream()
+                .map(BungHashtagEntity::getHashtagEntity)
                 .map(HashtagEntity::getHashtagStr)
-                .toList();
-        }
-
-        return bung;
+                .toList()
+        );
     }
-
-    public void update(EditBungDto dto) {
-        applyIfNotNull(dto.getName(), newName -> this.name = newName);
-        applyIfNotNull(dto.getDescription(), newDesc -> this.description = newDesc);
-        applyIfNotNull(dto.getMemberNumber(), newNumber -> this.memberNumber = newNumber);
-        applyIfNotNull(dto.getHasAfterRun(), newAfterRun -> this.hasAfterRun = newAfterRun);
-        applyIfNotNull(
-            dto.getAfterRunDescription(),
-            newAfterRunDesc -> this.afterRunDescription = newAfterRunDesc);
-        applyIfNotNull(dto.getMainImage(), newMainImage -> this.mainImage = newMainImage);
-    }
-
-    public BungEntity toEntity() {
+    
+    public BungEntity toEntity(List<BungHashtag> bungHashtags) {
         return new BungEntity(
             bungId,
             name,
@@ -116,7 +112,7 @@ public class Bung {
             afterRunDescription,
             isCompleted,
             mainImage,
-            null
+            bungHashtags.stream().map(BungHashtag::toEntity).toList()
         );
     }
 

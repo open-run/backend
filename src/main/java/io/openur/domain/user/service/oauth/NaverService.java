@@ -7,7 +7,7 @@ import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.OauthUserInfoDto;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
 import io.openur.global.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ public class NaverService extends LoginService {
     @Value("${spring.security.oauth2.client.registration.naver.client-secret}")
     private String clientSecret;
 
-    public NaverService(UserRepositoryImpl userRepository,
+    public NaverService(UserRepository userRepository,
         RestTemplate restTemplate, JwtUtil jwtUtil) {
         super(userRepository, restTemplate);
         this.jwtUtil = jwtUtil;
@@ -52,6 +52,7 @@ public class NaverService extends LoginService {
         // 4. JWT 토큰 반환
         return new GetUsersLoginDto(
             naverUser.getEmail(),
+            naverUser.getEmail(),  // Using email as identifier for OAuth services
             naverUser.getNickname(),
             jwtUtil.createToken(naverUser.getEmail())
         );

@@ -3,9 +3,9 @@ CREATE TABLE IF NOT EXISTS tb_users
 (
     user_id                VARCHAR(36)                      DEFAULT (UUID()) PRIMARY KEY NOT NULL,
     nickname               VARCHAR(16)                      DEFAULT NULL,
-    email                  VARCHAR(255)            NOT NULL,
+    email                  VARCHAR(255)                     DEFAULT NULL,
     identity_authenticated BOOLEAN                          DEFAULT FALSE,
-    provider               ENUM ('naver', 'kakao') NOT NULL,
+    provider               ENUM ('naver', 'kakao', 'smart_wallet') NOT NULL,
     blacklisted            BOOLEAN                          DEFAULT FALSE,
     created_date           TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_date        TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,9 +56,9 @@ CREATE TABLE IF NOT EXISTS tb_challenges
     reward_type VARCHAR(30)                            NOT NULL,
     reward_percentage FLOAT4                           NOT NULL,
     completed_type VARCHAR(30)                         NOT NULL,
-    completed_count BIGINT(20)                         NOT NULL,
-    condition_date BIGINT                              NOT NULL,
-    condition_text BIGINT                              NOT NULL
+    condition_count BIGINT(20)                             NULL,
+    condition_date TIMESTAMP                               NULL,
+    condition_text VARCHAR(50)                             NULL
 );
 
 -- tb_users_challenges 테이블 생성 (존재하지 않을 경우에만)
@@ -72,7 +72,9 @@ CREATE TABLE IF NOT EXISTS tb_users_challenges
     completed_date    TIMESTAMP   DEFAULT NULL,
     nft_completed     BOOLEAN     DEFAULT FALSE             NOT NULL,
 -- TODO: 유저가 받은 nft 정보 추가
-    current_count     BIGINT(20)                            NULL
+    current_count     BIGINT(20)                            NULL,
+    FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
+    FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id)
 );
 
 -- tb_hashtags 테이블 생성 (존재하지 않을 경우에만)

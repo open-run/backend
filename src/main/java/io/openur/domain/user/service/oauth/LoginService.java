@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.OauthUserInfoDto;
+import io.openur.domain.user.dto.SmartWalletUserInfoDto;
 import io.openur.domain.user.model.User;
-import io.openur.domain.user.repository.UserRepositoryImpl;
+import io.openur.domain.user.repository.UserRepository;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public abstract class LoginService {
 
-    private final UserRepositoryImpl userRepository;
+    private final UserRepository userRepository;
     private final RestTemplate restTemplate;
 
     public abstract GetUsersLoginDto login(String code, String state) throws JsonProcessingException;
@@ -67,10 +68,23 @@ public abstract class LoginService {
     protected User registerUserIfNew(OauthUserInfoDto oauthUserInfoDto) {
         // DB 에 중복된 이메일의 유저가 있는지 확인
         String email = oauthUserInfoDto.getEmail();
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUser(new User(email, oauthUserInfoDto.getProvider()));
         if (user == null) {
             // 없으면 회원가입
             User newUser = new User(email, oauthUserInfoDto.getProvider());
+            return userRepository.save(newUser);
+        } else {
+            return user;
+        }
+    }
+
+    protected User registerUserIfNew(SmartWalletUserInfoDto smartWalletUserInfoDto) {
+        // DB 에 중복된 블록체인 주소의 유저가 있는지 확인
+        String blockchainAddress = smartWalletUserInfoDto.getBlockchainAddress();
+        User user = userRepository.findUser(new User(blockchainAddress));
+        if (user == null) {
+            // 없으면 회원가입
+            User newUser = new User(blockchainAddress);
             return userRepository.save(newUser);
         } else {
             return user;
