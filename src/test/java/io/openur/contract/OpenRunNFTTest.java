@@ -1,5 +1,6 @@
 package io.openur.contract;
 
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Utf8String;
@@ -53,5 +54,23 @@ public class OpenRunNFTTest extends Contract {
             Collections.emptyList()
         );
         return executeRemoteCallTransaction(function);
+    }
+
+    public RemoteCall<BigInteger> balanceOf(String account, BigInteger tokenId) {
+        final Function function = new Function(
+            "balanceOf",
+            Arrays.asList(new Address(account), new Uint256(tokenId)),
+            Arrays.asList(new TypeReference<Uint256>() {})
+        );
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+    public RemoteCall<String> uri(BigInteger tokenId) {
+        final Function function = new Function(
+            "uri",
+            Arrays.asList(new Uint256(tokenId)),
+            Arrays.asList(new TypeReference<Utf8String>() {})
+        );
+        return executeRemoteCallSingleValueReturn(function, String.class);
     }
 }
