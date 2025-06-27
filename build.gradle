@@ -49,6 +49,9 @@ dependencies {
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
+    implementation 'org.web3j:core:4.10.0'
+
+
     testRuntimeOnly 'com.h2database:h2:2.2.224'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
