@@ -30,12 +30,11 @@ public class BungInfoWithMemberListDto extends BungInfoDto {
         this.currentMemberCount = memberList.size();
     }
     
-    public BungInfoWithMemberListDto(Entry<BungEntity, UserBungEntity> entryMap) {
+    public BungInfoWithMemberListDto(Entry<BungEntity, List<UserBungEntity>> entryMap) {
         // 인원수 카운트 공백 및 본인 혼자만 들어갈 예정
         super(Bung.from(entryMap.getKey()));
 
-        this.memberList =
-            List.of(new UserBungInfoDto(UserBung.from(entryMap.getValue())));
+        this.memberList = entryMap.getValue().stream().map(UserBung::from).map(UserBungInfoDto::new).toList();
     }
     
     public BungInfoWithMemberListDto(BungEntity bung) {
