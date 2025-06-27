@@ -11,6 +11,7 @@ import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
@@ -88,73 +89,72 @@ public class BungRepositoryImpl implements BungRepository {
     @Override
     public Page<BungInfoWithMemberListDto> findBungsWithLocation(
         String keyword, Pageable pageable) {
-        
-        List<String> bungIds = queryFactory
-            .select(bungEntity.bungId)
-            .from(bungEntity)
-            .where(
-                bungEntity.location.containsIgnoreCase(keyword),
-                bungEntity.startDateTime.gt(LocalDateTime.now())
-            )
+
+        // 공통 조건 추출
+        BooleanExpression locationCondition = bungEntity.location.containsIgnoreCase(keyword);
+        BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+
+        // 1. 단일 쿼리로 직접 조회
+        List<BungEntity> bungs = queryFactory
+            .selectFrom(bungEntity)
+            .where(locationCondition, dateCondition)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
-        
-        List<BungInfoWithMemberListDto> contents = !bungIds.isEmpty() ?
-            queryFactory
-                .selectFrom(bungEntity)
-                .where(bungEntity.bungId.in(bungIds))
-                .orderBy(bungEntity.startDateTime.asc())
-                .fetch().stream().map(BungInfoWithMemberListDto::new).toList()
-            : Collections.emptyList();
-        
+
+        // 2. DTO 변환
+        List<BungInfoWithMemberListDto> contents = bungs.stream()
+            .map(BungInfoWithMemberListDto::new)
+            .toList();
+
+        // 3. 카운트 쿼리 (동일한 조건 사용)
         JPAQuery<Long> countQuery = queryFactory
             .select(bungEntity.count())
             .from(bungEntity)
-            .where(bungEntity.location.containsIgnoreCase(keyword));
-        
+            .where(locationCondition, dateCondition);
+
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
     
     @Override
     public Page<BungInfoWithMemberListDto> findBungWithHashtag(
-        String keyword, Pageable pageable
-    ) {
-        List<String> bungIds = queryFactory
-            .selectDistinct(bungEntity.bungId)
-            .from(bungHashtagEntity)
-            .join(bungHashtagEntity.bungEntity, bungEntity)
-            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
+        String keyword, Pageable pageable) {
+
+        // 공통 조건 추출
+        BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.containsIgnoreCase(keyword);
+
+        // 1. 서브쿼리로 조건에 맞는 BungEntity 직접 조회
+        List<BungEntity> bungs = queryFactory
+            .selectFrom(bungEntity)
             .where(
-                bungEntity.startDateTime.gt(LocalDateTime.now()),
-                hashtagEntity.hashtagStr.containsIgnoreCase(keyword)
+                bungEntity.bungId.in(
+                    JPAExpressions
+                        .selectDistinct(bungHashtagEntity.bungEntity.bungId)
+                        .from(bungHashtagEntity)
+                        .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
+                        .where(dateCondition, hashtagCondition)
+                )
             )
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
-        
-        List<BungInfoWithMemberListDto> contents = !bungIds.isEmpty() ?
-            queryFactory
-                .selectFrom(bungEntity)
-                .join(bungEntity.bungHashtags, bungHashtagEntity)
-                .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
-                .where(bungEntity.bungId.in(bungIds))
-                .orderBy(bungEntity.startDateTime.asc())
-                .fetch().stream().map(BungInfoWithMemberListDto::new).toList() :
-            Collections.emptyList();
-        
+
+        // 2. DTO 변환
+        List<BungInfoWithMemberListDto> contents = bungs.stream()
+            .map(BungInfoWithMemberListDto::new)
+            .toList();
+
+        // 3. 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
             .select(bungEntity.countDistinct())
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
             .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
-            .where(
-                bungEntity.startDateTime.gt(LocalDateTime.now()),
-                hashtagEntity.hashtagStr.containsIgnoreCase(keyword)
-            );
-        
+            .where(dateCondition, hashtagCondition);
+
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
     

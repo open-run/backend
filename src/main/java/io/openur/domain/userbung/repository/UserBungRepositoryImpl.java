@@ -2,6 +2,7 @@ package io.openur.domain.userbung.repository;
 
 
 import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.enums.BungStatus.ACCOMPLISHED;
 import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
@@ -12,6 +13,7 @@ import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
@@ -27,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -75,50 +78,63 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     
     @Override
     public Page<BungInfoWithMemberListDto> findBungWithUserName(
-        String keyword, Pageable pageable)
-    {
+        String keyword, Pageable pageable) {
+
         if (!StringUtils.hasText(keyword)) {
             return Page.empty(pageable);
         }
-        
-        // 닉네임 일치 / 참가 닫히지 않은 것
-        List<String> bungIds = queryFactory
-            .selectDistinct(userBungEntity.bungEntity.bungId)
-            .from(userBungEntity)
+
+        BooleanExpression nicknameCondition = userEntity.nickname.containsIgnoreCase(keyword);
+        BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+
+        // 1. 서브쿼리로 정렬된 BungEntity 조회
+        List<BungEntity> bungs = queryFactory
+            .selectFrom(bungEntity)
             .where(
-                userBungEntity.userEntity.nickname.containsIgnoreCase(keyword),
-                userBungEntity.bungEntity.startDateTime.gt(LocalDateTime.now())
+                bungEntity.bungId.in(
+                    JPAExpressions
+                        .selectDistinct(userBungEntity.bungEntity.bungId)
+                        .from(userBungEntity)
+                        .join(userBungEntity.userEntity, userEntity)
+                        .where(nicknameCondition, dateCondition)
+                )
             )
-            .orderBy(userBungEntity.bungEntity.startDateTime.asc())
+            .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
-        
-        Map<BungEntity, UserBungEntity> bungMap = !bungIds.isEmpty() ? queryFactory
-            .selectFrom(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-            .join(userBungEntity.userEntity, userEntity).fetchJoin()
-            .where(userBungEntity.bungEntity.bungId.in(bungIds))
-            .transform(groupBy(userBungEntity.bungEntity).as(userBungEntity))
-            : Collections.emptyMap();
-        
-        List<BungInfoWithMemberListDto> contents = bungMap.entrySet().stream()
-            .sorted(
-                Comparator.comparing(e ->
-                    bungIds.indexOf(e.getKey().getBungId())
-                )
-            )
-            .map(BungInfoWithMemberListDto::new)
+
+        List<String> bungIds = bungs.stream()
+            .map(BungEntity::getBungId)
             .toList();
-        
+
+        // 2. 상세 데이터 조회
+        Map<String, List<UserBungEntity>> bungMap = !bungIds.isEmpty() ?
+            queryFactory
+                .selectFrom(userBungEntity)
+                .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+                .join(userBungEntity.userEntity, userEntity).fetchJoin()
+                .where(bungEntity.bungId.in(bungIds))
+                .transform(groupBy(bungEntity.bungId).as(list(userBungEntity)))
+            : Collections.emptyMap();
+
+        // 3. 정렬 순서 유지하며 DTO 변환
+        List<BungInfoWithMemberListDto> contents = bungIds.stream()
+            .map(bungMap::get)
+            .filter(Objects::nonNull)
+            .map(members -> new BungInfoWithMemberListDto(
+                members.get(0).getBungEntity(),
+                members
+            ))
+            .toList();
+
+        // 4. 카운트 쿼리
         JPAQuery<Long> countQuery = queryFactory
-            .select(userBungEntity.bungEntity.bungId.countDistinct())
+            .select(bungEntity.bungId.countDistinct())
             .from(userBungEntity)
-            .where(
-                userBungEntity.userEntity.nickname.containsIgnoreCase(keyword),
-                userBungEntity.bungEntity.startDateTime.gt(LocalDateTime.now())
-            );
-        
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(nicknameCondition, dateCondition);
+
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
 
