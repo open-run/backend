@@ -24,6 +24,7 @@ public class BungInfoDto {
     private Float distance;
     private String pace;
     private Integer memberNumber;
+    private Integer currentMemberCount;
     private Boolean hasAfterRun;
     private String afterRunDescription;
     private Boolean isCompleted;
@@ -42,6 +43,7 @@ public class BungInfoDto {
         this.distance = bung.getDistance();
         this.pace = bung.getPace();
         this.memberNumber = bung.getMemberNumber();
+        this.currentMemberCount = bung.getCurrentMemberNumber();
         this.hasAfterRun = bung.getHasAfterRun();
         this.afterRunDescription = bung.getAfterRunDescription();
         this.isCompleted = bung.isCompleted();

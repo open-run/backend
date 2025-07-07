@@ -1,5 +1,6 @@
 package io.openur.domain.bung.repository;
 
+import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
@@ -13,7 +14,7 @@ public interface BungRepository {
     Page<BungInfoWithMemberListDto> findBungsWithStatus(
         User user, boolean isAvailableOnly, Pageable pageable);
     
-    Page<BungInfoWithMemberListDto> findBungsWithLocation(
+    Page<BungInfoDto> findBungsWithLocation(
         String keyword, Pageable pageable);
     
     Page<BungInfoWithMemberListDto> findBungWithHashtag(
