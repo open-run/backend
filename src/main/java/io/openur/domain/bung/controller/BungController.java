@@ -84,6 +84,23 @@ public class BungController {
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
     }
+
+    @GetMapping("/location")
+    @Operation(summary = "")
+    public ResponseEntity<PagedResponse<BungInfoDto>> searchBungByLocation(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam String location,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "5") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungInfoDto> contents = bungService.searchBungByLocation(
+            userDetails, location, pageable
+        );
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success"));
+    }
     
     @GetMapping("/my-bungs")
     @Operation(summary = """

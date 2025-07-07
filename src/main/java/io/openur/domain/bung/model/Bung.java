@@ -6,17 +6,17 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.entity.BungEntity;
-import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
-import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
+@Builder
+@Getter 
 @Setter
 @AllArgsConstructor
 public class Bung {
@@ -33,6 +33,7 @@ public class Bung {
     private Float distance;
     private String pace;
     private Integer memberNumber;
+    private Integer currentMemberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
     private boolean isCompleted;
@@ -83,49 +84,46 @@ public class Bung {
     }
 
     public static Bung from(final BungEntity bungEntity) {
-        return new Bung(
-            bungEntity.getBungId(),
-            bungEntity.getName(),
-            bungEntity.getDescription(),
-            bungEntity.getMainImage(),
-            bungEntity.getLocation(),
-            bungEntity.getLatitude(),
-            bungEntity.getLongitude(),
-            bungEntity.getStartDateTime(),
-            bungEntity.getEndDateTime(),
-            bungEntity.getDistance(),
-            bungEntity.getPace(),
-            bungEntity.getMemberNumber(),
-            bungEntity.getHasAfterRun(),
-            bungEntity.getAfterRunDescription(),
-            bungEntity.isCompleted(),
-            bungEntity.getBungHashtags()
-                .stream()
-                .map(BungHashtagEntity::getHashtagEntity)
-                .map(HashtagEntity::getHashtagStr)
-                .toList()
-        );
+        return Bung.builder()
+            .bungId(bungEntity.getBungId())
+            .name(bungEntity.getName())
+            .description(bungEntity.getDescription())
+            .location(bungEntity.getLocation())
+            .latitude(bungEntity.getLatitude())
+            .longitude(bungEntity.getLongitude())
+            .startDateTime(bungEntity.getStartDateTime())
+            .endDateTime(bungEntity.getEndDateTime())
+            .distance(bungEntity.getDistance())
+            .pace(bungEntity.getPace())
+            .memberNumber(bungEntity.getMemberNumber())
+            .currentMemberNumber(bungEntity.getCurrentMemberNumber())
+            .hasAfterRun(bungEntity.getHasAfterRun())
+            .afterRunDescription(bungEntity.getAfterRunDescription())
+            .isCompleted(bungEntity.isCompleted())
+            .mainImage(bungEntity.getMainImage())
+            // TO-CHECK: 일단 BE-92 대로 옮겨오긴 했는데 hashtag 는 빼도 되는게 맞는거?
+            .build();
     }
 
     public BungEntity toEntity(List<BungHashtag> bungHashtags) {
-        return new BungEntity(
-            bungId,
-            name,
-            description,
-            location,
-            latitude,
-            longitude,
-            startDateTime,
-            endDateTime,
-            distance,
-            pace,
-            memberNumber,
-            hasAfterRun,
-            afterRunDescription,
-            isCompleted,
-            mainImage,
-            bungHashtags.stream().map(BungHashtag::toEntity).toList()
-        );
+        return BungEntity.builder()
+            .bungId(bungId)
+            .name(name)
+            .description(description)
+            .location(location)
+            .latitude(latitude)
+            .longitude(longitude)
+            .startDateTime(startDateTime)
+            .endDateTime(endDateTime)
+            .distance(distance)
+            .pace(pace)
+            .memberNumber(memberNumber)
+            .hasAfterRun(hasAfterRun)
+            .afterRunDescription(afterRunDescription)
+            .completed(isCompleted)
+            .mainImage(mainImage)
+            .bungHashtags(bungHashtags.stream().map(BungHashtag::toEntity).toList())
+            .build();
     }
 
     public void completeBung() {
