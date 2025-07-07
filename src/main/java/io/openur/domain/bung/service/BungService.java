@@ -99,7 +99,6 @@ public class BungService {
             case ALL -> bungRepository.findBungsWithStatus(user, isJoinedOnly, pageable);
             case MEMBER_NAME -> userBungRepository.findBungWithUserName(keyword, pageable);
             case HASHTAG ->  bungRepository.findBungWithHashtag(keyword, pageable);
-            case LOCATION -> bungRepository.findBungsWithLocation(keyword, pageable);
         };
     }
     
@@ -111,6 +110,15 @@ public class BungService {
         return userBungRepository
             .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
             .map(BungInfoWithOwnershipDto::new);
+    }
+
+    public Page<BungInfoDto> searchBungByLocation(
+        UserDetailsImpl userDetails, String location, Pageable pageable
+    ) {
+        if(!StringUtils.hasText(location))
+            throw new SearchBungException(SearchBungResultEnum.EMPTY_KEYWORD);
+
+        return bungRepository.findBungsWithLocation(location, pageable);
     }
     
     @Transactional

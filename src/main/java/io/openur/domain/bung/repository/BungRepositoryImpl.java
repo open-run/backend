@@ -14,6 +14,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.enums.GetBungResultEnum;
@@ -87,8 +88,7 @@ public class BungRepositoryImpl implements BungRepository {
     }
     
     @Override
-    public Page<BungInfoWithMemberListDto> findBungsWithLocation(
-        String keyword, Pageable pageable) {
+    public Page<BungInfoDto> findBungsWithLocation(String keyword, Pageable pageable) {
 
         // 공통 조건 추출
         BooleanExpression locationCondition = bungEntity.location.containsIgnoreCase(keyword);
@@ -104,8 +104,9 @@ public class BungRepositoryImpl implements BungRepository {
             .fetch();
 
         // 2. DTO 변환
-        List<BungInfoWithMemberListDto> contents = bungs.stream()
-            .map(BungInfoWithMemberListDto::new)
+        List<BungInfoDto> contents = bungs.stream()
+            .map(Bung::from)
+            .map(BungInfoDto::new)
             .toList();
 
         // 3. 카운트 쿼리 (동일한 조건 사용)

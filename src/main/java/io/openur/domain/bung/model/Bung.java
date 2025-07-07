@@ -13,9 +13,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+@Builder
 @Getter @Setter
 @AllArgsConstructor
 public class Bung {
@@ -30,6 +32,7 @@ public class Bung {
     private Float distance;
     private String pace;
     private Integer memberNumber;
+    private Integer currentMemberNumber;
     private Boolean hasAfterRun;
     private String afterRunDescription;
     private boolean isCompleted;
@@ -76,44 +79,41 @@ public class Bung {
     }
     
     public static Bung from(final BungEntity bungEntity) {
-        return new Bung(
-            bungEntity.getBungId(),
-            bungEntity.getName(),
-            bungEntity.getDescription(),
-            bungEntity.getMainImage(),
-            bungEntity.getLocation(),
-            bungEntity.getStartDateTime(),
-            bungEntity.getEndDateTime(),
-            bungEntity.getDistance(),
-            bungEntity.getPace(),
-            bungEntity.getMemberNumber(),
-            bungEntity.getHasAfterRun(),
-            bungEntity.getAfterRunDescription(),
-            bungEntity.isCompleted(),
-            bungEntity.getBungHashtags().stream()
-                .map(BungHashtagEntity::getHashtagEntity)
-                .map(HashtagEntity::getHashtagStr)
-                .toList()
-        );
+        return Bung.builder()
+            .bungId(bungEntity.getBungId())
+            .name(bungEntity.getName())
+            .description(bungEntity.getDescription())
+            .location(bungEntity.getLocation())
+            .startDateTime(bungEntity.getStartDateTime())
+            .endDateTime(bungEntity.getEndDateTime())
+            .distance(bungEntity.getDistance())
+            .pace(bungEntity.getPace())
+            .memberNumber(bungEntity.getMemberNumber())
+            .currentMemberNumber(bungEntity.getCurrentMemberNumber())
+            .hasAfterRun(bungEntity.getHasAfterRun())
+            .afterRunDescription(bungEntity.getAfterRunDescription())
+            .isCompleted(bungEntity.isCompleted())
+            .mainImage(bungEntity.getMainImage())
+            .build();
     }
     
     public BungEntity toEntity(List<BungHashtag> bungHashtags) {
-        return new BungEntity(
-            bungId,
-            name,
-            description,
-            location,
-            startDateTime,
-            endDateTime,
-            distance,
-            pace,
-            memberNumber,
-            hasAfterRun,
-            afterRunDescription,
-            isCompleted,
-            mainImage,
-            bungHashtags.stream().map(BungHashtag::toEntity).toList()
-        );
+        return BungEntity.builder()
+            .bungId(bungId)
+            .name(name)
+            .description(description)
+            .location(location)
+            .startDateTime(startDateTime)
+            .endDateTime(endDateTime)
+            .distance(distance)
+            .pace(pace)
+            .memberNumber(memberNumber)
+            .hasAfterRun(hasAfterRun)
+            .afterRunDescription(afterRunDescription)
+            .completed(isCompleted)
+            .mainImage(mainImage)
+            .bungHashtags(bungHashtags.stream().map(BungHashtag::toEntity).toList())
+            .build();
     }
 
     public void completeBung() {
