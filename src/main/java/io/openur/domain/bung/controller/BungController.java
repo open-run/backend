@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -64,9 +65,6 @@ public class BungController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Parameter(
             description = "ALL : 기존 기능과 동일"
-                + "MEMBER_NAME : 멤버 이름 검색"
-                + "LOCATION : 위치 검색"
-                + "HASHTAG : 해시태그 검색"
         )
         @RequestParam(required = false, defaultValue = "ALL") SearchBungTypeEnum type,
         @Parameter(description = "type에 따라 검색할 내용, ALL ")
@@ -87,7 +85,7 @@ public class BungController {
 
     @GetMapping("/location")
     @Operation(summary = "")
-    public ResponseEntity<PagedResponse<BungInfoDto>> searchBungByLocation(
+    public ResponseEntity<PagedResponse<BungInfoDto>> searchByLocation(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam String location,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -101,7 +99,43 @@ public class BungController {
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
     }
-    
+
+    @GetMapping("/nickname")
+    @Operation(summary = "")
+    public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> searchByNickname(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam String nickname,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "5") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungInfoWithMemberListDto> contents = bungService.searchBungByNickname(
+            userDetails, nickname, pageable
+        );
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success")
+        );
+    }
+
+    @GetMapping("/hashtag")
+    @Operation(summary = "")
+    public ResponseEntity<PagedResponse<BungInfoDto>> searchByHashtag(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = true, defaultValue = "") List<String> hashtag,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "5") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<BungInfoDto> contents = bungService.searchBungByHashtag(
+            userDetails, hashtag, pageable
+        );
+
+        return ResponseEntity.ok().body(
+            PagedResponse.build(contents, "success")
+        );
+    }
+
     @GetMapping("/my-bungs")
     @Operation(summary = """
         내가 소유 및 참가했던 벙 목록.
