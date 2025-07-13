@@ -97,8 +97,7 @@ public class BungService {
 
         return switch (type) {
             case ALL -> bungRepository.findBungsWithStatus(user, isJoinedOnly, pageable);
-            case MEMBER_NAME -> userBungRepository.findBungWithUserName(keyword, pageable);
-            case HASHTAG ->  bungRepository.findBungWithHashtag(keyword, pageable);
+            default -> null;
         };
     }
     
@@ -116,11 +115,29 @@ public class BungService {
         UserDetailsImpl userDetails, String location, Pageable pageable
     ) {
         if(!StringUtils.hasText(location))
-            throw new SearchBungException(SearchBungResultEnum.EMPTY_KEYWORD);
+            throw new SearchBungException(SearchBungResultEnum.NO_LOCATION_SPECIFIED);
 
         return bungRepository.findBungsWithLocation(location, pageable);
     }
-    
+
+    public Page<BungInfoWithMemberListDto> searchBungByNickname(
+        UserDetailsImpl userDetails, String nickname, Pageable pageable
+    ) {
+        if(!StringUtils.hasText(nickname))
+            throw new SearchBungException(SearchBungResultEnum.NO_NICKNAME_PROVIDED);
+
+        return userBungRepository.findBungsWithUserName(nickname, pageable);
+    }
+
+    public Page<BungInfoDto> searchBungByHashtag(
+        UserDetailsImpl userDetails, List<String> hashtag, Pageable pageable
+    ) {
+        if(hashtag == null || hashtag.isEmpty())
+            throw new SearchBungException(SearchBungResultEnum.NO_HASHTAG_PROVIDED);
+
+        return bungRepository.findBungWithHashtag(hashtag, pageable);
+    }
+
     @Transactional
     public JoinBungResultEnum joinBung(UserDetailsImpl userDetails, String bungId)
         throws JoinBungException {
@@ -142,7 +159,7 @@ public class BungService {
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
         return JoinBungResultEnum.SUCCESSFULLY_JOINED;
     }
-    
+
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public EditBungResultEnum editBung(
@@ -176,7 +193,7 @@ public class BungService {
         this.updateHashtagConnection(bung, editBungDto.getHashtags());
         return EditBungResultEnum.SUCCESSFULLY_EDITED;
     }
-    
+
     private void updateHashtagConnection(Bung bung, List<String> hashtagStrList) {
         // 변경 요청 해시태그가 공백인데, 원래도 공백이면 할거 없고
         if(hashtagStrList.isEmpty()) {
@@ -190,7 +207,7 @@ public class BungService {
         List<Hashtag> hashtags = hashtagRepository.saveNotListedTags(hashtagStrList);
         bungHashtagRepository.insertHashtagConnection(bung, hashtags);
     }
-    
+
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public CompleteBungResultEnum completeBung(
