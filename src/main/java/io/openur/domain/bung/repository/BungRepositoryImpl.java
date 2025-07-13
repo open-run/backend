@@ -31,10 +31,12 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -119,45 +121,66 @@ public class BungRepositoryImpl implements BungRepository {
     }
     
     @Override
-    public Page<BungInfoWithMemberListDto> findBungWithHashtag(
-        String keyword, Pageable pageable) {
+    public Page<BungInfoDto> findBungWithHashtag(List<String> listOfTags, Pageable pageable) {
+        // 입력 검증
+        if (listOfTags == null || listOfTags.isEmpty()) {
+            return Page.empty(pageable);
+        }
 
-        // 공통 조건 추출
+        List<String> filteredTags = listOfTags.stream()
+            .filter(StringUtils::hasText)
+            .map(String::trim)
+            .toList();
+
+        if (filteredTags.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 공통 조건
+        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.in(filteredTags);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
-        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.containsIgnoreCase(keyword);
 
-        // 1. 서브쿼리로 조건에 맞는 BungEntity 직접 조회
-        List<BungEntity> bungs = queryFactory
-            .selectFrom(bungEntity)
-            .where(
-                bungEntity.bungId.in(
-                    JPAExpressions
-                        .selectDistinct(bungHashtagEntity.bungEntity.bungId)
-                        .from(bungHashtagEntity)
-                        .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
-                        .where(dateCondition, hashtagCondition)
-                )
-            )
+        // 1. 페이징된 BungEntity ID 조회
+        List<String> bungIds = queryFactory
+            .selectDistinct(bungHashtagEntity.bungEntity.bungId)
+            .from(bungHashtagEntity)
+            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+            .join(bungHashtagEntity.bungEntity, bungEntity)
+            .where(hashtagCondition, dateCondition)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
 
-        // 2. DTO 변환
-        List<BungInfoWithMemberListDto> contents = bungs.stream()
-            .map(BungInfoWithMemberListDto::new)
+        if (bungIds.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        // 2. 상세 데이터 조회
+        List<BungEntity> bungs = queryFactory
+            .selectFrom(bungEntity)
+            .where(bungEntity.bungId.in(bungIds))
+            .orderBy(bungEntity.startDateTime.asc())
+            .fetch();
+
+        // 3. DTO 변환
+        List<BungInfoDto> contents = bungs.stream()
+            .map(Bung::from)
+            .map(BungInfoDto::new)
             .toList();
 
-        // 3. 카운트 쿼리
-        JPAQuery<Long> countQuery = queryFactory
-            .select(bungEntity.countDistinct())
+        // 4. 카운트 쿼리
+        long total = queryFactory
+            .select(bungEntity.bungId.countDistinct())
             .from(bungHashtagEntity)
+            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
-            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity)
-            .where(dateCondition, hashtagCondition);
+            .where(hashtagCondition, dateCondition)
+            .fetchOne();
 
-        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
+        return new PageImpl<>(contents, pageable, total);
     }
+
     
     @Override
     public Bung findBungById(String bungId) {

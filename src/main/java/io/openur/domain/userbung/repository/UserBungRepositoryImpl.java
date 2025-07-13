@@ -25,7 +25,6 @@ import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -33,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
@@ -75,67 +75,56 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         
         return Optional.of(new BungInfoWithMemberListDto(bung, members));
     }
-    
-    @Override
-    public Page<BungInfoWithMemberListDto> findBungWithUserName(
-        String keyword, Pageable pageable) {
 
-        if (!StringUtils.hasText(keyword)) {
+    @Override
+    public Page<BungInfoWithMemberListDto> findBungsWithUserName(String nickname, Pageable pageable) {
+        if (!StringUtils.hasText(nickname)) {
             return Page.empty(pageable);
         }
 
-        BooleanExpression nicknameCondition = userEntity.nickname.containsIgnoreCase(keyword);
+        // 조건을 명확히 분리
+        BooleanExpression nicknameCondition = userBungEntity.userEntity.nickname.containsIgnoreCase(nickname);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
 
-        // 1. 서브쿼리로 정렬된 BungEntity 조회
-        List<BungEntity> bungs = queryFactory
-            .selectFrom(bungEntity)
-            .where(
-                bungEntity.bungId.in(
-                    JPAExpressions
-                        .selectDistinct(userBungEntity.bungEntity.bungId)
-                        .from(userBungEntity)
-                        .join(userBungEntity.userEntity, userEntity)
-                        .where(nicknameCondition, dateCondition)
-                )
-            )
+        // 1. 서브쿼리로 페이징 및 정렬된 BungEntity ID 조회
+        List<String> bungIds = queryFactory
+            .selectDistinct(userBungEntity.bungEntity.bungId)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(nicknameCondition, dateCondition)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
 
-        List<String> bungIds = bungs.stream()
-            .map(BungEntity::getBungId)
-            .toList();
+        if (bungIds.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
 
-        // 2. 상세 데이터 조회
-        Map<String, List<UserBungEntity>> bungMap = !bungIds.isEmpty() ?
-            queryFactory
-                .selectFrom(userBungEntity)
-                .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-                .join(userBungEntity.userEntity, userEntity).fetchJoin()
-                .where(bungEntity.bungId.in(bungIds))
-                .transform(groupBy(bungEntity.bungId).as(list(userBungEntity)))
-            : Collections.emptyMap();
+        // 2. 상세 데이터 조회 및 fetchJoin으로 N+1 문제 방지
+        Map<String, List<UserBungEntity>> bungMap = queryFactory
+            .selectFrom(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+            .join(userBungEntity.userEntity, userEntity).fetchJoin()
+            .where(bungEntity.bungId.in(bungIds))
+            .transform(groupBy(bungEntity.bungId).as(list(userBungEntity)));
 
         // 3. 정렬 순서 유지하며 DTO 변환
         List<BungInfoWithMemberListDto> contents = bungIds.stream()
             .map(bungMap::get)
             .filter(Objects::nonNull)
-            .map(members -> new BungInfoWithMemberListDto(
-                members.get(0).getBungEntity(),
-                members
-            ))
+            .map(members -> new BungInfoWithMemberListDto(members.get(0).getBungEntity(), members))
             .toList();
 
-        // 4. 카운트 쿼리
-        JPAQuery<Long> countQuery = queryFactory
-            .select(bungEntity.bungId.countDistinct())
+        // 4. 정확한 카운트 쿼리 (DISTINCT 사용)
+        long total = queryFactory
+            .select(userBungEntity.bungEntity.bungId.countDistinct())
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
-            .where(nicknameCondition, dateCondition);
+            .where(nicknameCondition, dateCondition)
+            .fetchOne();
 
-        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
+        return new PageImpl<>(contents, pageable, total);
     }
 
     @Override
