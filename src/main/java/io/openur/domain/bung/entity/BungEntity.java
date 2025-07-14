@@ -57,6 +57,7 @@ public class BungEntity {
 
     @Column(name = "is_completed")
     private boolean completed;
+
     private String mainImage;
 
     @OneToMany(mappedBy = "bungEntity", cascade = CascadeType.ALL, orphanRemoval = true)
