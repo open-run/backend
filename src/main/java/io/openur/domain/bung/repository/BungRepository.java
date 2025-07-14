@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 public interface BungRepository {
 
     Page<BungInfoWithMemberListDto> findBungsWithStatus(
-        User user, boolean isAvailableOnly, Pageable pageable);
+        User user, Pageable pageable);
     
     Page<BungInfoDto> findBungsWithLocation(
         String keyword, Pageable pageable);
