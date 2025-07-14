@@ -8,10 +8,10 @@ import static io.openur.domain.hashtag.entity.QHashtagEntity.hashtagEntity;
 import static io.openur.domain.user.entity.QUserEntity.userEntity;
 import static io.openur.domain.userbung.entity.QUserBungEntity.userBungEntity;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.bung.dto.BungInfoDto;
@@ -26,9 +26,14 @@ import io.openur.domain.userbung.entity.UserBungEntity;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -48,47 +53,39 @@ public class BungRepositoryImpl implements BungRepository {
 
     @Override
     public Page<BungInfoWithMemberListDto> findBungsWithStatus(
-        User user, boolean isJoinedOnly, Pageable pageable)
-    {
-        // 대용량 객체 조회 고려 배치 사이징
+        User user, Pageable pageable) {
+
+        // 사용자가 참여한 벙 ID 조회 (한 번만 실행)
+        Set<String> joinedBungIds = getJoinedBungIds(user);
+
+        // 페이징된 벙 ID 조회 (정렬 순서 보존을 위한 LinkedHashMap 사용)
         List<String> bungIds = queryFactory
             .select(bungEntity.bungId)
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .join(userBungEntity.userEntity, userEntity)
-            .where(isAvailable(user, isJoinedOnly))
+            .from(bungEntity)
+            .where(isAvailable(joinedBungIds))
             .orderBy(conditionalBungOrdering(user))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
-        
-        // 배치 사이즈 내 조인 검색 최소화
-        Map<BungEntity, List<UserBungEntity>> bungMap = !bungIds.isEmpty() ?
-            queryFactory
-                .selectFrom(userBungEntity)
-                .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-                .join(userBungEntity.userEntity, userEntity).fetchJoin()
-                .where(userBungEntity.bungEntity.bungId.in(bungIds))
-                .transform(groupBy(bungEntity).as(list(userBungEntity)))
-            : Collections.emptyMap();
-        
-        List<BungInfoWithMemberListDto> contents = bungMap.entrySet().stream()
-            .map(entry ->
-                new BungInfoWithMemberListDto(entry.getKey(), entry.getValue())
-            )
-            .sorted(
-                Comparator.comparing(dto -> bungIds.indexOf(dto.getBungId()))
-            ).toList();
-        
-        JPAQuery<Long> countQuery = queryFactory
+
+        if (bungIds.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        // 배치 조회 및 DTO 변환
+        List<BungInfoWithMemberListDto> contents = fetchBungInfoWithMembers(bungIds);
+
+        // 카운트 쿼리 (최적화된 조건 사용)
+        long totalCount = queryFactory
             .select(bungEntity.countDistinct())
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .where(isAvailable(user, isJoinedOnly));
-        
-        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
+            .from(bungEntity)
+            .where(isAvailable(joinedBungIds))
+            .fetchOne();
+
+        return new PageImpl<>(contents, pageable, totalCount);
     }
-    
+
+
     @Override
     public Page<BungInfoDto> findBungsWithLocation(String keyword, Pageable pageable) {
 
@@ -224,24 +221,52 @@ public class BungRepositoryImpl implements BungRepository {
         };
     }
 
-    private BooleanExpression isAvailable(User user, boolean isJoinedOnly) {
-        // 기본적으로 Bung 은 행사 시작 이전것이 보여야함.
+    private Set<String> getJoinedBungIds(User user) {
+        return new HashSet<>(
+            queryFactory
+                .select(userBungEntity.bungEntity.bungId)
+                .from(userBungEntity)
+                .where(userBungEntity.userEntity.eq(user.toEntity()))
+                .fetch()
+        );
+    }
+
+    private BooleanExpression isAvailable(Set<String> joinedBungIds) {
         BooleanExpression baseCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
 
-        if (!isJoinedOnly) {
+        if (joinedBungIds.isEmpty()) {
             return baseCondition;
         }
 
-        // 내가 이미 참여한 벙들의 ID
-        List<String> joinedBungIds = queryFactory
-            .select(userBungEntity.bungEntity.bungId)
+        return baseCondition.and(bungEntity.bungId.notIn(joinedBungIds));
+    }
+
+    private List<BungInfoWithMemberListDto> fetchBungInfoWithMembers(List<String> bungIds) {
+        // 정렬 순서 보존을 위한 인덱스 맵 생성
+        Map<String, Integer> orderMap = IntStream.range(0, bungIds.size())
+            .boxed()
+            .collect(Collectors.toMap(bungIds::get, Function.identity()));
+
+        // 배치 조회
+        List<Tuple> results = queryFactory
+            .select(bungEntity, userBungEntity)
             .from(userBungEntity)
-            .where(userBungEntity.userEntity.eq(user.toEntity()))
+            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+            .join(userBungEntity.userEntity, userEntity).fetchJoin()
+            .where(bungEntity.bungId.in(bungIds))
             .fetch();
-        
-        BooleanExpression notJoined = joinedBungIds.isEmpty() ?
-            null : bungEntity.bungId.notIn(joinedBungIds);
-        
-        return baseCondition.and(notJoined);
+
+        // 그룹핑 및 DTO 변환
+        Map<BungEntity, List<UserBungEntity>> bungMap = results.stream()
+            .collect(Collectors.groupingBy(
+                tuple -> tuple.get(bungEntity),
+                Collectors.mapping(tuple -> tuple.get(userBungEntity), Collectors.toList())
+            ));
+
+        // 정렬된 결과 반환
+        return bungMap.entrySet().stream()
+            .map(entry -> new BungInfoWithMemberListDto(entry.getKey(), entry.getValue()))
+            .sorted(Comparator.comparing(dto -> orderMap.get(dto.getBungId())))
+            .collect(Collectors.toList());
     }
 }

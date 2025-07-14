@@ -11,7 +11,6 @@ import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.GetBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
 import io.openur.domain.bung.enums.SearchBungResultEnum;
-import io.openur.domain.bung.enums.SearchBungTypeEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
@@ -87,18 +86,12 @@ public class BungService {
     }
     
     public Page<BungInfoWithMemberListDto> getBungLists(
-        UserDetailsImpl userDetails, SearchBungTypeEnum type, String keyword,
-        boolean isJoinedOnly, Pageable pageable
+        UserDetailsImpl userDetails,
+        Pageable pageable
     ) {
-        if(SearchBungTypeEnum.needToSearch(type) && !StringUtils.hasText(keyword))
-            throw new SearchBungException(SearchBungResultEnum.EMPTY_KEYWORD);
-        
         User user = userRepository.findUser(userDetails.getUser());
 
-        return switch (type) {
-            case ALL -> bungRepository.findBungsWithStatus(user, isJoinedOnly, pageable);
-            default -> null;
-        };
+        return bungRepository.findBungsWithStatus(user, pageable);
     }
     
     public Page<BungInfoWithOwnershipDto> getMyBungLists(
