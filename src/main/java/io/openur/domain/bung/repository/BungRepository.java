@@ -18,7 +18,7 @@ public interface BungRepository {
         String keyword, Pageable pageable);
     
     Page<BungInfoDto> findBungWithHashtag(
-        List<String> listOfTags, Pageable pageable
+        String hashTag, Pageable pageable
     );
     
     Bung findBungById(String bungId);

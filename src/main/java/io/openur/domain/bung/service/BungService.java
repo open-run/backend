@@ -107,7 +107,7 @@ public class BungService {
     public Page<BungInfoDto> searchBungByLocation(
         UserDetailsImpl userDetails, String location, Pageable pageable
     ) {
-        if(!StringUtils.hasText(location))
+        if(!StringUtils.hasText(location) || location.length() < 2)
             throw new SearchBungException(SearchBungResultEnum.NO_LOCATION_SPECIFIED);
 
         return bungRepository.findBungsWithLocation(location, pageable);
@@ -116,16 +116,16 @@ public class BungService {
     public Page<BungInfoWithMemberListDto> searchBungByNickname(
         UserDetailsImpl userDetails, String nickname, Pageable pageable
     ) {
-        if(!StringUtils.hasText(nickname))
+        if(!StringUtils.hasText(nickname) || nickname.length() < 2)
             throw new SearchBungException(SearchBungResultEnum.NO_NICKNAME_PROVIDED);
 
         return userBungRepository.findBungsWithUserName(nickname, pageable);
     }
 
     public Page<BungInfoDto> searchBungByHashtag(
-        UserDetailsImpl userDetails, List<String> hashtag, Pageable pageable
+        UserDetailsImpl userDetails, String hashtag, Pageable pageable
     ) {
-        if(hashtag == null || hashtag.isEmpty())
+        if(!StringUtils.hasText(hashtag)|| hashtag.length() < 2)
             throw new SearchBungException(SearchBungResultEnum.NO_HASHTAG_PROVIDED);
 
         return bungRepository.findBungWithHashtag(hashtag, pageable);

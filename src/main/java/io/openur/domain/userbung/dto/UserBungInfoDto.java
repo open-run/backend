@@ -13,6 +13,7 @@ public class UserBungInfoDto {
     private String nickname;
     private String email;
     private String profileImageUrl;
+    private Integer likeCount;
 //    private String runningPace;
 
 //    private Long userBungId;
@@ -24,6 +25,7 @@ public class UserBungInfoDto {
         this.userId = userBung.getUser().getUserId();
         this.nickname = userBung.getUser().getNickname();
         this.email = userBung.getUser().getEmail();
+        this.likeCount = userBung.getUser().getFeedback();
         this.profileImageUrl = "";
 //        this.runningPace = userBung.getUser().getRunningPace();
 //        this.userBungId = userBung.getUserBungId();
