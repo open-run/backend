@@ -1,8 +1,10 @@
 package io.openur.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,6 +42,8 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -49,6 +53,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BungApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/bungs";
+    private static final Logger log = LoggerFactory.getLogger(
+        BungApiTest.class);
     @Autowired
     protected UserBungJpaRepository userBungJpaRepository;
     @Autowired
@@ -104,41 +110,13 @@ public class BungApiTest extends TestSupport {
     @DisplayName("벙 목록 조회")
     class getBungListTest {
 
-        String uriPath = PREFIX + "?isAvailableOnly=";
-
         @Test
-        @DisplayName("200 OK. isAvailableOnly = false")
+        @DisplayName("200 OK.")
         void getBungList_isOk() throws Exception {
             String token = getTestUserToken("test2@test.com");
             MvcResult result = mockMvc.perform(
-                get(uriPath + false)
+                get(PREFIX)
                     .header(AUTH_HEADER, token)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk()).andReturn();
-
-            PagedResponse<BungInfoWithMemberListDto> response = parseResponse(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
-            );
-            assert !response.isEmpty();
-            List<BungInfoWithMemberListDto> bungInfoDtoList = response.getData();
-            assert bungInfoDtoList.size() == 2;
-            BungInfoWithMemberListDto oneBung = bungInfoDtoList.get(0);
-            assert bungInfoDtoList.get(0).getStartDateTime().isBefore(bungInfoDtoList.get(1).getStartDateTime());
-            assert !oneBung.getHashtags().isEmpty();
-        }
-
-        @Test
-        @DisplayName("200 OK. isAvailableOnly = true")
-        void getBungList_isOk_availableOnly() throws Exception {
-            String notAvailableBungId = "90477004-1422-4551-acce-04584b34612e";
-            String participatingUserToken = getTestUserToken(
-                "test3@test.com");  // owner of the bung so already participating.
-
-            MvcResult result = mockMvc.perform(
-                get(uriPath + true)
-                    .header(AUTH_HEADER, participatingUserToken)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
 
@@ -152,7 +130,157 @@ public class BungApiTest extends TestSupport {
             assert bungInfoDtoList.size() == 1;
             BungInfoWithMemberListDto oneBung = bungInfoDtoList.get(0);
             assert !oneBung.getHashtags().isEmpty();
-            assert !Objects.equals(oneBung.getBungId(), notAvailableBungId);
+        }
+    }
+
+    @Nested
+    @DisplayName("벙 검색 - 위치")
+    class searchByLocationTest {
+
+        @Test
+        @DisplayName("200 OK - 위치 검색 성공")
+        void searchByLocation_isOk() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+            String location = "강남";
+
+            MvcResult result = mockMvc.perform(
+                get(PREFIX + "/location")
+                    .header(AUTH_HEADER, token)
+                    .param("location", location)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+
+            assertNotNull(response);
+            assertNotNull(response.getData());
+
+            // 검색 결과가 있는 경우 위치 정보 확인
+            if (!response.getData().isEmpty()) {
+                BungInfoDto bung = response.getData().get(0);
+                assertNotNull(bung.getLocation());
+            }
+        }
+
+        @Test
+        @DisplayName("400 Bad Request - 위치 파라미터 누락")
+        void searchByLocation_missingLocationParam() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+
+            mockMvc.perform(
+                get(PREFIX + "/location")
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("벙 검색 - 닉네임")
+    class searchByNicknameTest {
+
+        @Test
+        @DisplayName("200 OK - 닉네임 검색 성공")
+        void searchByNickname_isOk() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+            String nickname = "테스트";
+
+            MvcResult result = mockMvc.perform(
+                get(PREFIX + "/nickname")
+                    .header(AUTH_HEADER, token)
+                    .param("nickname", nickname)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoWithMemberListDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+
+            assertNotNull(response);
+            assertNotNull(response.getData());
+
+            // 검색 결과가 있는 경우 멤버 정보 확인
+            if (!response.getData().isEmpty()) {
+                BungInfoWithMemberListDto bung = response.getData().get(0);
+                assertNotNull(bung.getMemberList());
+                assertFalse(bung.getMemberList().isEmpty());
+
+                // 멤버 중 검색한 닉네임이 포함되어 있는지 확인
+                boolean nicknameFound = bung.getMemberList().stream()
+                    .anyMatch(
+                        member -> member.getNickname().contains(nickname));
+                assertTrue(nicknameFound);
+            }
+        }
+
+        @Test
+        @DisplayName("400 Bad Request - 닉네임 파라미터 누락")
+        void searchByNickname_missingNicknameParam() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+
+            mockMvc.perform(
+                get(PREFIX + "/nickname")
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("벙 검색 - 해시태그")
+    class searchByHashtagTest {
+
+        @Test
+        @DisplayName("200 OK - 해시태그 검색 성공")
+        void searchByHashtag_isOk() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+            String hashtag = "모임";
+
+            MvcResult result = mockMvc.perform(
+                get(PREFIX + "/hashtag")
+                    .header(AUTH_HEADER, token)
+                    .param("hashtag", hashtag)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+
+            assertNotNull(response);
+            assertNotNull(response.getData());
+
+            // 검색 결과가 있는 경우 해시태그 정보 확인
+            if (!response.getData().isEmpty()) {
+                BungInfoDto bung = response.getData().get(0);
+                assertNotNull(bung.getHashtags());
+                assertFalse(bung.getHashtags().isEmpty());
+
+                // 해시태그 중 검색한 키워드가 포함되어 있는지 확인
+                boolean hashtagFound = bung.getHashtags().stream()
+                    .anyMatch(tag -> tag.contains(hashtag));
+                assertTrue(hashtagFound);
+            }
+        }
+
+        @Test
+        @DisplayName("400 Bad Request - 해시태그 파라미터 누락")
+        void searchByHashtag_missingHashtagParam() throws Exception {
+            String token = getTestUserToken("test2@test.com");
+
+            mockMvc.perform(
+                get(PREFIX + "/hashtag")
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isBadRequest());
         }
     }
 
@@ -209,7 +337,8 @@ public class BungApiTest extends TestSupport {
                 new TypeReference<>() {
                 }
             );
-            assert !response.getData().getHashtags().isEmpty();
+
+            assert response.getData().getHashtags() != null && !response.getData().getHashtags().isEmpty();
             assert !response.getData().getMemberList().isEmpty();
             assert response.getData().getMemberList().size() == response.getData()
                 .getMemberNumber();

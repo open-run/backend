@@ -52,7 +52,7 @@ public class BungRepositoryImpl implements BungRepository {
     private final BungJpaRepository bungJpaRepository;
 
     @Override
-    public Page<BungInfoWithMemberListDto> findBungsWithStatus(
+    public Page<BungInfoWithMemberListDto> findBungs(
         User user, Pageable pageable) {
 
         // 사용자가 참여한 벙 ID 조회 (한 번만 실행)
@@ -63,7 +63,7 @@ public class BungRepositoryImpl implements BungRepository {
             .select(bungEntity.bungId)
             .from(bungEntity)
             .where(isAvailable(joinedBungIds))
-            .orderBy(conditionalBungOrdering(user))
+            .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -191,20 +191,6 @@ public class BungRepositoryImpl implements BungRepository {
     public Boolean isBungStarted(String bungId) {
         Bung bung = this.findBungById(bungId);
         return bung.getStartDateTime().isBefore(LocalDateTime.now());
-    }
-
-    private OrderSpecifier[] conditionalBungOrdering(User user) {
-        return new OrderSpecifier[] {
-            bungEntity.startDateTime.asc(),
-            new CaseBuilder()
-                .when(
-                    userBungEntity.userEntity.userId.eq(user.getUserId())
-                )
-                .then(0)
-                .otherwise(1).asc(),
-            userBungEntity.isOwner.desc(),
-            userEntity.nickname.asc()
-        };
     }
 
     private Set<String> getJoinedBungIds(User user) {
