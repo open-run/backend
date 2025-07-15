@@ -91,7 +91,7 @@ public class BungService {
     ) {
         User user = userRepository.findUser(userDetails.getUser());
 
-        return bungRepository.findBungsWithStatus(user, pageable);
+        return bungRepository.findBungs(user, pageable);
     }
     
     public Page<BungInfoWithOwnershipDto> getMyBungLists(

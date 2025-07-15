@@ -59,20 +59,21 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
     @Override
     public Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId) {
-        BungEntity bung = queryFactory
-            .selectFrom(bungEntity)
-            .where(bungEntity.bungId.eq(bungId))
-            .fetchOne();
-        
-        if(bung == null) return Optional.empty();
-        
-        // Bung 이 존재하지 않았다면, 유저들을 복잡하게 조인해서 찾을 이유 없음.
         List<UserBungEntity> members = queryFactory
             .selectFrom(userBungEntity)
-            .join(userBungEntity.userEntity).fetchJoin()  // 페치 조인 추가
-            .where(userBungEntity.bungEntity.eq(bung))
+            .join(userBungEntity.userEntity).fetchJoin()
+            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+            .leftJoin(bungEntity.bungHashtags, bungHashtagEntity).fetchJoin()
+            .where(userBungEntity.bungEntity.bungId.eq(bungId))
             .fetch();
-        
+
+        if (members.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // 첫 번째 멤버에서 BungEntity 추출 (모든 멤버는 동일한 Bung을 참조)
+        BungEntity bung = members.get(0).getBungEntity();
+
         return Optional.of(new BungInfoWithMemberListDto(bung, members));
     }
 

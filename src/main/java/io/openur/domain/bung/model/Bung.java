@@ -6,7 +6,9 @@ import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
+import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -101,7 +103,12 @@ public class Bung {
             .afterRunDescription(bungEntity.getAfterRunDescription())
             .isCompleted(bungEntity.isCompleted())
             .mainImage(bungEntity.getMainImage())
-            // TO-CHECK: 일단 BE-92 대로 옮겨오긴 했는데 hashtag 는 빼도 되는게 맞는거?
+            .hashtags(
+                bungEntity.getBungHashtags().stream()
+                .map(BungHashtagEntity::getHashtagEntity)
+                .map(HashtagEntity::toString)
+                .toList()
+            )
             .build();
     }
 
