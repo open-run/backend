@@ -59,10 +59,12 @@ public class BungController {
     }
 
     @GetMapping()
-    @Operation(summary = "현재 시각 기준 벙 시작 시각이 미래인 벙 목록, 시작 시간 오름차순 (가장 임박한 벙 먼저)")
+    @Operation(summary = "탐색 - 추천")
     public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> getBungList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Parameter(description = "현 페이지 위치 ( 인덱스 )")
         @RequestParam(required = false, defaultValue = "0") int page,
+        @Parameter(description = "현 페이지 크기 제한")
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
@@ -75,9 +77,11 @@ public class BungController {
     }
 
     @GetMapping("/location")
-    @Operation(summary = "")
+    @Operation(summary = "벙 검색 - 위치")
     public ResponseEntity<PagedResponse<BungInfoDto>> searchByLocation(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Parameter(description = "위치에 따른 검색, 최소 두글자 제한"
+            + "인원수 필드 값 추가 확인 바람")
         @RequestParam String location,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "5") int limit
@@ -92,9 +96,12 @@ public class BungController {
     }
 
     @GetMapping("/nickname")
-    @Operation(summary = "")
+    @Operation(summary = "벙 검색 - 닉네임")
     public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> searchByNickname(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Parameter(description = "참가 사용자 닉네임에 따른 검색, 최소 두글자 제한,"
+            + " 개인 프로필 이미지 추후 첨부 예정, 인원수 필드 값 추가 확인 바람"
+        )
         @RequestParam String nickname,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "5") int limit
@@ -110,10 +117,11 @@ public class BungController {
     }
 
     @GetMapping("/hashtag")
-    @Operation(summary = "")
+    @Operation(summary = "벙 검색 - 해시태그")
     public ResponseEntity<PagedResponse<BungInfoDto>> searchByHashtag(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam(required = true, defaultValue = "") List<String> hashtag,
+        @Parameter(description = "검색할 해시태그, 최소 두 글자 제한,")
+        @RequestParam(required = true) String hashtag,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "5") int limit
     ) {
