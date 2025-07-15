@@ -13,13 +13,17 @@ import lombok.ToString;
 @Getter
 @ToString
 public class CreateBungDto {
-    
+
     @NotBlank
     private String name;
     private String description;
     private String mainImage;
     @NotBlank
     private String location;
+    @NotNull
+    private Double latitude;
+    @NotNull
+    private Double longitude;
     @NotNull
     private LocalDateTime startDateTime;
     @NotNull
@@ -28,12 +32,12 @@ public class CreateBungDto {
     private Float distance;
     @NotBlank
     private String pace;
-    
+
     @NotNull
     @Min(3)
     @Max(300)
     private Integer memberNumber;
-    
+
     @NotNull
     private Boolean hasAfterRun;
     private String afterRunDescription;

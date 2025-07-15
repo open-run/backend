@@ -16,7 +16,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 public class Bung {
 
@@ -25,6 +26,8 @@ public class Bung {
     private String description;
     private String mainImage;
     private String location;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private Float distance;
@@ -40,6 +43,8 @@ public class Bung {
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.location = dto.getLocation();
+        this.latitude = dto.getLatitude();
+        this.longitude = dto.getLongitude();
         this.startDateTime = dto.getStartDateTime();
         this.endDateTime = dto.getEndDateTime();
         this.distance = dto.getDistance();
@@ -55,6 +60,8 @@ public class Bung {
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.location = dto.getLocation();
+        this.latitude = dto.getLatitude();
+        this.longitude = dto.getLongitude();
         this.startDateTime = dto.getStartDateTime();
         this.endDateTime = dto.getEndDateTime();
         this.distance = dto.getDistance();
@@ -64,7 +71,7 @@ public class Bung {
         this.afterRunDescription = dto.getAfterRunDescription();
         this.mainImage = dto.getMainImage();
     }
-    
+
     // 기본적으로 bung hashtag 는 엔티티기 때문에, 해당 메서드로 업데이트 불가
     public void update(EditBungDto dto) {
         applyIfNotNull(dto.getName(), this::setName);
@@ -74,7 +81,7 @@ public class Bung {
         applyIfNotNull(dto.getHasAfterRun(), this::setHasAfterRun);
         applyIfNotNull(dto.getAfterRunDescription(), this::setAfterRunDescription);
     }
-    
+
     public static Bung from(final BungEntity bungEntity) {
         return new Bung(
             bungEntity.getBungId(),
@@ -82,6 +89,8 @@ public class Bung {
             bungEntity.getDescription(),
             bungEntity.getMainImage(),
             bungEntity.getLocation(),
+            bungEntity.getLatitude(),
+            bungEntity.getLongitude(),
             bungEntity.getStartDateTime(),
             bungEntity.getEndDateTime(),
             bungEntity.getDistance(),
@@ -90,19 +99,22 @@ public class Bung {
             bungEntity.getHasAfterRun(),
             bungEntity.getAfterRunDescription(),
             bungEntity.isCompleted(),
-            bungEntity.getBungHashtags().stream()
+            bungEntity.getBungHashtags()
+                .stream()
                 .map(BungHashtagEntity::getHashtagEntity)
                 .map(HashtagEntity::getHashtagStr)
                 .toList()
         );
     }
-    
+
     public BungEntity toEntity(List<BungHashtag> bungHashtags) {
         return new BungEntity(
             bungId,
             name,
             description,
             location,
+            latitude,
+            longitude,
             startDateTime,
             endDateTime,
             distance,
