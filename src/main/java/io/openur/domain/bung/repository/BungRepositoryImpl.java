@@ -118,23 +118,9 @@ public class BungRepositoryImpl implements BungRepository {
     }
     
     @Override
-    public Page<BungInfoDto> findBungWithHashtag(List<String> listOfTags, Pageable pageable) {
-        // 입력 검증
-        if (listOfTags == null || listOfTags.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        List<String> filteredTags = listOfTags.stream()
-            .filter(StringUtils::hasText)
-            .map(String::trim)
-            .toList();
-
-        if (filteredTags.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
+    public Page<BungInfoDto> findBungWithHashtag(String hashTag, Pageable pageable) {
         // 공통 조건
-        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.in(filteredTags);
+        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.containsIgnoreCase(hashTag);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
 
         // 1. 페이징된 BungEntity ID 조회
