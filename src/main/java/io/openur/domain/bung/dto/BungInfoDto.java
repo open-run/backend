@@ -15,6 +15,8 @@ public class BungInfoDto {
     private String name;
     private String description;
     private String location;
+    private Double latitude;
+    private Double longitude;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startDateTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -33,6 +35,8 @@ public class BungInfoDto {
         this.name = bung.getName();
         this.description = bung.getDescription();
         this.location = bung.getLocation();
+        this.latitude = bung.getLatitude();
+        this.longitude = bung.getLongitude();
         this.startDateTime = bung.getStartDateTime();
         this.endDateTime = bung.getEndDateTime();
         this.distance = bung.getDistance();
