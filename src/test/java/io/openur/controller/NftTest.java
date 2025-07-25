@@ -1,12 +1,18 @@
 package io.openur.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.contract.OpenRunNFTTest;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.crypto.Credentials;
 import org.web3j.tx.gas.DefaultGasProvider;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URL;
 
 
 public class NftTest {
@@ -23,9 +29,9 @@ public class NftTest {
         OpenRunNFTTest contract = OpenRunNFTTest.load(contractAddress, web3j, credentials, new DefaultGasProvider());
 
         String to = "0x4f76b5121838b16a5f938d4c8369021f22ad659d";
-        BigInteger taskId = BigInteger.valueOf(403);
+        BigInteger taskId = BigInteger.valueOf(28);
         BigInteger amount = BigInteger.ONE;
-        BigInteger itemId = BigInteger.valueOf(403);
+        BigInteger itemId = BigInteger.valueOf(28);
 
         // task 등록
         contract.setTaskItem(taskId, itemId).send();
@@ -39,17 +45,18 @@ public class NftTest {
         System.out.println("baseURI 설정 완료: " + uriReceipt.getTransactionHash());
 
         // 블록 포함 대기
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         // NFT 민팅
         TransactionReceipt receipt = contract.mintItemForTask(to, taskId, amount).send();
         System.out.println("Mint Success! TxHash: " + receipt.getTransactionHash());
 
-
+        // 블록 포함 대기q
+        Thread.sleep(1000);
 
         // 확인할 지갑 주소와 tokenId
         String walletAddress = "0x4f76b5121838b16a5f938d4c8369021f22ad659d";
-        BigInteger tokenId = BigInteger.valueOf(403);
+        BigInteger tokenId = BigInteger.valueOf(28);
 
         //보유량 확인
         BigInteger balance = contract.balanceOf(walletAddress, tokenId).send();
@@ -61,17 +68,33 @@ public class NftTest {
             System.out.println("메타데이터 URI: " + uri);
 
             //tokenId 403에 대해 메타데이터 파일명 치환
-            if (tokenId.equals(BigInteger.valueOf(403))) {
-                uri = uri.replace("403", "shoes4-3.json");
+            if (tokenId.equals(BigInteger.valueOf(28))) {
+                uri = uri.replace("28", "shoes4-3.json");
             }
 
             //게이트웨이 URL로 변환
             String metadataUrl = uri.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
             System.out.println("메타데이터 확인: " + metadataUrl);
 
-            System.out.println("\n 브라우저에서 확인:\n" + metadataUrl);
+
+
+            /*
+            // 메타데이터 JSON에서 image 필드 파싱
+            ObjectMapper mapper = new ObjectMapper();
+
+
+            InputStream in = new URL(metadataUrl).openStream();
+            JsonNode root = mapper.readTree(in);
+            String imageIpfs = root.get("image").asText();
+            String imageUrl = imageIpfs.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+
+            System.out.println(" 이미지 URL: " + imageUrl);
+            System.out.println("\n 브라우저에서 보기:\n" + imageUrl);
+*/
+
         } else {
             System.out.println(" 해당 지갑은 이 NFT를 보유하고 있지 않습니다.");
         }
     }
+
 }
