@@ -12,11 +12,12 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
+@Getter @Builder
 @Table(name = "tb_bungs")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,12 +49,15 @@ public class BungEntity {
 
     private Integer memberNumber;
 
+    private Integer  currentMemberNumber;
+
     private Boolean hasAfterRun;
 
     private String afterRunDescription;
 
     @Column(name = "is_completed")
     private boolean completed;
+
     private String mainImage;
 
     @OneToMany(mappedBy = "bungEntity", cascade = CascadeType.ALL, orphanRemoval = true)
