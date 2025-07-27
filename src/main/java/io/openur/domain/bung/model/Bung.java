@@ -53,6 +53,7 @@ public class Bung {
         this.distance = dto.getDistance();
         this.pace = dto.getPace();
         this.memberNumber = dto.getMemberNumber();
+        this.currentMemberNumber = 1;
         this.hasAfterRun = dto.getHasAfterRun();
         this.afterRunDescription = dto.getAfterRunDescription();
         this.mainImage = dto.getMainImage();
@@ -70,6 +71,7 @@ public class Bung {
         this.distance = dto.getDistance();
         this.pace = dto.getPace();
         this.memberNumber = dto.getMemberNumber();
+        this.currentMemberNumber = dto.getCurrentMemberCount();
         this.hasAfterRun = dto.getHasAfterRun();
         this.afterRunDescription = dto.getAfterRunDescription();
         this.mainImage = dto.getMainImage();
@@ -125,6 +127,7 @@ public class Bung {
             .distance(distance)
             .pace(pace)
             .memberNumber(memberNumber)
+            .currentMemberNumber(currentMemberNumber)
             .hasAfterRun(hasAfterRun)
             .afterRunDescription(afterRunDescription)
             .completed(isCompleted)
