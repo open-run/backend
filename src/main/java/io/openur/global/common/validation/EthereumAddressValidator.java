@@ -22,4 +22,8 @@ public class EthereumAddressValidator implements ConstraintValidator<ValidEthere
         // Check length and format
         return address.length() == ETH_ADDRESS_LENGTH && ETH_ADDRESS_PATTERN.matcher(address).matches();
     }
+
+    public boolean isValid(String address) {
+        return isValid(address, null);
+    }
 } 

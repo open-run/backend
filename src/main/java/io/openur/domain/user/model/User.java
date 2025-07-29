@@ -18,7 +18,6 @@ public class User {
 
     private String userId;
     private String nickname;
-    private String email;
     private Boolean identityAuthenticated;
     private Provider provider;
     private Boolean blacklisted;
@@ -35,7 +34,6 @@ public class User {
     ) {
         this.userId = UUID.randomUUID().toString();
         this.nickname = null;
-        this.email = email;
         this.identityAuthenticated = false;
         this.provider = provider;
         this.blacklisted = false;
@@ -50,7 +48,6 @@ public class User {
     public User(String blockchainAddress) {
         this.userId = UUID.randomUUID().toString();
         this.nickname = null;
-        this.email = null;
         this.identityAuthenticated = false;
         this.provider = Provider.smart_wallet;
         this.blacklisted = false;
@@ -66,7 +63,6 @@ public class User {
         return new User(
             userEntity.getUserId(),
             userEntity.getNickname(),
-            userEntity.getEmail(),
             userEntity.getIdentityAuthenticated(),
             userEntity.getProvider(),
             userEntity.getBlacklisted(),
@@ -83,7 +79,6 @@ public class User {
         return new UserEntity(
             userId,
             nickname,
-            email,
             identityAuthenticated,
             provider,
             blacklisted,

@@ -73,7 +73,7 @@ public class UserController {
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        GetUserResponseDto getUserResponseDto = userService.getUserEmail(userDetails);
+        GetUserResponseDto getUserResponseDto = userService.getUser(userDetails);
         return ResponseEntity.ok()
             .body(Response.<GetUserResponseDto>builder()
                 .message("success")
