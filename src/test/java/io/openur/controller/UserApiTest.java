@@ -36,7 +36,7 @@ public class UserApiTest extends TestSupport {
     @Test
     @DisplayName("유저 정보")
     void getUserInfoTest() throws Exception {
-        String token = getTestUserToken("test1@test.com");
+        String token = getTestUserToken1();
 
         mockMvc.perform(
                 get(PREFIX)
@@ -53,7 +53,7 @@ public class UserApiTest extends TestSupport {
         @Test
         @DisplayName("200 Ok.")
         void getUserByNickname_isOk() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
 
             MvcResult result = mockMvc.perform(
                     get(PREFIX + "/nickname?nickname={nickname}", "test")
@@ -73,7 +73,7 @@ public class UserApiTest extends TestSupport {
         @Test
         @DisplayName("400 Bad Request. Query parameter is required.")
         void getUserByNickname_isBadRequest() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
 
             mockMvc.perform(
                     get(PREFIX + "/nickname")
@@ -91,7 +91,7 @@ public class UserApiTest extends TestSupport {
         @Test
         @DisplayName("400 Bad Request. 잘못된 형식의 인풋")
         void saveSurveyResult_isBadRequest() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             var surveyResult = new HashMap<>();
             surveyResult.put("nickname", "나도모른거");
             surveyResult.put("runningPace", "5'55\"");  // 형식에 맞지 않음. 5'55" -> 05'55"
@@ -109,7 +109,7 @@ public class UserApiTest extends TestSupport {
         @DisplayName("201 Created.")
         @Transactional
         void saveSurveyResult_isOk() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             var surveyResult = new HashMap<>();
             surveyResult.put("nickname", "나도모른거");
             surveyResult.put("runningPace", "05'55\"");

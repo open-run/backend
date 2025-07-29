@@ -42,8 +42,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -53,8 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class BungApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/bungs";
-    private static final Logger log = LoggerFactory.getLogger(
-        BungApiTest.class);
     @Autowired
     protected UserBungJpaRepository userBungJpaRepository;
     @Autowired
@@ -68,7 +64,7 @@ public class BungApiTest extends TestSupport {
     @DisplayName("벙 생성")
     @Transactional
     void createBungTest() throws Exception {
-        String token = getTestUserToken("test1@test.com");
+        String token = getTestUserToken1();
 
         var submittedBung = new HashMap<>();
         List<String> hashtags = Arrays.asList("LSD", "음악있음", "밤산책");
@@ -113,7 +109,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("200 OK.")
         void getBungList_isOk() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             MvcResult result = mockMvc.perform(
                 get(PREFIX)
                     .header(AUTH_HEADER, token)
@@ -140,7 +136,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("200 OK - 위치 검색 성공")
         void searchByLocation_isOk() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             String location = "강남";
 
             MvcResult result = mockMvc.perform(
@@ -169,7 +165,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("400 Bad Request - 위치 파라미터 누락")
         void searchByLocation_missingLocationParam() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
 
             mockMvc.perform(
                 get(PREFIX + "/location")
@@ -186,7 +182,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("200 OK - 닉네임 검색 성공")
         void searchByNickname_isOk() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             String nickname = "테스트";
 
             MvcResult result = mockMvc.perform(
@@ -222,7 +218,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("400 Bad Request - 닉네임 파라미터 누락")
         void searchByNickname_missingNicknameParam() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
 
             mockMvc.perform(
                 get(PREFIX + "/nickname")
@@ -239,7 +235,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("200 OK - 해시태그 검색 성공")
         void searchByHashtag_isOk() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             String hashtag = "모임";
 
             MvcResult result = mockMvc.perform(
@@ -274,7 +270,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("400 Bad Request - 해시태그 파라미터 누락")
         void searchByHashtag_missingHashtagParam() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
 
             mockMvc.perform(
                 get(PREFIX + "/hashtag")
@@ -291,7 +287,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("200 OK. isOwned = null, status = null. 내가 소유 및 참가했던 모든 벙. 가장 먼 미래 순으로.")
         void getMyBungList_isOk() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             MvcResult result = mockMvc.perform(
                 get(PREFIX + "/my-bungs")
                     .header(AUTH_HEADER, token)
@@ -325,7 +321,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("200 OK.")
         void getBungDetail_isOk() throws Exception {
-            String token = getTestUserToken("test3@test.com");  // not owner of the bung
+            String token = getTestUserToken3();  // not owner of the bung
             MvcResult result = mockMvc.perform(
                 get(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, token)
@@ -364,7 +360,7 @@ public class BungApiTest extends TestSupport {
         @Test
         @DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
         void deleteBung_isForbidden_notOwner() throws Exception {
-            String notOwnerToken = getTestUserToken("test2@test.com");
+            String notOwnerToken = getTestUserToken2();
             mockMvc.perform(
                 delete(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, notOwnerToken)
@@ -395,7 +391,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("200 Ok.")
         @Transactional
         void deleteBung_isOk() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             mockMvc.perform(
                 delete(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, token)
@@ -419,7 +415,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("409 Conflict. 이미 참가한 경우")
         void joinBung_isConflict_alreadyJoined() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             MvcResult result = mockMvc.perform(
                 get(PREFIX + "/" + bungId + "/join")
                     .header(AUTH_HEADER, token)
@@ -438,7 +434,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("409 Conflict. 벙이 이미 시작된 경우")
         void joinBung_isConflict_alreadyStarted() throws Exception {
             String bungId = "a1234567-89ab-cdef-0123-456789abcdef";
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             MvcResult result = mockMvc.perform(
                 get(PREFIX + "/" + bungId + "/join")
                     .header(AUTH_HEADER, token)
@@ -457,7 +453,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("409 Conflict. 벙 인원이 다 찬 경우")
         void joinBung_isConflict_isFull() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-            String token = getTestUserToken("test3@test.com");
+            String token = getTestUserToken3();
             MvcResult result = mockMvc.perform(
                 get(PREFIX + "/" + bungId + "/join")
                     .header(AUTH_HEADER, token)
@@ -476,7 +472,7 @@ public class BungApiTest extends TestSupport {
         @Transactional
         void joinBung_isOk() throws Exception {
             String bungId = "90477004-1422-4551-acce-04584b34612e";
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             MvcResult result = mockMvc.perform(
                 get(PREFIX + "/{bungId}/join", bungId)
                     .header(AUTH_HEADER, token)
@@ -518,7 +514,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("400 Bad Request. No elements.")
         void editBung_isOk_noElements() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-            String ownerToken = getTestUserToken("test1@test.com");
+            String ownerToken = getTestUserToken1();
             mockMvc.perform(
                 patch(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, ownerToken)
@@ -532,7 +528,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("403 Forbidden. Not owner of the bung")
         void editBung_isForbidden_notOwner() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-            String notOwnerToken = getTestUserToken("test2@test.com");
+            String notOwnerToken = getTestUserToken2();
             mockMvc.perform(
                 patch(PREFIX + "/" + bungId)
                     .header(AUTH_HEADER, notOwnerToken)
@@ -546,7 +542,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("403 Forbidden. Bung has already completed")
         void editBung_isForbidden_alreadyCompleted() throws Exception {
             String bungId = "a1234567-89ab-cdef-0123-1982ey1kbjas";
-            String ownerToken = getTestUserToken("test3@test.com");
+            String ownerToken = getTestUserToken3();
 
             MvcResult result = mockMvc.perform(
                 patch(PREFIX + "/" + bungId)
@@ -568,7 +564,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("200 Ok. All elements.")
         void edit_isOk() throws Exception {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
-            String ownerToken = getTestUserToken("test1@test.com");
+            String ownerToken = getTestUserToken1();
             Set<String> previousHashtags =
                 bungHashtagRepository.findHashtagsByBungId(bungId).stream()
                     .map(Hashtag::getHashtagStr)
@@ -611,7 +607,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("409 Already Completed")
         void complete_isConflict_alreadyCompleted() throws Exception {
             String bungId = "a1234567-89ab-cdef-0123-1982ey1kbjas";
-            String token = getTestUserToken("test3@test.com");
+            String token = getTestUserToken3();
 
             MvcResult result = mockMvc.perform(
                 patch(PREFIX + "/" + bungId + "/complete")
@@ -631,7 +627,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("409 Conflict. Bung has not started")
         void complete_isConflict_hasNotStarted() throws Exception {
             String bungId = "90477004-1422-4551-acce-04584b34612e";
-            String token = getTestUserToken("test3@test.com");
+            String token = getTestUserToken3();
             MvcResult result = mockMvc.perform(
                 patch(PREFIX + "/" + bungId + "/complete")
                     .header(AUTH_HEADER, token)
@@ -650,7 +646,7 @@ public class BungApiTest extends TestSupport {
         @DisplayName("200 OK.")
         void complete_isOk() throws Exception {
             String bungId = "a1234567-89ab-cdef-0123-456789abcdef";
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             MvcResult result = mockMvc.perform(
                 patch(PREFIX + "/" + bungId + "/complete")
                     .header(AUTH_HEADER, token)

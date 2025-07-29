@@ -35,7 +35,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("200 Ok. Is bung owner.")
         void kickMember_successTest() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
@@ -49,7 +49,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("200 Ok. Is self.")
         void kickMember_success_isSelf() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
@@ -66,7 +66,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("403 Forbidden. Owner is trying to kick self.")
         void kickMember_isForbidden_ownerKickingSelf() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String userIdToKick = "9e1bfc60-f76a-47dc-9147-803653707192";
 
@@ -86,7 +86,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("403 Forbidden. Is not owner nor self.")
         void kickMember_isForbidden_notOwnerNorSelf() throws Exception {
-            String token = getTestUserToken("test3@test.com");
+            String token = getTestUserToken3();
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String userIdToKick = "91b4928f-8288-44dc-a04d-640911f0b2be";
 
@@ -112,7 +112,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("200 Ok.")
         void changeOwner_isOkTest() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
 
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
@@ -152,7 +152,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("403 Forbidden. Bung owner 가 아닌 경우")
         void changeOwner_isForbidden_notOwner() throws Exception {
-            String notOwnerToken = getTestUserToken("test2@test.com");
+            String notOwnerToken = getTestUserToken2();
 
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
             String newOwnerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
@@ -216,7 +216,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("200 Ok. 벙주인 경우")
         void confirmBungParticipation_isOkTest() throws Exception {
-            String token = getTestUserToken("test1@test.com");
+            String token = getTestUserToken1();
             String userId = "9e1bfc60-f76a-47dc-9147-803653707192";
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
 
@@ -226,7 +226,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("200 Ok. 벙 참가자인 경우")
         void confirmBungParticipation_isOk_participant() throws Exception {
-            String token = getTestUserToken("test2@test.com");
+            String token = getTestUserToken2();
             String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
 
@@ -236,7 +236,7 @@ public class UserBungApiTest extends TestSupport {
         @Test
         @DisplayName("403 Forbidden. 벙 참가자가 아닌 경우")
         void confirmBungParticipation_isForbidden_notParticipant() throws Exception {
-            String token = getTestUserToken("test3@test.com");
+            String token = getTestUserToken3();
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
 
             mockMvc.perform(
