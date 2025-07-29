@@ -15,14 +15,16 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class SmartWalletService extends LoginService {
     private final JwtUtil jwtUtil;
+    private final UserRepositoryImpl userRepository;
 
     public SmartWalletService(
-        UserRepositoryImpl userRepository,
         RestTemplate restTemplate,
-        JwtUtil jwtUtil
+        JwtUtil jwtUtil,
+        UserRepositoryImpl userRepository
     ) {
-        super(userRepository, restTemplate);
+        super(restTemplate);
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -39,7 +41,6 @@ public class SmartWalletService extends LoginService {
             log.debug("JWT token generated successfully");
 
             return new GetUsersLoginDto(
-                null,
                 walletAddress,  // Use wallet address as identifier
                 user.getNickname(),
                 token
@@ -48,6 +49,19 @@ public class SmartWalletService extends LoginService {
             String errorMsg = "Failed to process smart wallet login: " + e.getMessage();
             log.error(errorMsg, e);
             throw new IllegalArgumentException(errorMsg, e);
+        }
+    }
+
+    protected User registerUserIfNew(SmartWalletUserInfoDto smartWalletUserInfoDto) {
+        // DB 에 중복된 블록체인 주소의 유저가 있는지 확인
+        String blockchainAddress = smartWalletUserInfoDto.getBlockchainAddress();
+        User user = userRepository.findUser(new User(blockchainAddress));
+        if (user == null) {
+            // 없으면 회원가입
+            User newUser = new User(blockchainAddress);
+            return userRepository.save(newUser);
+        } else {
+            return user;
         }
     }
 } 

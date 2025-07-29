@@ -52,8 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Claims claims = jwtUtil.getUserInfoFromToken(jwtToken);
-            String email = claims.getSubject();
-            this.setAuthentication(email);
+            String blockchainAddress = claims.getSubject();
+            this.setAuthentication(blockchainAddress);
         } catch (InvalidJwtException | UsernameNotFoundException e) {
             resolver.resolveException(request, response, null, e);
             return;
@@ -62,16 +62,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void setAuthentication(String username) throws UsernameNotFoundException {
+    private void setAuthentication(String blockchainAddress) throws UsernameNotFoundException {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = this.createAuthentication(username);
+        Authentication authentication = this.createAuthentication(blockchainAddress);
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
     }
 
-    private Authentication createAuthentication(String email) throws UsernameNotFoundException {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+    private Authentication createAuthentication(String blockchainAddress) throws UsernameNotFoundException {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(blockchainAddress);
         return new UsernamePasswordAuthenticationToken(userDetails, null,
             userDetails.getAuthorities());
     }
