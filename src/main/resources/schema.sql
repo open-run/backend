@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS tb_users
 (
     user_id                VARCHAR(36)                      DEFAULT (UUID()) PRIMARY KEY NOT NULL,
     nickname               VARCHAR(16)                      DEFAULT NULL,
-    email                  VARCHAR(255)                     DEFAULT NULL,
     identity_authenticated BOOLEAN                          DEFAULT FALSE,
     provider               ENUM ('naver', 'kakao', 'smart_wallet') NOT NULL,
     blacklisted            BOOLEAN                          DEFAULT FALSE,

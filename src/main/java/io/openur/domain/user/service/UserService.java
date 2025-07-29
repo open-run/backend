@@ -33,7 +33,7 @@ public class UserService {
         return userRepository.existsByNickname(nickname);
     }
 
-    public GetUserResponseDto getUserEmail(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public GetUserResponseDto getUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userRepository.findUser(userDetails.getUser());
         return new GetUserResponseDto(user);
     }
