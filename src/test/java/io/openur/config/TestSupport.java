@@ -42,13 +42,25 @@ public class TestSupport {
             .build();
     }
 
-    public String getTestUserToken(String email) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+    public String getTestUserToken1() {
+        return getTestUserToken("0x1234567890123456789012345678901234567890");
+    }
+    
+    public String getTestUserToken2() {
+        return getTestUserToken("0x1234567890123456789012345678901234567891");
+    }
+    
+    public String getTestUserToken3() {
+        return getTestUserToken("0x1234567890123456789012345678901234567892");
+    }
+    
+    private String getTestUserToken(String address) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(address);
         UsernamePasswordAuthenticationToken authenticatedToken
             = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authenticatedToken);
-        return jwtUtil.createToken(email);
+        return jwtUtil.createToken(address);
     }
 
     // Implementation of DTO
