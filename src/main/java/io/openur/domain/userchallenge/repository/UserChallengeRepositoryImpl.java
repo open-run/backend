@@ -2,7 +2,6 @@ package io.openur.domain.userchallenge.repository;
 
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
-import static com.querydsl.core.group.GroupBy.map;
 import static io.openur.domain.challenge.entity.QChallengeEntity.challengeEntity;
 import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
 

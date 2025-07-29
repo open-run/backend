@@ -9,7 +9,6 @@ import lombok.Getter;
 public class GetUsersResponseDto {
 
     private final String nickname;
-    private final String email;
     private final String userId;
     private final String runningPace;
     private final Integer runningFrequency;
@@ -20,7 +19,6 @@ public class GetUsersResponseDto {
 
         this.userId = user.getUserId();
         this.nickname = user.getNickname();
-        this.email = user.getEmail();
         this.runningPace = user.getRunningPace();
         this.runningFrequency = user.getRunningFrequency();
         this.collabCount = userCounts.get(1, Long.class);

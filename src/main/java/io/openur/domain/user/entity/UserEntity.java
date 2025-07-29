@@ -34,8 +34,6 @@ public class UserEntity {
 
     private String nickname;
 
-    private String email;
-
     private Boolean identityAuthenticated;
 
     @Enumerated(EnumType.STRING)

@@ -2,6 +2,7 @@ package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
+import io.openur.global.common.validation.EthereumAddressValidator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 
 @Repository
@@ -19,39 +19,18 @@ import org.springframework.util.StringUtils;
 public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userJpaRepository;
+    private final EthereumAddressValidator ethereumAddressValidator;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     public User findUser(User user) {
-        // Try to find by email first if available
-        if (StringUtils.hasText(user.getEmail())) {
-            User foundUser = findByEmail(user.getEmail());
-            if (foundUser != null) {
-                return foundUser;
-            }
-        }
-        
-        // If email not found or not available, try blockchain address
-        if (user.getBlockchainAddress() != null && !user.getBlockchainAddress().matches("0x")) {
-            return findByBlockchainAddress(user.getBlockchainAddress());
-        }
-        
-        return null;
-    }
-
-    private User findByEmail(String email) {
-        UserEntity userEntity = userJpaRepository.findByEmail(email).orElse(null);
-        if (userEntity == null) {
+        if (!ethereumAddressValidator.isValid(user.getBlockchainAddress())) {
             return null;
-        } else {
-            return User.from(userEntity);
         }
-    }
-
-    private User findByBlockchainAddress(String blockchainAddress) {
-        UserEntity userEntity = userJpaRepository.findByBlockchainAddress(blockchainAddress).orElse(null);
+        
+        UserEntity userEntity = userJpaRepository.findByBlockchainAddress(user.getBlockchainAddress()).orElse(null);
         if (userEntity == null) {
             return null;
         } else {
