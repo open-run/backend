@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS tb_bungs
     name                  VARCHAR(192)                               NOT NULL DEFAULT '',
     description           VARCHAR(255),
     location              VARCHAR(128)                               NOT NULL DEFAULT '',
+    latitude              DECIMAL(10, 6)                           NOT NULL,
+    longitude             DECIMAL(11, 6)                           NOT NULL,
     start_datetime        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP    NOT NULL,
     end_datetime          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP    NOT NULL,
     distance              SMALLINT                                   NOT NULL DEFAULT 0,
