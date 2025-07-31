@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS tb_bungs
     distance              SMALLINT                                   NOT NULL DEFAULT 0,
     pace                  VARCHAR(8)                                 NOT NULL,
     member_number         SMALLINT                                   NOT NULL,
+    current_member_number SMALLINT                                   NOT NULL DEFAULT 1,
     has_after_run         BOOLEAN       DEFAULT FALSE,
     after_run_description VARCHAR(4096) DEFAULT NULL,
     is_completed          BOOLEAN       DEFAULT FALSE                NOT NULL,
