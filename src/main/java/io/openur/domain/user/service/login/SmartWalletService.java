@@ -1,4 +1,4 @@
-package io.openur.domain.user.service.oauth;
+package io.openur.domain.user.service.login;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.openur.domain.user.dto.GetUsersLoginDto;
