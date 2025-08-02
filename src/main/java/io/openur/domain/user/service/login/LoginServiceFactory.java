@@ -1,4 +1,4 @@
-package io.openur.domain.user.service.oauth;
+package io.openur.domain.user.service.login;
 
 import io.openur.domain.user.model.Provider;
 import lombok.RequiredArgsConstructor;
