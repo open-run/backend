@@ -9,7 +9,7 @@ public interface UserRepository {
 
     User save(User user);
 
-    User findUser(User user);  // Will use email or blockchain address based on what's available
+    User findUser(User user); 
 
     User findById(String userId);
 

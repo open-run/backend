@@ -26,7 +26,7 @@ public class HashtagApiTest extends TestSupport {
     @Test
     @DisplayName("기존 해시태그 조회")
     void getHashtagsTest() throws Exception {
-        String token = getTestUserToken("test1@test.com");
+        String token = getTestUserToken1();
         String uriPath = PREFIX + "/hashtags?tag=";
         Map<String, List<String>> requestAndResponse = Map.of(
             "런", Arrays.asList("펀런", "런린이"),

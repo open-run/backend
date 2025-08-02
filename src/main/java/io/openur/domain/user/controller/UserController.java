@@ -9,8 +9,8 @@ import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
-import io.openur.domain.user.service.oauth.LoginService;
-import io.openur.domain.user.service.oauth.LoginServiceFactory;
+import io.openur.domain.user.service.login.LoginService;
+import io.openur.domain.user.service.login.LoginServiceFactory;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
@@ -73,7 +73,7 @@ public class UserController {
     public ResponseEntity<Response<GetUserResponseDto>> getUserInfo(
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        GetUserResponseDto getUserResponseDto = userService.getUserEmail(userDetails);
+        GetUserResponseDto getUserResponseDto = userService.getUser(userDetails);
         return ResponseEntity.ok()
             .body(Response.<GetUserResponseDto>builder()
                 .message("success")

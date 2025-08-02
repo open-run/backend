@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserJpaRepository extends JpaRepository<UserEntity, String> {
 
-    Optional<UserEntity> findByEmail(String email);
-
     Optional<UserEntity> findByBlockchainAddress(String blockchainAddress);
 
     Optional<UserEntity> findByUserId(String userId);

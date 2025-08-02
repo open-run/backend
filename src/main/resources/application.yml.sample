@@ -8,22 +8,6 @@ spring:
     redis:
       password: ${{ REDIS_PASSWORD }}
 
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-id: ${{ KAKAO_CLIENT_ID }}
-          naver:
-            client-id: ${{ NAVER_CLIENT_ID }}
-            client-secret: ${{ NAVER_CLIENT_SECRET }}
-
 jwt:
   secret:
     key: ${{ JWT_SECRET_KEY }}
-
-openur:
-  kakao:
-    redirect-uri: ${{ FRONTEND_KAKAO_REDIRECT_URI }}
-  naver:
-    redirect-uri: ${{ FRONTEND_NAVER_REDIRECT_URI }}

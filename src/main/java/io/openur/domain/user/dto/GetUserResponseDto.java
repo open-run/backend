@@ -13,7 +13,6 @@ public class GetUserResponseDto {
 
     private String userId;
     private String nickname;
-    private String email;
     private Boolean identityAuthenticated;
     private Provider provider;
     private Boolean blackListed;
@@ -30,7 +29,6 @@ public class GetUserResponseDto {
     public GetUserResponseDto(User user) {
         this.userId = user.getUserId();
         this.nickname = user.getNickname();
-        this.email = user.getEmail();
         this.identityAuthenticated = user.getIdentityAuthenticated();
         this.provider = user.getProvider();
         this.blackListed = user.getBlacklisted();

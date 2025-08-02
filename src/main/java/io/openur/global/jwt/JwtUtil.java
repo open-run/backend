@@ -39,12 +39,12 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(String email) {
+    public String createToken(String blockchainAddress) {
         Date date = new Date();
 
         return BEARER_PREFIX +
             Jwts.builder()
-                .setSubject(email) // 사용자 식별자값(ID)
+                .setSubject(blockchainAddress) // 사용자 식별자값(ID)
                 .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간
                 .setIssuedAt(date) // 발급일
                 .signWith(key, signatureAlgorithm) // 암호화 알고리즘
