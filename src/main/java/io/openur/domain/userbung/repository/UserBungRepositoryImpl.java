@@ -89,14 +89,15 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
         // 1. 서브쿼리로 페이징 및 정렬된 BungEntity ID 조회
         List<String> bungIds = queryFactory
-            .selectDistinct(userBungEntity.bungEntity.bungId)
+            .selectDistinct(userBungEntity.bungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(nicknameCondition, dateCondition)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .fetch();
+            .fetch()
+            .stream().map(BungEntity::getBungId).toList();
 
         if (bungIds.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
