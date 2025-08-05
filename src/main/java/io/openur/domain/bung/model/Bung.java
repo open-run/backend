@@ -108,7 +108,7 @@ public class Bung {
             .hashtags(
                 bungEntity.getBungHashtags().stream()
                 .map(BungHashtagEntity::getHashtagEntity)
-                .map(HashtagEntity::toString)
+                .map(HashtagEntity::getHashtagStr)
                 .toList()
             )
             .build();
