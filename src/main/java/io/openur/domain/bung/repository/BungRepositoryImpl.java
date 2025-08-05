@@ -125,7 +125,7 @@ public class BungRepositoryImpl implements BungRepository {
 
         // 1. 페이징된 BungEntity ID 조회
         List<String> bungIds = queryFactory
-            .selectDistinct(bungHashtagEntity.bungEntity.bungId)
+            .selectDistinct(bungHashtagEntity.bungEntity)
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
@@ -133,7 +133,8 @@ public class BungRepositoryImpl implements BungRepository {
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .fetch();
+            .fetch()
+            .stream().map(BungEntity::getBungId).toList();
 
         if (bungIds.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
