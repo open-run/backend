@@ -2,18 +2,18 @@ package io.openur.domain.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.openur.domain.user.dto.GetFeedbackDto;
+import io.openur.domain.user.dto.GetNonceResponseDto;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.exception.UserNotFoundException;
-import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
-import io.openur.domain.user.service.login.LoginService;
-import io.openur.domain.user.service.login.LoginServiceFactory;
+import io.openur.domain.user.service.login.SmartWalletService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
+import io.openur.global.common.validation.ValidEthereumAddress;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,7 +34,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,23 +44,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final LoginServiceFactory loginServiceFactory;
+    private final SmartWalletService smartWalletService;
     private final UserService userService;
 
-    @GetMapping("/login/{authServer}")
-    @Operation(summary = "유저 로그인 성공 시 정보 반환")
-    public ResponseEntity<Response<GetUsersLoginDto>> getUser(
-        @PathVariable Provider authServer,
-        @RequestParam String code,
-        @RequestParam(required = false) String state
+    @GetMapping("/nonce")
+    @Operation(summary = "Get nonce of the wallet address for smart wallet login")
+    public ResponseEntity<Response<GetNonceResponseDto>> getNonce(
+        @RequestParam @ValidEthereumAddress String walletAddress
     ) {
-        LoginService loginService = loginServiceFactory.getLoginService(
-            authServer);
+        String nonce = smartWalletService.generateNonce(walletAddress);
+        
+        return ResponseEntity.ok()
+            .body(Response.<GetNonceResponseDto>builder()
+                .message("success")
+                .data(new GetNonceResponseDto(nonce))
+                .build());
+    }
+
+    @GetMapping("/login/smart_wallet")
+    @Operation(summary = "Smart Wallet login")
+    public ResponseEntity<Response<GetUsersLoginDto>> smartWalletLogin(
+        @RequestParam @ValidEthereumAddress @NotBlank(message = "Wallet address is required") String address
+        // TODO: signature, nonce 통해 인증 처리 필요
+        // @RequestParam @NotBlank(message = "Signature is required") String signature,
+        // @RequestParam @NotBlank(message = "Nonce is required") String nonce
+    ) {
         try {
             return ResponseEntity.ok()
                 .body(Response.<GetUsersLoginDto>builder()
                     .message("success")
-                    .data(loginService.login(code, state))
+                    .data(smartWalletService.login(address, null, null))
                     .build());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

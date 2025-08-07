@@ -5,6 +5,7 @@ import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.exception.JoinBungException;
 import io.openur.domain.bung.exception.SearchBungException;
+import io.openur.domain.user.exception.InvalidSignatureException;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.domain.userbung.exception.RemoveUserFromBungException;
 import io.openur.global.dto.ExceptionDto;
@@ -55,7 +56,7 @@ public class ExceptionController {
         return createResponse(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
-    @ExceptionHandler({InvalidJwtException.class})
+    @ExceptionHandler({InvalidJwtException.class, InvalidSignatureException.class})
     public ResponseEntity<ExceptionDto> handleInvalidJwtException(Exception e) {
         return createResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
