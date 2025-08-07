@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class GetUsersLoginDto {
-    private final String identifier;  // blockchain address
+    private final String identifier;
     private final String nickname;
     private final String jwtToken;
 }
