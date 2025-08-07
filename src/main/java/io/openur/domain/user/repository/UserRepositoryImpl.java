@@ -2,7 +2,7 @@ package io.openur.domain.user.repository;
 
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
-import io.openur.global.common.validation.EthereumAddressValidator;
+import io.openur.domain.user.model.EVMAddress;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -19,14 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userJpaRepository;
-    private final EthereumAddressValidator ethereumAddressValidator;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     public User findUser(User user) {
-        if (!ethereumAddressValidator.isValid(user.getBlockchainAddress())) {
+        if (!EVMAddress.isValid(user.getBlockchainAddress())) {
             return null;
         }
         

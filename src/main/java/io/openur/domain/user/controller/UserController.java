@@ -8,12 +8,13 @@ import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.exception.UserNotFoundException;
+import io.openur.domain.user.model.EVMAddress;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.login.SmartWalletService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 import io.openur.global.common.UtilController;
-import io.openur.global.common.validation.ValidEthereumAddress;
+import io.openur.global.common.evmaddress.EVMAddressParam;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,7 +51,7 @@ public class UserController {
     @GetMapping("/nonce")
     @Operation(summary = "Get nonce of the wallet address for smart wallet login")
     public ResponseEntity<Response<GetNonceResponseDto>> getNonce(
-        @RequestParam @ValidEthereumAddress String walletAddress
+        @RequestParam @EVMAddressParam EVMAddress walletAddress
     ) {
         String nonce = smartWalletService.generateNonce(walletAddress);
         
@@ -64,8 +65,7 @@ public class UserController {
     @GetMapping("/login/smart_wallet")
     @Operation(summary = "Smart Wallet login")
     public ResponseEntity<Response<GetUsersLoginDto>> smartWalletLogin(
-        @RequestParam @ValidEthereumAddress @NotBlank(message = "Wallet address is required") String address
-        // TODO: signature, nonce 통해 인증 처리 필요
+        @RequestParam @EVMAddressParam @NotBlank(message = "Wallet address is required") EVMAddress address
         // @RequestParam @NotBlank(message = "Signature is required") String signature,
         // @RequestParam @NotBlank(message = "Nonce is required") String nonce
     ) {
