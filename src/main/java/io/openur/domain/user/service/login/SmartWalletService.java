@@ -12,22 +12,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j(topic = "Smart Wallet Login")
-@Service
 @RequiredArgsConstructor
+@Service
 public class SmartWalletService {
     private final JwtUtil jwtUtil;
     private final UserRepositoryImpl userRepository;
+    private final NonceCacheService nonceCacheService;
 
-    public String generateNonce(EVMAddress walletAddress) {
-        // TODO
-        return "nonce";
+    public String getNonce(EVMAddress walletAddress) {
+        String nonce = nonceCacheService.getNonce(walletAddress);
+        if (nonce == null) {
+            return nonceCacheService.generateAndStoreNonce(walletAddress);
+        }
+        return nonce;
     }
 
     public GetUsersLoginDto login(EVMAddress walletAddress, String signature, String nonce) throws JsonProcessingException {
-        if (!verifyNonceSignature(walletAddress, signature, nonce)) {
-            throw new InvalidSignatureException(walletAddress.getValue(), nonce);
-        }
-        log.debug("Nonce signature verified: {}", walletAddress);
+        verifyNonceSignature(walletAddress, signature, nonce);
+        log.debug("Nonce signature verified: {}", walletAddress.getValue());
 
         User user = registerUserIfNew(walletAddress);
         log.info("User found/created successfully. User ID: {}", user.getUserId());
@@ -42,8 +44,23 @@ public class SmartWalletService {
         );
     }
 
-    protected Boolean verifyNonceSignature(EVMAddress walletAddress, String signature, String nonce) {
-        // TODO: verify nonce signature
+    protected Boolean verifyNonceSignature(EVMAddress walletAddress, String signature, String nonce) throws InvalidSignatureException {
+        String cachedNonce = nonceCacheService.getNonce(walletAddress);
+        
+        if (cachedNonce == null) {
+            throw new InvalidSignatureException("No stored nonce found for wallet: " + walletAddress.getValue());
+        }
+        
+        if (!cachedNonce.equals(nonce)) {
+            log.warn("Nonce mismatch for wallet: {}. Expected: {}, Received: {}", 
+                    walletAddress.getValue(), cachedNonce, nonce);
+            throw new InvalidSignatureException("Nonce mismatch for wallet: " + walletAddress.getValue());
+        }
+        
+        // TODO: verify signature
+        
+        // Remove the used nonce to prevent replay attacks
+        nonceCacheService.evictNonce(walletAddress);
         return true;
     }
 

@@ -53,7 +53,7 @@ public class UserController {
     public ResponseEntity<Response<GetNonceResponseDto>> getNonce(
         @RequestParam @EVMAddressParam EVMAddress walletAddress
     ) {
-        String nonce = smartWalletService.generateNonce(walletAddress);
+        String nonce = smartWalletService.getNonce(walletAddress);
         
         return ResponseEntity.ok()
             .body(Response.<GetNonceResponseDto>builder()
