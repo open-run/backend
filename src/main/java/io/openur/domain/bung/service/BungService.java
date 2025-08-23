@@ -53,9 +53,8 @@ public class BungService {
     private final ChallengeEventsPublisher challengeEventsPublisher;
     
     @Transactional
-    public BungInfoDto createBung(
-        @AuthenticationPrincipal UserDetailsImpl userDetails, CreateBungDto dto)
-    {
+    public BungInfoDto createBung(UserDetailsImpl userDetails, CreateBungDto dto
+    ) {
         List<Hashtag> hashtags = hashtagRepository.saveNotListedTags(dto.getHashtags());
         Bung bung = this.saveNewBung(userDetails, dto, hashtags);
         
