@@ -1,11 +1,9 @@
 package io.openur.domain.challenge.controller;
 
 import io.openur.domain.challenge.dto.ChallengeInfoDto;
-import io.openur.domain.challenge.model.ChallengeType;
 import io.openur.domain.challenge.model.CompletedType;
 import io.openur.domain.challenge.service.ChallengeService;
 import io.openur.global.common.PagedResponse;
-import io.openur.global.common.Response;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
