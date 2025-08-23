@@ -26,6 +26,10 @@ public interface UserChallengeRepository {
     void bulkUpdateCompletedChallenges(List<Long> completedUserChallengeIds);
 
     List<UserChallenge> findByUserId(String userId);
+
+    Page<UserChallenge> findByUserIdAndChallengeType(
+        String userId, CompletedType type, Pageable pageable
+    );
     
     Page<UserChallengeInfoDto> findAllByUserId(String string,
         Pageable pageable);

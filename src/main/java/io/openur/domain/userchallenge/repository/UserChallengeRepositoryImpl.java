@@ -5,9 +5,13 @@ import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.challenge.entity.QChallengeEntity.challengeEntity;
 import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.openur.domain.challenge.entity.QChallengeEntity;
 import io.openur.domain.challenge.model.CompletedType;
 import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
+import io.openur.domain.userchallenge.entity.QUserChallengeEntity;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
@@ -20,6 +24,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +89,62 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .map(UserChallenge::from)
             .toList();
     }
-    
+
+    @Override
+    public Page<UserChallenge> findByUserIdAndChallengeType(
+        String userId, CompletedType type, Pageable pageable
+    ) {
+        QUserChallengeEntity userChallengeEntity = QUserChallengeEntity.userChallengeEntity;
+        QChallengeEntity challengeEntity = QChallengeEntity.challengeEntity;
+
+        final LocalDateTime currentTime = LocalDateTime.now();
+
+        // 1. 페이징 content 쿼리
+        List<UserChallengeEntity> content = queryFactory
+            .selectFrom(userChallengeEntity)
+            .leftJoin(userChallengeEntity.challengeEntity, challengeEntity)
+            .fetchJoin()
+            .where(
+                userChallengeEntity.userEntity.userId.eq(userId),
+                userChallengeEntity.nftCompleted.isFalse(),
+                challengeEntity.conditionAsDate.isNull()
+                    .or(challengeEntity.conditionAsDate.goe(currentTime)),
+                withCompleteType(type)
+            )
+            .orderBy(
+                userChallengeEntity.completedDate.asc().nullsLast(),
+                userChallengeEntity.currentCount.desc().nullsLast()
+            )
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        // 2. Count 쿼리 최적화 (fetchJoin 불필요)
+        JPAQuery<Long> countQuery = queryFactory
+            .select(userChallengeEntity.count())
+            .from(userChallengeEntity)
+            // challengeEntity join은 conditionAsDate 조건에만 필요
+            .leftJoin(userChallengeEntity.challengeEntity, challengeEntity)
+            .where(
+                userChallengeEntity.userEntity.userId.eq(userId),
+                userChallengeEntity.nftCompleted.isFalse(),
+                challengeEntity.conditionAsDate.isNull()
+                    .or(challengeEntity.conditionAsDate.goe(currentTime)),
+                withCompleteType(type)
+            );
+
+        // 3. 엔티티 → 도메인 모델 매핑
+        List<UserChallenge> result = content.parallelStream()
+            .map(UserChallenge::from)
+            .collect(Collectors.toList());
+
+        // 4. Page 반환 (countQuery는 필요 시에만 실행)
+        return PageableExecutionUtils.getPage(
+            result, pageable, countQuery::fetchOne
+        );
+    }
+
+
     @Override
     public Page<UserChallengeInfoDto> findAllByUserId(String string,
         Pageable pageable) {
@@ -95,10 +155,13 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds) {
+    public List<UserChallenge> findByUserIdsAndChallengeIds(
+        List<String> userIds, List<Long> challengeIds
+    ) {
         return userChallengeJpaRepository
-            .findAllByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(userIds, challengeIds)
-            .stream()
+            .findAllByUserEntity_UserIdInAndChallengeEntity_ChallengeIdIn(
+                userIds, challengeIds
+            ).stream()
             .map(UserChallenge::from)
             .toList();
     }
@@ -148,5 +211,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     @Override
     public void delete(UserChallenge userChallenge) {
         userChallengeJpaRepository.delete(userChallenge.toEntity());
+    }
+
+    private BooleanExpression withCompleteType(CompletedType type) {
+        if(type != null)
+            return challengeEntity.completedType.eq(type);
+        return null;
     }
 }
