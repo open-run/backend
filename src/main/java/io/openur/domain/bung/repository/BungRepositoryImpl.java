@@ -85,15 +85,18 @@ public class BungRepositoryImpl implements BungRepository {
         return new PageImpl<>(contents, pageable, totalCount);
     }
 
-
     @Override
     public Page<BungInfoDto> findBungsWithLocation(String keyword, Pageable pageable) {
+        // 1. 입력 검증
+        if (!StringUtils.hasText(keyword)) {
+            return Page.empty(pageable);
+        }
 
-        // 공통 조건 추출
+        // 2. 공통 조건 추출
         BooleanExpression locationCondition = bungEntity.location.containsIgnoreCase(keyword);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
 
-        // 1. 단일 쿼리로 직접 조회
+        // 3. Content 쿼리 - 필요시 fetchJoin 추가 가능
         List<BungEntity> bungs = queryFactory
             .selectFrom(bungEntity)
             .where(locationCondition, dateCondition)
@@ -102,13 +105,13 @@ public class BungRepositoryImpl implements BungRepository {
             .limit(pageable.getPageSize())
             .fetch();
 
-        // 2. DTO 변환
+        // 4. DTO 변환
         List<BungInfoDto> contents = bungs.stream()
             .map(Bung::from)
             .map(BungInfoDto::new)
             .toList();
 
-        // 3. 카운트 쿼리 (동일한 조건 사용)
+        // 5. Count 쿼리 최적화 (동일한 조건 사용)
         JPAQuery<Long> countQuery = queryFactory
             .select(bungEntity.count())
             .from(bungEntity)
@@ -116,56 +119,63 @@ public class BungRepositoryImpl implements BungRepository {
 
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
-    
+
     @Override
     public Page<BungInfoDto> findBungWithHashtag(String hashTag, Pageable pageable) {
         // 공통 조건
-        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.containsIgnoreCase(hashTag);
+        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.equalsIgnoreCase(hashTag);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
 
-        // 1. 페이징된 BungEntity ID 조회
-        List<String> bungIds = queryFactory
-            .selectDistinct(bungHashtagEntity.bungEntity)
-            .from(bungHashtagEntity)
-            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
-            .join(bungHashtagEntity.bungEntity, bungEntity)
-            .where(hashtagCondition, dateCondition)
-            .orderBy(bungEntity.startDateTime.asc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch()
-            .stream().map(BungEntity::getBungId).toList();
-
-        if (bungIds.isEmpty()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, 0);
-        }
-
-        // 2. 상세 데이터 조회
-        List<BungEntity> bungs = queryFactory
-            .selectFrom(bungEntity)
-            .where(bungEntity.bungId.in(bungIds))
-            .orderBy(bungEntity.startDateTime.asc())
-            .fetch();
-
-        // 3. DTO 변환
-        List<BungInfoDto> contents = bungs.stream()
-            .map(Bung::from)
-            .map(BungInfoDto::new)
-            .toList();
-
-        // 4. 카운트 쿼리
+        // 1. 먼저 정확한 총 개수 조회 (DISTINCT 기준)
         long total = queryFactory
-            .select(bungEntity.bungId.countDistinct())
+            .select(bungHashtagEntity.bungEntity.bungId.countDistinct())
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
             .where(hashtagCondition, dateCondition)
             .fetchOne();
 
+        if (total == 0) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        // 2. GROUP BY를 사용하여 중복 제거 후 페이징 적용 (성능 최적화)
+        List<BungEntity> distinctBungs = queryFactory
+            .select(bungEntity)
+            .from(bungHashtagEntity)
+            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+            .join(bungHashtagEntity.bungEntity, bungEntity)
+            .where(hashtagCondition, dateCondition)
+            .groupBy(bungEntity.bungId)           // ← GROUP BY로 중복 제거 (DISTINCT보다 효율적)
+            .orderBy(bungEntity.startDateTime.asc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (distinctBungs.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, total);
+        }
+
+        List<String> bungIds = distinctBungs.stream()
+            .map(BungEntity::getBungId)
+            .toList();
+
+        // 3. 상세 데이터 조회 (정렬 순서 보장)
+        List<BungEntity> bungs = queryFactory
+            .selectFrom(bungEntity)
+            .where(bungEntity.bungId.in(bungIds))
+            .orderBy(bungEntity.startDateTime.asc())  // 동일한 정렬 조건 적용
+            .fetch();
+
+        // 4. DTO 변환
+        List<BungInfoDto> contents = bungs.stream()
+            .map(Bung::from)
+            .map(BungInfoDto::new)
+            .toList();
+
         return new PageImpl<>(contents, pageable, total);
     }
 
-    
     @Override
     public Bung findBungById(String bungId) {
         Optional<BungEntity> optionalBungEntity = bungJpaRepository

@@ -82,27 +82,42 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             return Page.empty(pageable);
         }
 
-        // 조건을 명확히 분리
-        BooleanExpression nicknameCondition = userBungEntity.userEntity.nickname.containsIgnoreCase(nickname);
+        BooleanExpression nicknameCondition = userBungEntity.userEntity.nickname.equalsIgnoreCase(nickname);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
 
-        // 1. 서브쿼리로 페이징 및 정렬된 BungEntity ID 조회
-        List<String> bungIds = queryFactory
-            .selectDistinct(userBungEntity.bungEntity)
+        // 1. 먼저 DISTINCT된 전체 개수 조회
+        long total = queryFactory
+            .select(userBungEntity.bungEntity.bungId.countDistinct())
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(nicknameCondition, dateCondition)
-            .orderBy(bungEntity.startDateTime.asc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch()
-            .stream().map(BungEntity::getBungId).toList();
+            .fetchOne();
 
-        if (bungIds.isEmpty()) {
+        if (total == 0) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        // 2. 상세 데이터 조회 및 fetchJoin으로 N+1 문제 방지
+        // 2. DISTINCT 기준으로 정확한 페이징 적용
+        List<BungEntity> distinctBungs = queryFactory
+            .select(bungEntity)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(nicknameCondition, dateCondition)
+            .groupBy(bungEntity.bungId)  // GROUP BY로 중복 제거 (성능 최적화)
+            .orderBy(bungEntity.startDateTime.asc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (distinctBungs.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, total);
+        }
+
+        List<String> bungIds = distinctBungs.stream()
+            .map(BungEntity::getBungId)
+            .toList();
+
+        // 3. 상세 데이터 조회
         Map<String, List<UserBungEntity>> bungMap = queryFactory
             .selectFrom(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
@@ -110,20 +125,12 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .where(bungEntity.bungId.in(bungIds))
             .transform(groupBy(bungEntity.bungId).as(list(userBungEntity)));
 
-        // 3. 정렬 순서 유지하며 DTO 변환
+        // 4. 정렬 순서 보장하며 DTO 변환
         List<BungInfoWithMemberListDto> contents = bungIds.stream()
             .map(bungMap::get)
             .filter(Objects::nonNull)
             .map(members -> new BungInfoWithMemberListDto(members.get(0).getBungEntity(), members))
             .toList();
-
-        // 4. 정확한 카운트 쿼리 (DISTINCT 사용)
-        long total = queryFactory
-            .select(userBungEntity.bungEntity.bungId.countDistinct())
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .where(nicknameCondition, dateCondition)
-            .fetchOne();
 
         return new PageImpl<>(contents, pageable, total);
     }
