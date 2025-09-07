@@ -22,8 +22,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChallengeController {
     private final ChallengeService challengeService;
 
-    @GetMapping()
-    public ResponseEntity<PagedResponse<ChallengeInfoDto>> getMyChallengeList(
+    @GetMapping("/general")
+    public ResponseEntity<PagedResponse<ChallengeInfoDto>> getGeneralChallengeList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+
+        Page<ChallengeInfoDto> challenges = challengeService.getCompletedChallengeList(
+            userDetails, pageable
+        );
+
+        return ResponseEntity.ok(
+            PagedResponse.build(challenges, "success")
+        );
+    }
+
+    @GetMapping("/completed")
+    public ResponseEntity<PagedResponse<ChallengeInfoDto>> getCompletedChallengeList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam(required = false, defaultValue = "") CompletedType type,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -31,12 +48,31 @@ public class ChallengeController {
     ) {
         Pageable pageable = PageRequest.of(page, limit);
 
-        Page<ChallengeInfoDto> challenges = challengeService.getMyChallengeList(
-            userDetails, type, pageable
+        Page<ChallengeInfoDto> challenges = challengeService.getCompletedChallengeList(
+            userDetails, pageable
         );
 
         return ResponseEntity.ok(
-            PagedResponse.build(challenges, "sucess")
+            PagedResponse.build(challenges, "success")
         );
+    }
+
+    //TODO : 도전과제 테이블을 변경 우선해 수행
+    @GetMapping("/continuous")
+    public ResponseEntity<PagedResponse<Void>> getContinousChallengeList(
+        @RequestParam(required = false, defaultValue = "") CompletedType type,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+
+//        Page<ChallengeInfoDto> challenges = challengeService.getCompletedChallengeList(
+//            null, type, pageable
+//        );
+
+//        return ResponseEntity.ok(
+//            PagedResponse.build(challenges, "success")
+//        );
+        return null;
     }
 }
