@@ -1,7 +1,6 @@
 package io.openur.domain.challenge.service;
 
 import io.openur.domain.challenge.dto.ChallengeInfoDto;
-import io.openur.domain.challenge.model.CompletedType;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
@@ -19,13 +18,13 @@ public class ChallengeService {
     private final UserRepository userRepository;
     private final UserChallengeRepository userChallengeRepository;
 
-    public Page<ChallengeInfoDto> getMyChallengeList(
-        UserDetailsImpl userDetails, CompletedType type, Pageable pageable
+    public Page<ChallengeInfoDto> getCompletedChallengeList(
+        UserDetailsImpl userDetails, Pageable pageable
     ) {
         User user = userRepository.findUser(userDetails.getUser());
 
         return userChallengeRepository.findByUserIdAndChallengeType(
-            user.getUserId(), type, pageable
-            ).map(ChallengeInfoDto::new);
+            user.getUserId(), pageable
+        ).map(ChallengeInfoDto::new);
     }
 }

@@ -92,7 +92,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     public Page<UserChallenge> findByUserIdAndChallengeType(
-        String userId, CompletedType type, Pageable pageable
+        String userId, Pageable pageable
     ) {
         QUserChallengeEntity userChallengeEntity = QUserChallengeEntity.userChallengeEntity;
         QChallengeEntity challengeEntity = QChallengeEntity.challengeEntity;
@@ -106,13 +106,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .fetchJoin()
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
-                userChallengeEntity.nftCompleted.isFalse(),
-                challengeEntity.conditionAsDate.isNull()
-                    .or(challengeEntity.conditionAsDate.goe(currentTime)),
-                withCompleteType(type)
+                userChallengeEntity.completedDate.isNull(),
+                challengeEntity.conditionAsDate.goe(currentTime)
             )
             .orderBy(
-                userChallengeEntity.completedDate.asc().nullsLast(),
+                // 달성 퍼센테이지가 높은 것 부터
                 userChallengeEntity.currentCount.desc().nullsLast()
             )
             .offset(pageable.getOffset())
@@ -123,14 +121,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         JPAQuery<Long> countQuery = queryFactory
             .select(userChallengeEntity.count())
             .from(userChallengeEntity)
-            // challengeEntity join은 conditionAsDate 조건에만 필요
             .leftJoin(userChallengeEntity.challengeEntity, challengeEntity)
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
-                userChallengeEntity.nftCompleted.isFalse(),
-                challengeEntity.conditionAsDate.isNull()
-                    .or(challengeEntity.conditionAsDate.goe(currentTime)),
-                withCompleteType(type)
+                userChallengeEntity.completedDate.isNull(),
+                challengeEntity.conditionAsDate.goe(currentTime)
             );
 
         // 3. 엔티티 → 도메인 모델 매핑
