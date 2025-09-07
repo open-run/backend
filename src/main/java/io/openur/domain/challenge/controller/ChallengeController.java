@@ -30,7 +30,7 @@ public class ChallengeController {
     ) {
         Pageable pageable = PageRequest.of(page, limit);
 
-        Page<ChallengeInfoDto> challenges = challengeService.getCompletedChallengeList(
+        Page<ChallengeInfoDto> challenges = challengeService.getGeneralChallengeList(
             userDetails, pageable
         );
 
@@ -66,7 +66,7 @@ public class ChallengeController {
     ) {
         Pageable pageable = PageRequest.of(page, limit);
 
-//        Page<ChallengeInfoDto> challenges = challengeService.getCompletedChallengeList(
+//        Page<ChallengeInfoDto> challenges = challengeService.getGeneralChallengeList(
 //            null, type, pageable
 //        );
 

@@ -18,12 +18,22 @@ public class ChallengeService {
     private final UserRepository userRepository;
     private final UserChallengeRepository userChallengeRepository;
 
-    public Page<ChallengeInfoDto> getCompletedChallengeList(
+    public Page<ChallengeInfoDto> getGeneralChallengeList(
         UserDetailsImpl userDetails, Pageable pageable
     ) {
         User user = userRepository.findUser(userDetails.getUser());
 
         return userChallengeRepository.findByUserIdAndChallengeType(
+            user.getUserId(), pageable
+        ).map(ChallengeInfoDto::new);
+    }
+
+    public Page<ChallengeInfoDto> getCompletedChallengeList(
+        UserDetailsImpl userDetails, Pageable pageable
+    ) {
+        User user = userRepository.findUser(userDetails.getUser());
+
+        return userChallengeRepository.findCompletedChallengesByUserId(
             user.getUserId(), pageable
         ).map(ChallengeInfoDto::new);
     }

@@ -30,7 +30,11 @@ public interface UserChallengeRepository {
     Page<UserChallenge> findByUserIdAndChallengeType(
         String userId, Pageable pageable
     );
-    
+
+    Page<UserChallenge> findCompletedChallengesByUserId(
+        String userId, Pageable pageable
+    );
+
     Page<UserChallengeInfoDto> findAllByUserId(String string,
         Pageable pageable);
     

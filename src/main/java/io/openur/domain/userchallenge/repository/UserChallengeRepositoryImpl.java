@@ -17,16 +17,19 @@ import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -117,6 +120,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .limit(pageable.getPageSize())
             .fetch();
 
+        if (content.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+
         // 2. Count 쿼리 최적화 (fetchJoin 불필요)
         JPAQuery<Long> countQuery = queryFactory
             .select(userChallengeEntity.count())
@@ -129,15 +137,66 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             );
 
         // 3. 엔티티 → 도메인 모델 매핑
-        List<UserChallenge> result = content.parallelStream()
+        List<UserChallenge> result = content.stream()
             .map(UserChallenge::from)
-            .collect(Collectors.toList());
+            .toList();
 
         // 4. Page 반환 (countQuery는 필요 시에만 실행)
         return PageableExecutionUtils.getPage(
             result, pageable, countQuery::fetchOne
         );
     }
+
+    @Override
+    public Page<UserChallenge> findCompletedChallengesByUserId(
+        String userId, Pageable pageable
+    ) {
+        // 1. 입력 검증
+        if (!StringUtils.hasText(userId)) {
+            return Page.empty(pageable);
+        }
+
+        // 2. Q클래스 재사용 (메모리 효율성)
+        QUserChallengeEntity userChallenge = QUserChallengeEntity.userChallengeEntity;
+
+        // 4. Content 쿼리 (N+1 문제 방지)
+        List<UserChallengeEntity> content = queryFactory
+            .selectFrom(userChallenge)
+            .leftJoin(userChallenge.challengeEntity, challengeEntity).fetchJoin()
+            .where(
+                userChallengeEntity.userEntity.userId.eq(userId),
+                userChallengeEntity.completedDate.isNotNull()
+            )
+            .orderBy(
+                userChallengeEntity.completedDate.desc(),
+                userChallengeEntity.userChallengeId.desc()
+            )
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        // 5. 빈 결과 조기 반환 (성능 최적화)
+        if (content.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        // 6. Count 쿼리 최적화 (fetchJoin 제거)
+        JPAQuery<Long> countQuery = queryFactory
+            .select(userChallenge.count())
+            .from(userChallenge)
+            .where(
+                userChallengeEntity.userEntity.userId.eq(userId),
+                userChallengeEntity.completedDate.isNotNull()
+            );
+
+        // 7. 도메인 모델 매핑 (병렬 처리 제거)
+        List<UserChallenge> result = content.stream()
+            .map(UserChallenge::from)
+            .collect(Collectors.toList());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
 
 
     @Override
