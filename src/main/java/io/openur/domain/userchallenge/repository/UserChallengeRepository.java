@@ -27,7 +27,7 @@ public interface UserChallengeRepository {
 
     List<UserChallenge> findByUserId(String userId);
 
-    Page<UserChallenge> findByUserIdAndChallengeType(
+    Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
     );
 

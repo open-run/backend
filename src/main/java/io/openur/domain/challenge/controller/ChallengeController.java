@@ -42,7 +42,6 @@ public class ChallengeController {
     @GetMapping("/completed")
     public ResponseEntity<PagedResponse<ChallengeInfoDto>> getCompletedChallengeList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam(required = false, defaultValue = "") CompletedType type,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
