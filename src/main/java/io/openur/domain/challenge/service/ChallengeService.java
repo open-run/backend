@@ -23,7 +23,7 @@ public class ChallengeService {
     ) {
         User user = userRepository.findUser(userDetails.getUser());
 
-        return userChallengeRepository.findByUserIdAndChallengeType(
+        return userChallengeRepository.findUncompletedChallengesByUserId(
             user.getUserId(), pageable
         ).map(ChallengeInfoDto::new);
     }

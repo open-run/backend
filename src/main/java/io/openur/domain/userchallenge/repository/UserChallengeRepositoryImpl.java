@@ -94,7 +94,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public Page<UserChallenge> findByUserIdAndChallengeType(
+    public Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
     ) {
         QUserChallengeEntity userChallengeEntity = QUserChallengeEntity.userChallengeEntity;
