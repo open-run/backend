@@ -1,4 +1,4 @@
-package io.openur.domain.challenge.model;
+package io.openur.domain.challenge.enums;
 
 public enum RewardType {
     face, // 너으 "눈, 코, 입"

@@ -1,7 +1,8 @@
 package io.openur.domain.challenge.event;
 
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.challenge.model.CompletedType;
+import io.openur.domain.challenge.dto.GeneralChallengeDto;
+import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.List;
@@ -49,22 +50,22 @@ public class ChallengeEventsPublisher {
 
         // Publish events for each group
         if (challengesByType.containsKey(CompletedType.date)) {
-            publisher.publishEvent(new OnDate(challengesByType.get(CompletedType.date)));
+            publisher.publishEvent(new GeneralChallengeDto.OnDate(challengesByType.get(CompletedType.date)));
         }
 
         if (challengesByType.containsKey(CompletedType.count)) {
-            publisher.publishEvent(new OnCount(challengesByType.get(CompletedType.count)));
+            publisher.publishEvent(new GeneralChallengeDto.OnCount(challengesByType.get(CompletedType.count)));
         }
 
         if (challengesByType.containsKey(CompletedType.place)) {
-            publisher.publishEvent(new OnPlace(challengesByType.get(CompletedType.place), bung.getLocation()));
+            publisher.publishEvent(new GeneralChallengeDto.OnPlace(challengesByType.get(CompletedType.place), bung.getLocation()));
         }
 
         if (challengesByType.containsKey(CompletedType.wearing)) {
             // TODO: 유저 소유 NFT 정보 인덱싱 및 현재 입고있는 데이터 핸들링 후 가져오기.
             List<UserChallenge> wearingChallenges = challengesByType.get(CompletedType.wearing);
             if (!wearingChallenges.isEmpty()) {
-                publisher.publishEvent(new OnWearing(wearingChallenges,
+                publisher.publishEvent(new GeneralChallengeDto.OnWearing(wearingChallenges,
                     wearingChallenges.get(0).getUser().getBlockchainAddress()));
             }
         }

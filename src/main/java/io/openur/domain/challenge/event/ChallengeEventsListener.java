@@ -1,5 +1,6 @@
 package io.openur.domain.challenge.event;
 
+import io.openur.domain.challenge.dto.GeneralChallengeDto;
 import io.openur.domain.challenge.model.Challenge;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
@@ -27,7 +28,7 @@ public class ChallengeEventsListener {
     @Async
     @Transactional
     @EventListener
-    public void handleOnDateChallengeEvent(OnDate event) {
+    public void handleOnDateChallengeEvent(GeneralChallengeDto.OnDate event) {
         List<Long> completedUserChallengeIds = new ArrayList<>();
         
         for (UserChallenge userChallenge : event.getUserChallenges()) {
@@ -46,7 +47,7 @@ public class ChallengeEventsListener {
     @Async
     @Transactional
     @EventListener
-    public void handleOnCountChallengeEvent(OnCount event) {
+    public void handleOnCountChallengeEvent(GeneralChallengeDto.OnCount event) {
         List<Long> userChallengeIds = event.getUserChallenges().stream()
             .map(UserChallenge::getUserChallengeId)
             .toList();
@@ -73,7 +74,7 @@ public class ChallengeEventsListener {
     @Async
     @Transactional
     @EventListener
-    public void handleOnPlaceChallengeEvent(OnPlace event) {
+    public void handleOnPlaceChallengeEvent(GeneralChallengeDto.OnPlace event) {
         List<Long> completedUserChallengeIds = new ArrayList<>();
         
         for (UserChallenge userChallenge : event.getUserChallenges()) {
@@ -92,7 +93,7 @@ public class ChallengeEventsListener {
     @Async
     @Transactional
     @EventListener
-    public void handleOnWearingChallengeEvent(OnWearing event) {
+    public void handleOnWearingChallengeEvent(GeneralChallengeDto.OnWearing event) {
         List<Long> completedUserChallengeIds = new ArrayList<>();
         
         for (UserChallenge userChallenge : event.getUserChallenges()) {

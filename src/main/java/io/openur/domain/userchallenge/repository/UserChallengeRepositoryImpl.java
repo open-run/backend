@@ -9,7 +9,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.challenge.entity.QChallengeEntity;
-import io.openur.domain.challenge.model.CompletedType;
+import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.entity.QUserChallengeEntity;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;

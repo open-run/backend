@@ -1,6 +1,6 @@
 package io.openur.domain.userchallenge.repository;
 
-import io.openur.domain.challenge.model.CompletedType;
+import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
