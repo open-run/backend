@@ -1,7 +1,7 @@
 package io.openur.domain.challenge.controller;
 
-import io.openur.domain.challenge.dto.ChallengeInfoDto;
-import io.openur.domain.challenge.model.CompletedType;
+import io.openur.domain.challenge.dto.GeneralChallengeDto;
+import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.challenge.service.ChallengeService;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.security.UserDetailsImpl;
@@ -23,14 +23,14 @@ public class ChallengeController {
     private final ChallengeService challengeService;
 
     @GetMapping("/general")
-    public ResponseEntity<PagedResponse<ChallengeInfoDto>> getGeneralChallengeList(
+    public ResponseEntity<PagedResponse<GeneralChallengeDto>> getGeneralChallengeList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
 
-        Page<ChallengeInfoDto> challenges = challengeService.getGeneralChallengeList(
+        Page<GeneralChallengeDto> challenges = challengeService.getGeneralChallengeList(
             userDetails, pageable
         );
 
@@ -40,14 +40,14 @@ public class ChallengeController {
     }
 
     @GetMapping("/completed")
-    public ResponseEntity<PagedResponse<ChallengeInfoDto>> getCompletedChallengeList(
+    public ResponseEntity<PagedResponse<GeneralChallengeDto>> getCompletedChallengeList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
 
-        Page<ChallengeInfoDto> challenges = challengeService.getCompletedChallengeList(
+        Page<GeneralChallengeDto> challenges = challengeService.getCompletedChallengeList(
             userDetails, pageable
         );
 
@@ -65,7 +65,7 @@ public class ChallengeController {
     ) {
         Pageable pageable = PageRequest.of(page, limit);
 
-//        Page<ChallengeInfoDto> challenges = challengeService.getGeneralChallengeList(
+//        Page<GeneralChallengeDto> challenges = challengeService.getGeneralChallengeList(
 //            null, type, pageable
 //        );
 

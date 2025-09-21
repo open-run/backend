@@ -1,6 +1,9 @@
 package io.openur.domain.challenge.model;
 
 import io.openur.domain.challenge.entity.ChallengeEntity;
+import io.openur.domain.challenge.enums.ChallengeType;
+import io.openur.domain.challenge.enums.CompletedType;
+import io.openur.domain.challenge.enums.RewardType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

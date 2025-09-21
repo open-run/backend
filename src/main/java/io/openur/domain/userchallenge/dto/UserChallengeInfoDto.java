@@ -1,8 +1,8 @@
 package io.openur.domain.userchallenge.dto;
 
-import io.openur.domain.challenge.model.ChallengeType;
-import io.openur.domain.challenge.model.CompletedType;
-import io.openur.domain.challenge.model.RewardType;
+import io.openur.domain.challenge.enums.ChallengeType;
+import io.openur.domain.challenge.enums.CompletedType;
+import io.openur.domain.challenge.enums.RewardType;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.time.LocalDateTime;
 import lombok.Getter;

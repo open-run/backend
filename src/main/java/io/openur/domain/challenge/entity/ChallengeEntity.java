@@ -1,8 +1,8 @@
 package io.openur.domain.challenge.entity;
 
-import io.openur.domain.challenge.model.ChallengeType;
-import io.openur.domain.challenge.model.CompletedType;
-import io.openur.domain.challenge.model.RewardType;
+import io.openur.domain.challenge.enums.ChallengeType;
+import io.openur.domain.challenge.enums.CompletedType;
+import io.openur.domain.challenge.enums.RewardType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

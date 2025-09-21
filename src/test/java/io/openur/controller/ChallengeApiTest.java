@@ -7,10 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
-import io.openur.domain.challenge.dto.ChallengeInfoDto;
-import io.openur.domain.challenge.model.CompletedType;
+import io.openur.domain.challenge.dto.GeneralChallengeDto;
 import io.openur.global.common.PagedResponse;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,7 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional(readOnly = true)
+@Transactional
 public class ChallengeApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/challenges";
@@ -43,7 +41,7 @@ public class ChallengeApiTest extends TestSupport {
             ).andExpect(status().isOk()).andReturn();
 
             // then
-            PagedResponse<ChallengeInfoDto> response = parseResponse(
+            PagedResponse<GeneralChallengeDto> response = parseResponse(
                 result.getResponse().getContentAsString(),
                 new TypeReference<>() {}
             );
@@ -72,7 +70,7 @@ public class ChallengeApiTest extends TestSupport {
             ).andExpect(status().isOk()).andReturn();
 
             // then
-            PagedResponse<ChallengeInfoDto> response = parseResponse(
+            PagedResponse<GeneralChallengeDto> response = parseResponse(
                 result.getResponse().getContentAsString(),
                 new TypeReference<>() {}
             );

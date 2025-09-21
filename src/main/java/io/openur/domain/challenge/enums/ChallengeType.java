@@ -1,4 +1,4 @@
-package io.openur.domain.challenge.model;
+package io.openur.domain.challenge.enums;
 
 public enum ChallengeType {
     tuto, normal, hidden
