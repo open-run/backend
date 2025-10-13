@@ -3,6 +3,7 @@ package io.openur.domain.challenge.entity;
 import io.openur.domain.challenge.enums.ChallengeType;
 import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.challenge.enums.RewardType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,8 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +29,7 @@ public class ChallengeEntity {
     private Long challengeId;
     
     private String name;
+
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -43,9 +47,9 @@ public class ChallengeEntity {
     @Column(name = "completed_type")
     private CompletedType completedType;
     
-    // 단순 횟수
-    @Column(name = "condition_count")
-    private Integer conditionAsCount;
+//    // 단순 횟수
+//    @Column(name = "condition_count")
+//    private Integer conditionAsCount;
     
     // 날짜 조건
     @Column(name = "condition_date")
@@ -54,5 +58,7 @@ public class ChallengeEntity {
     // 페이스, 장소 등
     @Column(name = "condition_text")
     private String conditionAsText;
-    
+
+    @OneToMany(mappedBy = "challengeEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChallengeStageEntity> challengeStages;
 }

@@ -53,9 +53,9 @@ public class ChallengeEventsPublisher {
             publisher.publishEvent(new GeneralChallengeDto.OnDate(challengesByType.get(CompletedType.date)));
         }
 
-        if (challengesByType.containsKey(CompletedType.count)) {
-            publisher.publishEvent(new GeneralChallengeDto.OnCount(challengesByType.get(CompletedType.count)));
-        }
+//        if (challengesByType.containsKey(CompletedType.count)) {
+//            publisher.publishEvent(new GeneralChallengeDto.OnCount(challengesByType.get(CompletedType.count)));
+//        }
 
         if (challengesByType.containsKey(CompletedType.place)) {
             publisher.publishEvent(new GeneralChallengeDto.OnPlace(challengesByType.get(CompletedType.place), bung.getLocation()));
