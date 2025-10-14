@@ -26,14 +26,14 @@ public class GeneralChallengeDto {
     private boolean nftCompleted;
 
     public GeneralChallengeDto(UserChallenge userChallenge) {
-        Challenge challenge = userChallenge.getChallenge();
+        Challenge challenge = userChallenge.getChallengeStage();
 
         this.challengeId = challenge.getChallengeId();
         this.userChallengeId = userChallenge.getUserChallengeId();
         this.challengeName = challenge.getChallengeName();
         this.challengeDescription = challenge.getChallengeDescription();
         this.currentCount = userChallenge.getCurrentCount();
-        this.conditionCount = challenge.getCompletedConditionCount();
+//        this.conditionCount = challenge.getCompletedConditionCount();
         this.conditionDate = challenge.getCompletedConditionDate();
         this.conditionText = challenge.getCompletedConditionText();
         this.challengeType = challenge.getChallengeType();
