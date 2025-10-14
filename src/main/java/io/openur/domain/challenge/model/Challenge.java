@@ -5,6 +5,7 @@ import io.openur.domain.challenge.enums.ChallengeType;
 import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.challenge.enums.RewardType;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,10 +20,11 @@ public class Challenge {
     private RewardType rewardType;
     private Float rewardPercentage;
     private CompletedType completedType;
-    private Integer completedConditionCount;
+//    private Integer completedConditionCount;
     private LocalDateTime completedConditionDate;
     private String completedConditionText;
-    
+    private List<ChallengeStage> challengeStages;
+
     public ChallengeEntity toEntity() {
         return new ChallengeEntity(
             this.challengeId,
@@ -32,9 +34,12 @@ public class Challenge {
             this.rewardType,
             this.rewardPercentage,
             this.completedType,
-            this.completedConditionCount,
+//            this.completedConditionCount,
             this.completedConditionDate,
-            this.completedConditionText
+            this.completedConditionText,
+            this.challengeStages
+                .stream().map(stage -> stage.toEntity(this))
+                .toList()
         );
     }
     
@@ -47,9 +52,10 @@ public class Challenge {
             challengeEntity.getRewardType(),
             challengeEntity.getRewardPercentage(),
             challengeEntity.getCompletedType(),
-            challengeEntity.getConditionAsCount(),
+//            challengeEntity.getConditionAsCount(),
             challengeEntity.getConditionAsDate(),
-            challengeEntity.getConditionAsText()
+            challengeEntity.getConditionAsText(),
+            challengeEntity.getChallengeStages().stream().map(ChallengeStage::from).toList()
         );
     }
 }

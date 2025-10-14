@@ -3,12 +3,14 @@ package io.openur.domain.userchallenge.repository;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.challenge.entity.QChallengeEntity.challengeEntity;
+import static io.openur.domain.challenge.entity.QChallengeStageEntity.challengeStageEntity;
 import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.challenge.entity.QChallengeEntity;
+import io.openur.domain.challenge.entity.QChallengeStageEntity;
 import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.entity.QUserChallengeEntity;
@@ -97,15 +99,13 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     public Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
     ) {
-        QUserChallengeEntity userChallengeEntity = QUserChallengeEntity.userChallengeEntity;
-        QChallengeEntity challengeEntity = QChallengeEntity.challengeEntity;
-
         final LocalDateTime currentTime = LocalDateTime.now();
 
         // 1. 페이징 content 쿼리
         List<UserChallengeEntity> content = queryFactory
             .selectFrom(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeEntity, challengeEntity)
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
             .fetchJoin()
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
@@ -128,8 +128,8 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         // 2. Count 쿼리 최적화 (fetchJoin 불필요)
         JPAQuery<Long> countQuery = queryFactory
             .select(userChallengeEntity.count())
-            .from(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeEntity, challengeEntity)
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
                 userChallengeEntity.completedDate.isNull(),
@@ -157,12 +157,13 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         }
 
         // 2. Q클래스 재사용 (메모리 효율성)
-        QUserChallengeEntity userChallenge = QUserChallengeEntity.userChallengeEntity;
+        QUserChallengeEntity userChallenge = userChallengeEntity;
 
         // 4. Content 쿼리 (N+1 문제 방지)
         List<UserChallengeEntity> content = queryFactory
-            .selectFrom(userChallenge)
-            .leftJoin(userChallenge.challengeEntity, challengeEntity).fetchJoin()
+            .selectFrom(userChallengeEntity)
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
                 userChallengeEntity.completedDate.isNotNull()
@@ -204,7 +205,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         Pageable pageable) {
         return userChallengeJpaRepository
             .findAllByUserEntity_UserId(string, pageable)
-            .map(UserChallenge::from)
             .map(UserChallengeInfoDto::new);
     }
 
@@ -226,7 +226,8 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     {
         Map<CompletedType, List<UserChallengeEntity>> entityMap = queryFactory
             .selectFrom(userChallengeEntity)
-            .join(userChallengeEntity.challengeEntity, challengeEntity).fetchJoin()
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
             .where(
                 userChallengeEntity.userEntity.userId.in(userIds),
                 userChallengeEntity.nftCompleted.isFalse(),
