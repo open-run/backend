@@ -203,9 +203,8 @@ public class BungService {
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
     public CompleteBungResultEnum completeBung(
-        UserDetailsImpl userDetails,
-        String bungId
-    ) throws CompleteBungException {
+        UserDetailsImpl userDetails, String bungId) throws CompleteBungException
+    {
         Bung bung = bungRepository.findBungById(bungId);
         if (bung.isCompleted()) {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED);
@@ -215,16 +214,14 @@ public class BungService {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED);
         }
 
-        //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
-        List<String> memberIds = getBungDetail(bungId)
-            .getMemberList()
-            .stream()
-            .map(UserBungInfoDto::getUserId)
-            .toList();
-        challengeEventsPublisher.bungIsComplete(bung, memberIds);
-
         bung.completeBung();
         bungRepository.save(bung, Collections.emptyList());
+
+        //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
+        getBungDetail(bungId).getMemberList().stream()
+            .map(UserBungInfoDto::getUserId)
+            .forEach(challengeEventsPublisher::simpleChallengeCheck);
+
         return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }
 }
