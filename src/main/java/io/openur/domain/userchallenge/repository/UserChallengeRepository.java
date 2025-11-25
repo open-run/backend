@@ -1,10 +1,7 @@
 package io.openur.domain.userchallenge.repository;
 
-import io.openur.domain.challenge.enums.CompletedType;
-import io.openur.domain.userchallenge.dto.UserChallengeInfoDto;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,8 +22,6 @@ public interface UserChallengeRepository {
      */
     void bulkUpdateCompletedChallenges(List<Long> completedUserChallengeIds);
 
-    List<UserChallenge> findByUserId(String userId);
-
     Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
     );
@@ -35,18 +30,7 @@ public interface UserChallengeRepository {
         String userId, Pageable pageable
     );
 
-    Page<UserChallengeInfoDto> findAllByUserId(String string,
-        Pageable pageable);
-    
-    List<UserChallenge> findByUserIdsAndChallengeIds(List<String> userIds, List<Long> challengeIds);
-
-    Map<CompletedType, List<UserChallenge>> findByUserIdsAndChallengeIdsGroupByCompletedType(
-        List<String> userIds, List<Long> challengeIds
-    );
-
-    Optional<UserChallenge> findOptionalByUserIdAndChallengeId(String userId, Long challengeId);
-
-    boolean existsByUserIdAndChallengeId(String userId, Long challengeId);
+    Optional<UserChallenge> findBySimpleRepetitiveChallenge(String userId);
 
     void delete(UserChallenge userChallenge);
 } 

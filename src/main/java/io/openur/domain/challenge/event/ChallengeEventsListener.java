@@ -1,21 +1,16 @@
 package io.openur.domain.challenge.event;
 
-import io.openur.domain.challenge.dto.GeneralChallengeDto;
-import io.openur.domain.challenge.model.Challenge;
-import io.openur.domain.challenge.model.ChallengeStage;
+import io.openur.domain.challenge.dto.GeneralChallengeDto.OnRaise;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChallengeEventsListener {
 
     private final UserChallengeRepository userChallengeRepository;
@@ -26,70 +21,78 @@ public class ChallengeEventsListener {
         userChallenge.setCompletedDate(LocalDateTime.now());
     }
 
-    @Async
-    @Transactional
-    @EventListener
-    public void handleOnDateChallengeEvent(GeneralChallengeDto.OnDate event) {
-        List<Long> completedUserChallengeIds = new ArrayList<>();
-        
-        for (UserChallenge userChallenge : event.getUserChallenges()) {
-            Challenge challenge = userChallenge.getChallengeStage().getChallenge();
-            LocalDateTime dateCondition = challenge.getCompletedConditionDate();
-            // TODO: Implement proper date condition check
-            if (dateCondition != null && LocalDateTime.now().isAfter(dateCondition)) {
-                airdropNFT(userChallenge);
-                completedUserChallengeIds.add(userChallenge.getUserChallengeId());
-            }
-        }
-        
-        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
+//    @Transactional
+//    @EventListener
+//    public void handleOnCountChallengeEvent(OnRaise event) {
+//        List<Long> userChallengeIds = event.getUserChallenges().stream()
+//            .map(UserChallenge::getUserChallengeId)
+//            .toList();
+//
+//        // First, increment all counts in one query
+//        userChallengeRepository.bulkIncrementCount(userChallengeIds);
+//
+//        // Then process NFT airdrops for completed challenges
+//        List<Long> completedUserChallengeIds = new ArrayList<>();
+//        for (UserChallenge userChallenge : event.getUserChallenges()) {
+//            Integer countCondition = userChallenge.getChallengeStage().getConditionAsCount();
+//            Integer currentCount = userChallenge.getCurrentCount() + 1; // Add 1 since we just incremented
+//
+//            if (currentCount.equals(countCondition)) {
+//                airdropNFT(userChallenge);
+//                completedUserChallengeIds.add(userChallenge.getUserChallengeId());
+//            }
+//        }
+//
+//        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
+//    }
+
+    public void simpleCountRaiser(OnRaise event) {
+
     }
 
-    @Async
-    @Transactional
-    @EventListener
-    public void handleOnCountChallengeEvent(GeneralChallengeDto.OnCount event) {
-        List<Long> userChallengeIds = event.getUserChallenges().stream()
-            .map(UserChallenge::getUserChallengeId)
-            .toList();
-            
-        // First, increment all counts in one query
-        userChallengeRepository.bulkIncrementCount(userChallengeIds);
-        
-        // Then process NFT airdrops for completed challenges
-        List<Long> completedUserChallengeIds = new ArrayList<>();
-        for (UserChallenge userChallenge : event.getUserChallenges()) {
-            Integer countCondition = userChallenge.getChallengeStage().getConditionAsCount();
-            Integer currentCount = userChallenge.getCurrentCount() + 1; // Add 1 since we just incremented
-            
-            if (currentCount.equals(countCondition)) {
-                airdropNFT(userChallenge);
-                completedUserChallengeIds.add(userChallenge.getUserChallengeId());
-            }
-        }
-        
-        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
+    public void simpleCountFinisher(OnRaise event) {
+
     }
 
-    @Async
-    @Transactional
-    @EventListener
-    public void handleOnPlaceChallengeEvent(GeneralChallengeDto.OnPlace event) {
-        List<Long> completedUserChallengeIds = new ArrayList<>();
-        
-        for (UserChallenge userChallenge : event.getUserChallenges()) {
-            ChallengeStage challengeStage = userChallenge.getChallengeStage();
-            Integer countCondition = challengeStage.getConditionAsCount();
-            String placeCondition = challengeStage.getChallenge().getCompletedConditionText();
-            // TODO: Implement proper place condition check
-            if (placeCondition != null && placeCondition.equals(event.getLocation())) {
-                airdropNFT(userChallenge);
-                completedUserChallengeIds.add(userChallenge.getUserChallengeId());
-            }
-        }
-        
-        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
-    }
+
+//    @Async
+//    @Transactional
+//    @EventListener
+//    public void handleOnDateChallengeEvent(GeneralChallengeDto.OnDate event) {
+//        List<Long> completedUserChallengeIds = new ArrayList<>();
+//
+//        for (UserChallenge userChallenge : event.getUserChallenges()) {
+//            Challenge challenge = userChallenge.getChallengeStage().getChallenge();
+//            LocalDateTime dateCondition = challenge.getCompletedConditionDate();
+//            // TODO: Implement proper date condition check
+//            if (dateCondition != null && LocalDateTime.now().isAfter(dateCondition)) {
+//                airdropNFT(userChallenge);
+//                completedUserChallengeIds.add(userChallenge.getUserChallengeId());
+//            }
+//        }
+//
+//        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
+//    }
+//
+//    @Async
+//    @Transactional
+//    @EventListener
+//    public void handleOnPlaceChallengeEvent(GeneralChallengeDto.OnPlace event) {
+//        List<Long> completedUserChallengeIds = new ArrayList<>();
+//
+//        for (UserChallenge userChallenge : event.getUserChallenges()) {
+//            ChallengeStage challengeStage = userChallenge.getChallengeStage();
+//            Integer countCondition = challengeStage.getConditionAsCount();
+//            String placeCondition = challengeStage.getChallenge().getCompletedConditionText();
+//            // TODO: Implement proper place condition check
+//            if (placeCondition != null && placeCondition.equals(event.getLocation())) {
+//                airdropNFT(userChallenge);
+//                completedUserChallengeIds.add(userChallenge.getUserChallengeId());
+//            }
+//        }
+//
+//        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
+//    }
 
 //    @Async
 //    @Transactional
