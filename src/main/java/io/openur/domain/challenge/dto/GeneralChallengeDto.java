@@ -54,7 +54,8 @@ public class GeneralChallengeDto {
     @Getter
     @RequiredArgsConstructor
     public static class OnRaise {
-        private final UserChallenge userChallenges;
+        // 추후, 같은 조건이거나 혹은 충족 조건인 여러개의 도전과제가 사용자별로 인덱싱 되었을때를 대비
+        private final List<UserChallenge> userChallenges;
     }
 
     @Getter

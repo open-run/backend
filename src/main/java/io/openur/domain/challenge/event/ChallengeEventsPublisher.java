@@ -6,6 +6,7 @@ import io.openur.domain.challenge.dto.GeneralChallengeDto.OnEvolution;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnRaise;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -82,7 +83,7 @@ public class ChallengeEventsPublisher {
 
         UserChallenge userChallenge = optionalUserChallenge.get();
         if(userChallenge.getCurrentCount() + 1 < userChallenge.getChallengeStage().getConditionAsCount())
-            publisher.publishEvent(new OnRaise(userChallenge));
+            publisher.publishEvent(new OnRaise(List.of(userChallenge)));
         else
             publisher.publishEvent(new OnEvolution(userChallenge, true));
         // 완료 달성 체크를 할 대상은, bung date 와 condition text ( 아마도 like 검색, 위치, 의상 등은 아직 잘 모름 ) 을 조건으로 내걸고,

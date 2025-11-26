@@ -46,8 +46,14 @@ public class ChallengeEventsListener {
 //        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
 //    }
 
-    public void simpleCountRaiser(OnRaise event) {
-
+    @Transactional
+    public void simpleChallengeChecker(OnRaise event) {
+        userChallengeRepository.bulkIncrementCount(
+            event.getUserChallenges()
+                .stream()
+                .map(UserChallenge::getUserChallengeId)
+                .toList()
+        );
     }
 
     public void simpleCountFinisher(OnRaise event) {
