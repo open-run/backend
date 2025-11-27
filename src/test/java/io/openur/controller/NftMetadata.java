@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 
 public class NftMetadata {
     private static final String CID = "bafybeidylx7ggx7u6pli4cdivcgapozjvqous6alhtnzpeaaheksgn35gq";
