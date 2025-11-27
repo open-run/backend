@@ -89,16 +89,14 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         // 1. 페이징 content 쿼리
         List<UserChallengeEntity> content = queryFactory
             .selectFrom(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
-            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
-            .fetchJoin()
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity).fetchJoin() // ✅ 첫 번째 fetch join
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity).fetchJoin()         // ✅ 두 번째 fetch join
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
                 userChallengeEntity.completedDate.isNull(),
                 challengeEntity.conditionAsDate.goe(currentTime)
             )
             .orderBy(
-                // 달성 퍼센테이지가 높은 것 부터
                 userChallengeEntity.currentCount.desc().nullsLast()
             )
             .offset(pageable.getOffset())
@@ -109,10 +107,10 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-
         // 2. Count 쿼리 최적화 (fetchJoin 불필요)
         JPAQuery<Long> countQuery = queryFactory
             .select(userChallengeEntity.count())
+            .from(userChallengeEntity)
             .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
             .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
             .where(
@@ -126,7 +124,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .map(UserChallenge::from)
             .toList();
 
-        // 4. Page 반환 (countQuery는 필요 시에만 실행)
+        // 4. Page 반환
         return PageableExecutionUtils.getPage(
             result, pageable, countQuery::fetchOne
         );
