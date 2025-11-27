@@ -80,7 +80,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         entityManager.clear();
     }
 
-    @Override
+     @Override
     public Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
     ) {
@@ -129,7 +129,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             result, pageable, countQuery::fetchOne
         );
     }
-
 
     @Override
     public Page<UserChallenge> findCompletedChallengesByUserId(
