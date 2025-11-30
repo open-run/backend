@@ -15,6 +15,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
+
 public class NFTContract extends Contract {
     public static final String BINARY = "";
 
