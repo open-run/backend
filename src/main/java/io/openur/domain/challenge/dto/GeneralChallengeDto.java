@@ -23,8 +23,8 @@ public class GeneralChallengeDto {
     private String conditionText;
     private ChallengeType challengeType;
     private CompletedType completedType;
-    private float progressStat = 0.0f;
     private Integer stageCount;
+    private float progressStat = 0.0f;
     private boolean accomplished;
     private boolean nftCompleted;
 
@@ -34,6 +34,7 @@ public class GeneralChallengeDto {
         this.completedDate = userChallenge.getCompletedDate();
         this.accomplished = userChallenge.getCompletedDate() != null;
         this.nftCompleted = userChallenge.getNftCompleted();
+        this.progressStat = userChallenge.getCurrentProgress();
 
         ChallengeStage challengeStage = userChallenge.getChallengeStage();
         this.conditionCount = challengeStage.getConditionAsCount();
@@ -48,7 +49,6 @@ public class GeneralChallengeDto {
         this.conditionDate = challenge.getCompletedConditionDate();
         this.conditionText = challenge.getCompletedConditionText();
         this.challengeType = challenge.getChallengeType();
-        this.progressStat = ((float) this.currentCount) / ((float)  this.conditionCount) * 100;
     }
 
     @Getter

@@ -37,4 +37,14 @@ public class ChallengeService {
             user.getUserId(), pageable
         ).map(GeneralChallengeDto::new);
     }
+
+    public Page<GeneralChallengeDto> getRepetitiveChallengeList(
+        UserDetailsImpl userDetails, Pageable pageable
+    ) {
+        User user = userRepository.findUser(userDetails.getUser());
+
+        return userChallengeRepository.findRepetitiveChallengesByUserId(
+            user.getUserId(), pageable
+        ).map(GeneralChallengeDto::new);
+    }
 }
