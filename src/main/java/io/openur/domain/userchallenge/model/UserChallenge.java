@@ -21,6 +21,8 @@ public class UserChallenge {
     private Boolean nftCompleted;  // TODO: 단순 boolean 말고 NFT index 정보를 갖게 하는것도?
     @Setter
     private Integer currentCount;
+    @Setter
+    private Float currentProgress;
 
     public static UserChallenge from(final UserChallengeEntity userChallengeEntity) {
         return new UserChallenge(
@@ -29,7 +31,8 @@ public class UserChallenge {
             ChallengeStage.from(userChallengeEntity.getChallengeStageEntity()),
             userChallengeEntity.getCompletedDate(),
             userChallengeEntity.getNftCompleted(),
-            userChallengeEntity.getCurrentCount()
+            userChallengeEntity.getCurrentCount(),
+            userChallengeEntity.getCurrentProgress()
         );
     }
 
@@ -39,6 +42,7 @@ public class UserChallenge {
             this.user.toEntity(),
             this.challengeStage.toEntity(),
             this.currentCount,
+            this.currentProgress,
             this.completedDate,
             this.nftCompleted
         );
