@@ -30,6 +30,10 @@ public interface UserChallengeRepository {
         String userId, Pageable pageable
     );
 
+    Page<UserChallenge> findRepetitiveChallengesByUserId(
+        String userId, Pageable pageable
+    );
+
     Optional<UserChallenge> findBySimpleRepetitiveChallenge(String userId);
 
     void delete(UserChallenge userChallenge);

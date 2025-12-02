@@ -37,6 +37,8 @@ public class UserChallengeEntity {
 
     private Integer currentCount;
 
+    private Float currentProgress;
+
     private LocalDateTime completedDate;
 
     @Column(nullable = false)
