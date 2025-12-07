@@ -1,10 +1,15 @@
 package io.openur.domain.challenge.service;
 
 import io.openur.domain.challenge.dto.GeneralChallengeDto;
+import io.openur.domain.challenge.dto.RepetitiveChallengeTreeDto;
+import io.openur.domain.challenge.model.ChallengeStage;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
+import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import io.openur.global.security.UserDetailsImpl;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,5 +51,20 @@ public class ChallengeService {
         return userChallengeRepository.findRepetitiveChallengesByUserId(
             user.getUserId(), pageable
         ).map(GeneralChallengeDto::new);
+    }
+
+    public RepetitiveChallengeTreeDto getRepetitiveChallengeDetail(
+        UserDetailsImpl userDetails, Long challengeId
+    ) {
+        Map<Long, UserChallenge> userChallengeMap = userChallengeRepository.
+            findRepetitiveUserChallengesMappedByStageId(
+                userDetails.getUser().getUserId(), challengeId
+            );
+
+        List<ChallengeStage> challengeStages = userChallengeMap.values().stream()
+            .map(UserChallenge::getChallengeStage)
+            .toList();
+
+        return new RepetitiveChallengeTreeDto(challengeStages, userChallengeMap);
     }
 }

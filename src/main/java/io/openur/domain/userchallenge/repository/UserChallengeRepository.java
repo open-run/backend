@@ -2,6 +2,7 @@ package io.openur.domain.userchallenge.repository;
 
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,10 @@ public interface UserChallengeRepository {
 
     Page<UserChallenge> findRepetitiveChallengesByUserId(
         String userId, Pageable pageable
+    );
+
+    Map<Long, UserChallenge> findRepetitiveUserChallengesMappedByStageId(
+        String userId, Long challengeId
     );
 
     Optional<UserChallenge> findBySimpleRepetitiveChallenge(String userId);
