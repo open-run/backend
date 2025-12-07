@@ -17,6 +17,7 @@ import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -207,6 +208,28 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .collect(Collectors.toList());
 
         return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Map<Long, UserChallenge> findRepetitiveUserChallengesMappedByStageId(
+        String userId, Long challengeId
+    ) {
+        return queryFactory
+            .selectFrom(userChallengeEntity)
+            .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .join(challengeStageEntity.challengeEntity, challengeEntity)
+            .where(
+                userChallengeEntity.userEntity.userId.eq(userId),
+                userChallengeEntity.nftCompleted.isFalse()
+            )
+            .fetch()
+            .stream()
+            .map(UserChallenge::from)
+            .collect(Collectors.toMap(
+                entity -> entity.getChallengeStage().getStageId(),
+                value -> value
+                )
+            );
     }
 
     @Override
