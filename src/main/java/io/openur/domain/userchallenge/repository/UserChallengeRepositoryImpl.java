@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -214,22 +215,36 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     public Map<Long, UserChallenge> findRepetitiveUserChallengesMappedByStageId(
         String userId, Long challengeId
     ) {
-        return queryFactory
+        // 1. 입력 검증
+        if (!StringUtils.hasText(userId) || challengeId == null) {
+            return Collections.emptyMap();
+        }
+
+        // 2. fetchJoin으로 N+1 문제 해결
+        List<UserChallengeEntity> entities = queryFactory
             .selectFrom(userChallengeEntity)
-            .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
-            .join(challengeStageEntity.challengeEntity, challengeEntity)
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity).fetchJoin() // ✅ fetchJoin 추가
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity).fetchJoin()         // ✅ fetchJoin 추가
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
+                challengeEntity.challengeId.eq(challengeId),                                     // ✅ challengeId 필터 추가
                 userChallengeEntity.nftCompleted.isFalse()
             )
-            .fetch()
-            .stream()
+            .fetch();
+
+        // 3. 빈 결과 조기 반환
+        if (entities.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 4. Map 변환 (중복 키 처리)
+        return entities.stream()
             .map(UserChallenge::from)
             .collect(Collectors.toMap(
-                entity -> entity.getChallengeStage().getStageId(),
-                value -> value
-                )
-            );
+                userChallenge -> userChallenge.getChallengeStage().getStageId(),
+                Function.identity(),
+                (existing, replacement) -> existing // ✅ 중복 키 발생 시 기존 값 유지
+            ));
     }
 
     @Override

@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity @Getter
-@Table(name = "tb_challenges_stage")
+@Table(name = "tb_challenge_stages")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChallengeStageEntity {

@@ -2,7 +2,10 @@ package io.openur.domain.challenge.service;
 
 import io.openur.domain.challenge.dto.GeneralChallengeDto;
 import io.openur.domain.challenge.dto.RepetitiveChallengeTreeDto;
+import io.openur.domain.challenge.exception.ChallengeNotAssignedException;
+import io.openur.domain.challenge.exception.ChallengeStageInvalid;
 import io.openur.domain.challenge.model.ChallengeStage;
+import io.openur.domain.challenge.repository.ChallengeStageRepository;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
 import io.openur.domain.userchallenge.model.UserChallenge;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChallengeService {
     private final UserRepository userRepository;
     private final UserChallengeRepository userChallengeRepository;
+    private final ChallengeStageRepository challengeStageRepository;
 
     public Page<GeneralChallengeDto> getGeneralChallengeList(
         UserDetailsImpl userDetails, Pageable pageable
@@ -61,10 +65,15 @@ public class ChallengeService {
                 userDetails.getUser().getUserId(), challengeId
             );
 
-        List<ChallengeStage> challengeStages = userChallengeMap.values().stream()
-            .map(UserChallenge::getChallengeStage)
-            .toList();
+        if(userChallengeMap.isEmpty())
+            throw new ChallengeNotAssignedException("No challenge assigned to user");
 
-        return new RepetitiveChallengeTreeDto(challengeStages, userChallengeMap);
+        List<ChallengeStage> challengeStages = challengeStageRepository
+            .findAllByChallengeId(challengeId);
+
+        if(challengeStages.isEmpty())
+            throw  new ChallengeStageInvalid("No challenge stages found");
+
+        return new RepetitiveChallengeTreeDto(userChallengeMap, challengeStages);
     }
 }

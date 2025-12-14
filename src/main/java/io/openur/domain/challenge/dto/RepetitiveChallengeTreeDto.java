@@ -4,19 +4,23 @@ import io.openur.domain.challenge.model.ChallengeStage;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RepetitiveChallengeTreeDto {
     private Long challengeId;
     private String challengeName;
     private String challengeDescription;
-    private List<RepetitiveChallengeDto> challenges;
+    private List<RepetitiveChallengeDto> challengeTrees;
 
     public RepetitiveChallengeTreeDto(
-        List<ChallengeStage> challengeStages, Map<Long, UserChallenge> userChallengeMap
+        Map<Long, UserChallenge> userChallengeMap, List<ChallengeStage> challengeStages
     ) {
-        this.challenges = challengeStages.stream().map(
+        this.challengeTrees = challengeStages.stream().map(
             stage ->
                 new RepetitiveChallengeDto(
                     // 없으면 알아서 null 로 나올것임
