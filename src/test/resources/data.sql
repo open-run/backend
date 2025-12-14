@@ -58,3 +58,24 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', 1),
        (6, 'a1234567-89ab-cdef-0123-456789abcdef', 1),
        (7, 'a1234567-89ab-cdef-0123-456789abcdef', 2);
 ;
+
+INSERT INTO tb_challenges (challenge_id, name, description, challenge_type,
+                           reward_type, reward_percentage,completed_type,
+                           condition_date, condition_text
+)
+VALUES
+    (1, 'test_challenge', 'test_challenge_description', 'normal', 'face', 50, 'count', null, null),
+    (2, 'test_challenge2', 'test_challenge2_description', 'repetitive', 'face', 50, 'count', null, null)
+;
+
+INSERT INTO tb_challenge_stages (stage_id, challenge_id, stage_number, condition_count)
+VALUES
+    (1, 1, 1, 1),
+    (2, 2, 1, 1),
+    (3, 2, 2, 3),
+    (4, 2, 3, 5)
+;
+
+INSERT INTO tb_users_challenges (user_challenge_id, challenge_stage_id, user_id, completed_date, current_count, current_progress, nft_completed)
+VALUES (1, 1, '9e1bfc60-f76a-47dc-9147-803653707192', CURRENT_TIMESTAMP, 1, 100.0, false),
+       (2, 3, '9e1bfc60-f76a-47dc-9147-803653707192', CURRENT_TIMESTAMP, 2, 66.6, false);
