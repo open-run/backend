@@ -7,10 +7,14 @@ import io.openur.domain.challenge.model.ChallengeStage;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class GeneralChallengeDto {
     private Long challengeId;
     private Long userChallengeId;

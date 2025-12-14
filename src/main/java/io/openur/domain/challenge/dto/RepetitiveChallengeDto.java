@@ -3,9 +3,13 @@ package io.openur.domain.challenge.dto;
 import io.openur.domain.challenge.model.ChallengeStage;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RepetitiveChallengeDto {
     private Long userChallengeId = null;
     private LocalDateTime completedDate = null;

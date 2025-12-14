@@ -1,6 +1,7 @@
 package io.openur.domain.challenge.model;
 
 import io.openur.domain.challenge.entity.ChallengeEntity;
+import io.openur.domain.challenge.entity.ChallengeStageEntity;
 import io.openur.domain.challenge.enums.ChallengeType;
 import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.challenge.enums.RewardType;
@@ -20,10 +21,24 @@ public class Challenge {
     private RewardType rewardType;
     private Float rewardPercentage;
     private CompletedType completedType;
-//    private Integer completedConditionCount;
     private LocalDateTime completedConditionDate;
     private String completedConditionText;
-    private List<ChallengeStage> challengeStages;
+//    private List<ChallengeStage> challengeStages;
+
+    public ChallengeEntity toEntity(List<ChallengeStage> challengeStages) {
+        return new ChallengeEntity(
+            this.challengeId,
+            this.challengeName,
+            this.challengeDescription,
+            this.challengeType,
+            this.rewardType,
+            this.rewardPercentage,
+            this.completedType,
+            this.completedConditionDate,
+            this.completedConditionText,
+            challengeStages.stream().map(ChallengeStage::toEntity).toList()
+        );
+    }
 
     public ChallengeEntity toEntity() {
         return new ChallengeEntity(
@@ -34,12 +49,9 @@ public class Challenge {
             this.rewardType,
             this.rewardPercentage,
             this.completedType,
-//            this.completedConditionCount,
             this.completedConditionDate,
             this.completedConditionText,
-            this.challengeStages
-                .stream().map(stage -> stage.toEntity(this))
-                .toList()
+            null
         );
     }
     
@@ -54,8 +66,7 @@ public class Challenge {
             challengeEntity.getCompletedType(),
 //            challengeEntity.getConditionAsCount(),
             challengeEntity.getConditionAsDate(),
-            challengeEntity.getConditionAsText(),
-            challengeEntity.getChallengeStages().stream().map(ChallengeStage::from).toList()
+            challengeEntity.getConditionAsText()
         );
     }
 }

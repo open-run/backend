@@ -10,6 +10,7 @@ public class ChallengeStage {
     private Long stageId;
     private Integer stageNumber;
     private Integer conditionAsCount;
+    private Long challengeId;
     private Challenge challenge;
 
     public static ChallengeStage from(ChallengeStageEntity challengeStageEntity) {
@@ -17,6 +18,7 @@ public class ChallengeStage {
             challengeStageEntity.getStageId(),
             challengeStageEntity.getStageNumber(),
             challengeStageEntity.getConditionAsCount(),
+            challengeStageEntity.getChallengeEntity().getChallengeId(),
             Challenge.from(challengeStageEntity.getChallengeEntity())
         );
     }
