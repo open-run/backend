@@ -28,7 +28,7 @@ public class RepetitiveChallengeTreeDto {
                 ))
         ).toList();
 
-        ChallengeStage firstStage = challengeStages.getFirst();
+        ChallengeStage firstStage = challengeStages.get(0);
         // 공통 옵션
         this.challengeId = firstStage.getChallenge().getChallengeId();
         this.challengeName = firstStage.getChallenge().getChallengeName();
