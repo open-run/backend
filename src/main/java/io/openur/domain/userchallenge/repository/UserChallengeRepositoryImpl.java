@@ -7,6 +7,7 @@ import static io.openur.domain.challenge.entity.QChallengeStageEntity.challengeS
 import static io.openur.domain.userchallenge.entity.QUserChallengeEntity.userChallengeEntity;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.challenge.enums.ChallengeType;
@@ -34,6 +35,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserChallengeRepositoryImpl implements UserChallengeRepository {
+
     private final UserChallengeJpaRepository userChallengeJpaRepository;
     private final JPAQueryFactory queryFactory;
 
@@ -45,7 +47,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         return UserChallenge.from(
             userChallengeJpaRepository.save(userChallenge.toEntity()));
     }
-
 
     @Override
     @Transactional
@@ -64,7 +65,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         entityManager.clear();
     }
 
-
     @Override
     @Transactional
     public void bulkUpdateCompletedChallenges(List<Long> userChallengeIds) {
@@ -73,7 +73,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         }
 
         queryFactory
-            .update(userChallengeEntity)        
+            .update(userChallengeEntity)
             .set(userChallengeEntity.completedDate, LocalDateTime.now())
             .set(userChallengeEntity.nftCompleted, true)
             .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
@@ -85,19 +85,30 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     public Page<UserChallenge> findUncompletedChallengesByUserId(
-        String userId, Pageable pageable
+        String userId,
+        Pageable pageable
     ) {
         // 2. 공통 조건 추출 (가독성 및 오류 방지)
         BooleanExpression conditions = buildNormalUncompletedConditions(userId);
 
         // 3. Content 쿼리 (N+1 문제 방지)
+        // 보상 가능한 챌린지(currentCount >= conditionCount)를 가장 위로 정렬
         List<UserChallengeEntity> content = queryFactory
             .selectFrom(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity).fetchJoin()
-            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity).fetchJoin()
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .fetchJoin()
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
+            .fetchJoin()
             .where(conditions)
             .orderBy(
-                userChallengeEntity.currentProgress.desc().nullsLast() // null 처리 추가
+                // 보상 가능한 챌린지(0)를 먼저, 그 다음 일반 챌린지(1)를 정렬
+                Expressions.cases()
+                    .when(userChallengeEntity.currentCount.goe(challengeStageEntity.conditionAsCount))
+                    .then(0)
+                    .otherwise(1)
+                    .asc(),
+                // 각 그룹 내에서는 progress로 정렬
+                userChallengeEntity.currentProgress.desc().nullsLast()
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -126,7 +137,8 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     public Page<UserChallenge> findCompletedChallengesByUserId(
-        String userId, Pageable pageable
+        String userId,
+        Pageable pageable
     ) {
         // 2. 공통 조건 추출 (가독성 및 재사용성)
         BooleanExpression conditions = buildNftIssuableConditions(userId);
@@ -134,8 +146,10 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         // 3. Content 쿼리 (N+1 문제 해결)
         List<UserChallengeEntity> content = queryFactory
             .selectFrom(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity).fetchJoin() // ✅ fetchJoin 추가
-            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity).fetchJoin()         // ✅ fetchJoin 추가
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .fetchJoin() // ✅ fetchJoin 추가
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
+            .fetchJoin()         // ✅ fetchJoin 추가
             .where(conditions)
             .orderBy(
                 userChallengeEntity.completedDate.asc(),
@@ -179,8 +193,10 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         // 3. Content 쿼리 (N+1 문제 방지)
         List<UserChallengeEntity> content = queryFactory
             .selectFrom(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity).fetchJoin()
-            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity).fetchJoin()
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .fetchJoin()
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
+            .fetchJoin()
             .where(conditions)
             .orderBy(
                 userChallengeEntity.currentProgress.desc().nullsLast(),
@@ -213,7 +229,8 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     public Map<Long, UserChallenge> findRepetitiveUserChallengesMappedByStageId(
-        String userId, Long challengeId
+        String userId,
+        Long challengeId
     ) {
         // 1. 입력 검증
         if (!StringUtils.hasText(userId) || challengeId == null) {
@@ -223,8 +240,10 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         // 2. fetchJoin으로 N+1 문제 해결
         List<UserChallengeEntity> entities = queryFactory
             .selectFrom(userChallengeEntity)
-            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity).fetchJoin() // ✅ fetchJoin 추가
-            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity).fetchJoin()         // ✅ fetchJoin 추가
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .fetchJoin() // ✅ fetchJoin 추가
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
+            .fetchJoin()         // ✅ fetchJoin 추가
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
                 challengeEntity.challengeId.eq(challengeId),                                     // ✅ challengeId 필터 추가
@@ -265,7 +284,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
                 .fetchFirst()
         ).map(UserChallenge::from);
     }
-
 
     @Override
     public void delete(UserChallenge userChallenge) {
