@@ -1,5 +1,6 @@
 package io.openur.global.exception;
 
+import io.openur.domain.NFT.exception.MintException;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
@@ -60,7 +61,7 @@ public class ExceptionController {
         return createResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
-    @ExceptionHandler({Exception.class, HeadlessException.class})
+    @ExceptionHandler({Exception.class, HeadlessException.class, MintException.class})
     public ResponseEntity<ExceptionDto> handleInternalServerErrorException(Exception e) {
         return createResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }

@@ -1,77 +1,84 @@
 package io.openur.controller;
 
 import io.openur.contract.OpenRunNFTTest;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.protocol.http.HttpService;
-import org.web3j.crypto.Credentials;
-import org.web3j.tx.gas.DefaultGasProvider;
 import java.math.BigInteger;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.web3j.crypto.Credentials;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-
+@SpringBootTest
 public class NftTest {
 
+    @Value("${nft.rpc-url}")
+    private String rpcUrl;
 
-    public static void main(String[] args) throws Exception {
-        String RPC_URL = "https://base-sepolia.g.alchemy.com/v2/FDDXOaIjm44THciq6GlNXqeR5KYR6xi_";
-        Web3j web3j = Web3j.build(new HttpService(RPC_URL));
+    @Value("${nft.private-key}")
+    private String privateKey;
 
-        String privateKey = "0x866565bd00765f23f211de47c7b7e1a3371bb6cd24932a07c01484d19e6e2946";
-        String contractAddress = "0xcdb492969565839a6447cca6b9fcc9ffaa7ec5f9";
-        Credentials credentials = Credentials.create(privateKey);
+    @Value("${nft.contract-address}")
+    private String contractAddress;
 
-        OpenRunNFTTest contract = OpenRunNFTTest.load(contractAddress, web3j, credentials, new DefaultGasProvider());
+    @Value("${nft.base-uri}")
+    private String baseUri;
 
-        String to = "0x4f76b5121838b16a5f938d4c8369021f22ad659d";
-        BigInteger taskId = BigInteger.valueOf(403);
+    @Test
+    @DisplayName("End-to-end NFT flow: set task, set baseURI, mint, read balance & uri")
+    void nft_end_to_end_flow() throws Exception {
+        // Hardcoded test values as requested
+        String to = "0xc0cdd3de0abc5305dead9dfa5b69b7db82ddb98f";
+        BigInteger taskId = BigInteger.valueOf(77);
         BigInteger amount = BigInteger.ONE;
-        BigInteger itemId = BigInteger.valueOf(403);
+        BigInteger itemId = BigInteger.valueOf(77);
 
-        // task 등록
-        contract.setTaskItem(taskId, itemId).send();
-        System.out.println("taskId " + taskId + "에 itemId " + itemId + " 등록 완료");
+        String walletAddress = "0x5557cFb2924e6031196b9B820E63Cb83f4BE5837";
+        BigInteger tokenId = BigInteger.valueOf(77);
 
+        Web3j web3j = Web3j.build(new HttpService(rpcUrl));
+        try {
+            Credentials credentials = Credentials.create(privateKey);
+            OpenRunNFTTest contract = OpenRunNFTTest.load(contractAddress, web3j, credentials, new DefaultGasProvider());
 
-        String baseUri = "ipfs://bafybeigi2w2q6zeq66uk27wk7uwcwkli6fbwc73lsezxpets7x43r2s6o4/";
+            // set task
+            TransactionReceipt taskReceipt = contract.setTaskItem(taskId, itemId).send();
+            Assertions.assertNotNull(taskReceipt.getTransactionHash());
 
-        // baseURI 설정
-        TransactionReceipt uriReceipt = contract.setBaseURI(baseUri).send();
-        System.out.println("baseURI 설정 완료: " + uriReceipt.getTransactionHash());
+            // set baseURI from application.yml
+            TransactionReceipt uriReceipt = contract.setBaseURI(baseUri).send();
+            Assertions.assertNotNull(uriReceipt.getTransactionHash());
 
-        // 블록 포함 대기
-        Thread.sleep(2000);
+            Thread.sleep(1000);
 
-        // NFT 민팅
-        TransactionReceipt receipt = contract.mintItemForTask(to, taskId, amount).send();
-        System.out.println("Mint Success! TxHash: " + receipt.getTransactionHash());
+            // mint
+            TransactionReceipt mintReceipt = contract.mintItemForTask(to, taskId, amount).send();
+            Assertions.assertNotNull(mintReceipt.getTransactionHash());
 
+            Thread.sleep(1000);
 
+            // read balance
+            BigInteger balance = contract.balanceOf(walletAddress, tokenId).send();
+            Assertions.assertNotNull(balance);
+            Assertions.assertTrue(balance.compareTo(BigInteger.ZERO) >= 0);
 
-        // 확인할 지갑 주소와 tokenId
-        String walletAddress = "0x4f76b5121838b16a5f938d4c8369021f22ad659d";
-        BigInteger tokenId = BigInteger.valueOf(403);
+            if (balance.compareTo(BigInteger.ZERO) > 0) {
+                String uri = contract.uri(tokenId).send();
+                Assertions.assertNotNull(uri);
 
-        //보유량 확인
-        BigInteger balance = contract.balanceOf(walletAddress, tokenId).send();
-        System.out.println("NFT 보유량 (tokenId = " + tokenId + "): " + balance);
+                if (tokenId.equals(BigInteger.valueOf(28))) {
+                    uri = uri.replace("28", "shoes4-3.json");
+                }
 
-        if (balance.compareTo(BigInteger.ZERO) > 0) {
-            //메타데이터 URI 조회
-            String uri = contract.uri(tokenId).send();
-            System.out.println("메타데이터 URI: " + uri);
-
-            //tokenId 403에 대해 메타데이터 파일명 치환
-            if (tokenId.equals(BigInteger.valueOf(403))) {
-                uri = uri.replace("403", "shoes4-3.json");
+                String metadataUrl = uri.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+                Assertions.assertTrue(metadataUrl.startsWith("https://"));
             }
-
-            //게이트웨이 URL로 변환
-            String metadataUrl = uri.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
-            System.out.println("메타데이터 확인: " + metadataUrl);
-
-            System.out.println("\n 브라우저에서 확인:\n" + metadataUrl);
-        } else {
-            System.out.println(" 해당 지갑은 이 NFT를 보유하고 있지 않습니다.");
+        } finally {
+            web3j.shutdown();
         }
     }
 }
