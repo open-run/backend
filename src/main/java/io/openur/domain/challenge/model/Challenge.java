@@ -19,7 +19,6 @@ public class Challenge {
     private String challengeDescription;
     private ChallengeType challengeType;
     private RewardType rewardType;
-    private Float rewardPercentage;
     private CompletedType completedType;
     private LocalDateTime completedConditionDate;
     private String completedConditionText;
@@ -32,7 +31,6 @@ public class Challenge {
             this.challengeDescription,
             this.challengeType,
             this.rewardType,
-            this.rewardPercentage,
             this.completedType,
             this.completedConditionDate,
             this.completedConditionText,
@@ -47,7 +45,6 @@ public class Challenge {
             this.challengeDescription,
             this.challengeType,
             this.rewardType,
-            this.rewardPercentage,
             this.completedType,
             this.completedConditionDate,
             this.completedConditionText,
@@ -62,7 +59,6 @@ public class Challenge {
             challengeEntity.getDescription(),
             challengeEntity.getChallengeType(),
             challengeEntity.getRewardType(),
-            challengeEntity.getRewardPercentage(),
             challengeEntity.getCompletedType(),
 //            challengeEntity.getConditionAsCount(),
             challengeEntity.getConditionAsDate(),

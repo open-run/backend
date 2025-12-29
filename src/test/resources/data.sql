@@ -60,12 +60,12 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', 1),
 ;
 
 INSERT INTO tb_challenges (challenge_id, name, description, challenge_type,
-                           reward_type, reward_percentage,completed_type,
+                           reward_type, completed_type,
                            condition_date, condition_text
 )
 VALUES
-    (1, 'test_challenge', 'test_challenge_description', 'normal', 'face', 50, 'count', null, null),
-    (2, 'test_challenge2', 'test_challenge2_description', 'repetitive', 'face', 50, 'count', null, null)
+    (1, 'test_challenge', 'test_challenge_description', 'normal', 'face', 'count', null, null),
+    (2, 'test_challenge2', 'test_challenge2_description', 'repetitive', 'face', 'count', null, null)
 ;
 
 INSERT INTO tb_challenge_stages (stage_id, challenge_id, stage_number, condition_count)

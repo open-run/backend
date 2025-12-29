@@ -59,7 +59,6 @@ CREATE TABLE IF NOT EXISTS tb_challenges
     description       VARCHAR(255) NOT NULL,
     challenge_type    VARCHAR(30)  NOT NULL,
     reward_type       VARCHAR(30)  NOT NULL,
-    reward_percentage FLOAT        NOT NULL,
     completed_type    VARCHAR(30)  NOT NULL,
     condition_date    DATETIME     NULL,
     condition_text    VARCHAR(100) NULL

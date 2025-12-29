@@ -40,9 +40,6 @@ public class ChallengeEntity {
     @Column(name = "reward_type")
     private RewardType rewardType;
     
-    @Column(name = "reward_percentage")
-    private Float rewardPercentage;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "completed_type")
     private CompletedType completedType;
