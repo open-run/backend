@@ -1,28 +1,28 @@
 -- h2 data sql sheet for test implementation, ** must be executed in order of foreign key constraints **
 INSERT INTO tb_users (user_id, nickname, identity_authenticated, provider, blacklisted,
                       created_date, last_login_date, blockchain_address, running_pace,
-                      running_frequency)
+                      running_frequency, feedback)
 VALUES ('9e1bfc60-f76a-47dc-9147-803653707192', 'test', FALSE, 'smart_wallet', FALSE, CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
-        '0x1234567890123456789012345678901234567890', NULL, NULL),
+        '0x1234567890123456789012345678901234567890', NULL, NULL, 0),
        ('91b4928f-8288-44dc-a04d-640911f0b2be', 'test2', FALSE, 'smart_wallet', FALSE, CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
-        '0x1234567890123456789012345678901234567891', NULL, NULL),
+        '0x1234567890123456789012345678901234567891', NULL, NULL, 0),
        ('5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', 'test3', FALSE, 'smart_wallet', FALSE, CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
-        '0x1234567890123456789012345678901234567892', NULL, NULL)
+        '0x1234567890123456789012345678901234567892', NULL, NULL, 0)
 ;
 
-INSERT INTO tb_bungs (bung_id, name, location, description, start_datetime, end_datetime, distance, pace, member_number,
+INSERT INTO tb_bungs (bung_id, name, description, location, latitude, longitude, start_datetime, end_datetime, distance, pace, member_number, current_member_number,
                       has_after_run, after_run_description, is_completed, main_image)
-VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'Seoul', 'temp_description',
-        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, false, null, false, 'image1.png'),
-       ('90477004-1422-4551-acce-04584b34612e', 'test2_bung', 'Bangkok', 'second_bung_data',
-        CURRENT_TIMESTAMP + 3, CURRENT_TIMESTAMP + 4, 1, '6"30', 2, true, 'chicken & beer', false, 'image2.png'),
-       ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung_incompleted', 'New York', 'past_bung_description',
-        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, false, null, false, 'image3.png'),
-       ('a1234567-89ab-cdef-0123-1982ey1kbjas', 'past_bung_completed', 'New York', 'past_bung_description',
-        CURRENT_TIMESTAMP - 4, CURRENT_TIMESTAMP - 3, 5, '7"00', 3, false, null, true, 'image4.png')
+VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'temp_description', 'Seoul', 37.5665, 126.9780,
+        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, 2, false, null, false, 'image1.png'),
+       ('90477004-1422-4551-acce-04584b34612e', 'test2_bung', 'second_bung_data', 'Bangkok', 13.7563, 100.5018,
+        CURRENT_TIMESTAMP + 3, CURRENT_TIMESTAMP + 4, 1, '6"30', 2, 1, true, 'chicken & beer', false, 'image2.png'),
+       ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung_incompleted', 'past_bung_description', 'New York', 40.7128, -74.0060,
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, 2, false, null, false, 'image3.png'),
+       ('a1234567-89ab-cdef-0123-1982ey1kbjas', 'past_bung_completed', 'past_bung_description', 'New York', 40.7128, -74.0060,
+        CURRENT_TIMESTAMP - 4, CURRENT_TIMESTAMP - 3, 5, '7"00', 3, 3, false, null, true, 'image4.png')
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
@@ -68,14 +68,14 @@ VALUES
     (2, 'test_challenge2', 'test_challenge2_description', 'repetitive', 'face', 'count', null, null)
 ;
 
-INSERT INTO tb_challenge_stages (stage_id, challenge_id, stage_number, condition_count)
+INSERT INTO tb_challenge_stages (stage_id, stage_number, condition_count, challenge_id)
 VALUES
     (1, 1, 1, 1),
-    (2, 2, 1, 1),
-    (3, 2, 2, 3),
-    (4, 2, 3, 5)
+    (2, 1, 1, 2),
+    (3, 2, 3, 2),
+    (4, 3, 5, 2)
 ;
 
-INSERT INTO tb_users_challenges (user_challenge_id, challenge_stage_id, user_id, completed_date, current_count, current_progress, nft_completed)
-VALUES (1, 1, '9e1bfc60-f76a-47dc-9147-803653707192', CURRENT_TIMESTAMP, 1, 100.0, false),
-       (2, 3, '9e1bfc60-f76a-47dc-9147-803653707192', CURRENT_TIMESTAMP, 2, 66.6, false);
+INSERT INTO tb_users_challenges (user_challenge_id, user_id, challenge_stage_id, current_count, current_progress, nft_completed, completed_date)
+VALUES (1, '9e1bfc60-f76a-47dc-9147-803653707192', 1, 1, 100.0, false, CURRENT_TIMESTAMP),
+       (2, '9e1bfc60-f76a-47dc-9147-803653707192', 3, 2, 66.6, false, CURRENT_TIMESTAMP);
