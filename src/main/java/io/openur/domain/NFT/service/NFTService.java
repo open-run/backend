@@ -94,13 +94,6 @@ public class NFTService {
             throw new MintException("Failed to mint NFT: " + e.getMessage());
         }
 
-        // TODO: 단순 슬립 대신 블록 확정까지 기다리고 진행하는 로직으로 교체 필요.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         return getNftMetadata(tokenId);
     }
 
