@@ -3,6 +3,7 @@ package io.openur.domain.NFT.controller;
 import io.openur.domain.NFT.service.NFTService;
 import io.openur.domain.NFT.dto.NFTMetadataDto;
 import io.openur.global.security.UserDetailsImpl;
+import lombok.RequiredArgsConstructor;
 import io.openur.global.common.PagedResponse;
 import io.openur.global.common.Response;
 
@@ -14,14 +15,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/nft")
+@RequestMapping("/v1/nft")
+@RequiredArgsConstructor
 public class NFTController {
 
     private final NFTService nftService;
-
-    public NFTController(NFTService nftService) {
-        this.nftService = nftService;
-    }
 
     @PostMapping("/mint")
     public ResponseEntity<Response<NFTMetadataDto>> mintNFT(
