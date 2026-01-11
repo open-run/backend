@@ -7,6 +7,8 @@ import io.openur.domain.NFT.dto.NFTMetadataDto;
 import io.openur.domain.NFT.exception.MintException;
 import io.openur.domain.challenge.model.Challenge;
 import io.openur.domain.challenge.repository.ChallengeRepository;
+
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,38 +16,41 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.TransactionManager;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
 public class NFTService {
 
     private NFTContract nftContract;
-    private ChallengeRepository challengeRepository;
+    private final ChallengeRepository challengeRepository;
 
-    @Value("${nft.base-uri}")
-    private String baseUri;
-    @Value("${nft.rpc-url}")
+    @Value("${nft.rpc-url:https://public.sepolia.rpc.status.network}")
     private String rpcUrl;
     @Value("${nft.private-key}")
     private String privateKey;
     @Value("${nft.contract-address}")
     private String contractAddress;
+    @Value("${nft.chain-id:1660990954}")
+    private Long chainId;
 
-    public NFTService(ChallengeRepository challengeRepository) {
+    @PostConstruct
+    public void init() {
         Web3j web3j = Web3j.build(new HttpService(rpcUrl));
         Credentials credentials = Credentials.create(privateKey);
-        NFTContract nftContract = NFTContract.load(contractAddress, web3j, credentials, new DefaultGasProvider());
-        this.nftContract = nftContract;
-        this.challengeRepository = challengeRepository;
+        TransactionManager transactionManager = new RawTransactionManager(web3j, credentials, chainId);
+        this.nftContract = NFTContract.load(contractAddress, web3j, transactionManager, new GaslessGasProvider());
     }
 
     public Page<NFTMetadataDto> getNFTsByUserAddress(String userAddress, Pageable pageable) {
@@ -53,29 +58,10 @@ public class NFTService {
         return Page.empty();
     }
 
-    public NFTMetadataDto mintNFT(String userAddress, Long challengeId) {
-        // TODO: 현재 itemId 확인 후 다음 id 를 부여하는 로직으로 교체 필요.
-        //현재는 test를 위해 77로 고정해둠
-        BigInteger taskId = BigInteger.valueOf(77);
-        BigInteger amount = BigInteger.ONE;
-        BigInteger itemId = BigInteger.valueOf(77);
 
-        // TODO: challengeId를 통해 어떤 NFT를 민팅할지 결정하는 로직 필요
-        Challenge challenge = challengeRepository.findById(challengeId);
-        
+    public void setBaseURI(String baseURI) {
         try {
-            TransactionReceipt taskReceipt = nftContract.setTaskItem(taskId, itemId).send();
-            if (!taskReceipt.isStatusOK()) {
-                throw new MintException("setTask status not OK: " + taskReceipt.getTransactionHash());
-            }
-            System.out.println("taskId " + taskId + "에 itemId " + itemId + " 등록 완료");
-        } catch (Exception e) {
-            throw new MintException("Failed to set task item: " + e.getMessage());
-        }
-
-        // TOCHECK: baseURI 를 민팅 할 때 마다 다시 설정해야 하는지 확인 필요.
-        try {
-            TransactionReceipt uriReceipt = nftContract.setBaseURI(baseUri).send();
+            TransactionReceipt uriReceipt = nftContract.setBaseURI(baseURI).send();
             if (!uriReceipt.isStatusOK()) {
                 throw new MintException("setBaseURI status not OK: " + uriReceipt.getTransactionHash());
             }
@@ -83,11 +69,25 @@ public class NFTService {
         } catch (Exception e) {
             throw new MintException("Failed to set baseURI: " + e.getMessage());
         }
+    }
 
+    private BigInteger stringToTokenId(String string) {
+        byte[] encoded = string.getBytes(StandardCharsets.UTF_8);
+        byte[] hash = Hash.sha3(encoded);
+        return new BigInteger(1, hash);
+    }
+
+    public NFTMetadataDto mintNFT(String userAddress, Long challengeId) {
+        // TODO: challengeId를 통해 어떤 NFT를 민팅할지 결정하는 로직 필요
+        Challenge challenge = challengeRepository.findById(challengeId);
+
+        // 현재는 test를 위해 shoes1의 tokenId로 고정해둠
+        BigInteger amount = BigInteger.ONE;
+        BigInteger tokenId = this.stringToTokenId("shoes1");
         try {
-            TransactionReceipt receipt = nftContract.mintItemForTask(userAddress, taskId, amount).send();
+            TransactionReceipt receipt = nftContract.mintToken(userAddress, tokenId, amount).send();
             if (!receipt.isStatusOK()) {
-                throw new MintException("mintItemForTask status not OK: " + receipt.getTransactionHash());
+                throw new MintException("mintToken status not OK: " + receipt.getTransactionHash());
             }
             System.out.println("NFT minted successfully: " + receipt.getTransactionHash());
         } catch (Exception e) {
@@ -101,7 +101,7 @@ public class NFTService {
             e.printStackTrace();
         }
 
-        return getNftMetadata(taskId);
+        return getNftMetadata(tokenId);
     }
 
     private NFTMetadataDto getNftMetadata(BigInteger tokenId) {
