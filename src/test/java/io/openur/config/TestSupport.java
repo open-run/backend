@@ -18,7 +18,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-@SpringBootTest(properties = {"spring.config.location=classpath:application-test.properties"})
+@SpringBootTest(properties = {
+    "spring.config.location=classpath:application.yml",
+    "spring.config.additional-location=classpath:application-test.properties"
+})
 public class TestSupport {
 
     protected final static String AUTH_HEADER = "Authorization";
