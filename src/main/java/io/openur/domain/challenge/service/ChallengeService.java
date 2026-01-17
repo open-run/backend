@@ -72,7 +72,7 @@ public class ChallengeService {
             .findAllByChallengeId(challengeId);
 
         if(challengeStages.isEmpty())
-            throw  new ChallengeStageInvalid("No challenge stages found");
+            throw new ChallengeStageInvalid("No challenge stages found");
 
         return new RepetitiveChallengeTreeDto(userChallengeMap, challengeStages);
     }
