@@ -21,17 +21,24 @@ public class RepetitiveChallengeDto {
     private Integer stageNumber;
     private Integer conditionAsCount;
 
-    public RepetitiveChallengeDto(ChallengeStage stage, UserChallenge userChallenge) {
+    public RepetitiveChallengeDto(
+        ChallengeStage stage, UserChallenge userChallenge, int accumulatedCount
+    ) {
         this.stageId = stage.getStageId();
         this.stageNumber = stage.getStageNumber();
         this.conditionAsCount = stage.getConditionAsCount();
 
+        // 조건 변경으로 완수 혹은 nft 발급된 것도 나와야 할듯 하다.
+        // 
         if(userChallenge != null) {
             this.userChallengeId = userChallenge.getUserChallengeId();
             this.completedDate = userChallenge.getCompletedDate();
             this.nftCompleted = userChallenge.getNftCompleted();
-            this.currentCount = userChallenge.getCurrentCount();
             this.currentProgress = userChallenge.getCurrentProgress();
+            this.currentCount = userChallenge.getCurrentCount();
+
+            this.currentCount = this.completedDate != null ?
+                this.currentCount : this.currentCount + accumulatedCount;
         }
     }
 }

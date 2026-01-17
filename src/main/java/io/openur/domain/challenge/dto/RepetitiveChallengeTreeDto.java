@@ -20,15 +20,22 @@ public class RepetitiveChallengeTreeDto {
     public RepetitiveChallengeTreeDto(
         Map<Long, UserChallenge> userChallengeMap, List<ChallengeStage> challengeStages
     ) {
-        this.challengeTrees = challengeStages.stream().map(
-            stage ->
-                new RepetitiveChallengeDto(
-                    // 없으면 알아서 null 로 나올것임
-                    stage, userChallengeMap.get(stage.getStageId()
-                ))
+        ChallengeStage firstStage = challengeStages.get(0);
+        int accumulatedCount = 0;
+        for (ChallengeStage challengeStage : challengeStages) {
+            if(userChallengeMap.get(challengeStage.getStageId()).getCompletedDate() == null)
+                break;
+            accumulatedCount = challengeStage.getConditionAsCount();
+        }
+
+        final int finalAccumulatedCount = accumulatedCount;
+        this.challengeTrees = challengeStages.stream().map(stage ->
+            new RepetitiveChallengeDto(
+                stage, userChallengeMap.get(stage.getStageId()),
+                finalAccumulatedCount
+            )
         ).toList();
 
-        ChallengeStage firstStage = challengeStages.get(0);
         // 공통 옵션
         this.challengeId = firstStage.getChallenge().getChallengeId();
         this.challengeName = firstStage.getChallenge().getChallengeName();
