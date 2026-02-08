@@ -1,7 +1,7 @@
 {
     "name": "shoes1",
     "description": "footwear 파츠입니다.",
-    "image": "https://ipfs.io/ipfs/bafybeictq47srcead27ydw42jlqy6yepwiisdwtsbbvsijqiqkmbd6t3tm/",
+    "image": "ipfs://bafybeictq47srcead27ydw42jlqy6yepwiisdwtsbbvsijqiqkmbd6t3tm/",
     "attributes": [
       {
         "trait_type": "category",

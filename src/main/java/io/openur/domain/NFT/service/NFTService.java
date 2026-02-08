@@ -44,6 +44,8 @@ public class NFTService {
     private String contractAddress;
     @Value("${nft.chain-id:1660990954}")
     private Long chainId;
+    @Value("${nft.pinata-dedicated-gateway:https://gateway.pinata.cloud}")
+    private String pinataDedicatedGateway;
 
     @PostConstruct
     public void init() {
@@ -104,8 +106,8 @@ public class NFTService {
         } catch (Exception e) {
             throw new MintException("Error from getting token URI: " + e.getMessage());
         }
-        // tokenUri가 ipfs:// 형식일 경우 gateway로 변환
-        String resolvedUri = tokenUri.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+        // dedicated gateway url로 변환
+        String resolvedUri = tokenUri.replace("ipfs://", pinataDedicatedGateway + "/ipfs/");
 
         // JSON 파싱
         URL url;
