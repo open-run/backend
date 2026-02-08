@@ -242,8 +242,8 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .fetchJoin()         // ✅ fetchJoin 추가
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
-                challengeEntity.challengeId.eq(challengeId) // ✅ challengeId 필터 추가
-//                userChallengeEntity.nftCompleted.isFalse()
+                challengeEntity.challengeId.eq(challengeId), // ✅ challengeId 필터 추가
+                userChallengeEntity.nftCompleted.isFalse()
             )
             .fetch();
 
