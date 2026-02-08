@@ -39,7 +39,7 @@ public interface UserChallengeRepository {
         String userId, Long challengeId
     );
 
-    Optional<UserChallenge> findBySimpleRepetitiveChallenge(String userId);
+    Optional<UserChallenge> findFirstBySimpleRepetitiveChallenge(String userId);
 
     void delete(UserChallenge userChallenge);
 } 

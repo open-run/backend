@@ -2,6 +2,7 @@ package io.openur.domain.challenge.repository;
 
 import io.openur.domain.challenge.model.ChallengeStage;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,5 +20,15 @@ public class ChallengeStageRepositoryImpl implements ChallengeStageRepository {
             .stream()
             .map(ChallengeStage::from)
             .toList();
+    }
+
+    @Override
+    public Optional<ChallengeStage> findByChallengeIdAndStageIsGreaterThan(
+        Long challengeId, Integer stage) {
+        return challengeStageJpaRepository
+            .findFirstByChallengeEntity_ChallengeIdAndStageNumberIsGreaterThan(
+                challengeId, stage
+            )
+            .map(ChallengeStage::from);
     }
 }

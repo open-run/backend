@@ -58,16 +58,20 @@ public class GeneralChallengeDto {
     @Getter
     @RequiredArgsConstructor
     public static class OnRaise {
-        // 추후, 같은 조건이거나 혹은 충족 조건인 여러개의 도전과제가 사용자별로 인덱싱 되었을때를 대비
+        // 추후, 같은 조건이거나 혹은 충족 조건인 여러개의 도전과제가 인덱싱 되었을때를 대비
         private final List<UserChallenge> userChallenges;
     }
 
     @Getter
     @RequiredArgsConstructor
-    // TODO : 분명히 단순 갯수를 올리는게 아니라 완수 충족시 도전과제 완료 처리 및 신규 과제가 발급되는 구조 필요
     public static class OnEvolution {
+        private final List<UserChallenge> userChallenges;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class OnIssue {
         private final UserChallenge userChallenge;
-        private final boolean isAccomplished;
     }
 
     @Getter

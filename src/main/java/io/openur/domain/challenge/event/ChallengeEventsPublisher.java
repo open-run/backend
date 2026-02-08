@@ -1,8 +1,8 @@
 package io.openur.domain.challenge.event;
 
 import io.openur.domain.bung.model.Bung;
-import io.openur.domain.challenge.dto.GeneralChallengeDto;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnEvolution;
+import io.openur.domain.challenge.dto.GeneralChallengeDto.OnIssue;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnRaise;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
@@ -78,15 +78,18 @@ public class ChallengeEventsPublisher {
         // Challenge 는 공통적으로 주어지는 완수 조건에 해당 ( 예 : 의상 혹은 위치 값, *횟수는 포함되지 않는다 )
         // 만에 하나, 반복 스테이지가 올라갈때마다 달성 보상 등급 또는 파츠를 다르게 주고 싶다면, RewardType 또는 CompletedType 을 개별적으로 주어줄 필요가 있다.
         // 따라서 완료 처리를 할 대상은, ChallengeStage 의 값과 비교가 된 UserChallenge 에 해당하며, 해당 미션 완수시에 다음 스테이지가 있다면 다음 스테이지로의 엔티티 생성까지 연결되어야한다.
-        Optional<UserChallenge> optionalUserChallenge = userChallengeRepository.findBySimpleRepetitiveChallenge(userId);
+        Optional<UserChallenge> optionalUserChallenge = userChallengeRepository
+            .findFirstBySimpleRepetitiveChallenge(userId);
         if(optionalUserChallenge.isEmpty()) return;
 
         UserChallenge userChallenge = optionalUserChallenge.get();
         if(userChallenge.getCurrentCount() + 1 < userChallenge.getChallengeStage().getConditionAsCount())
             publisher.publishEvent(new OnRaise(List.of(userChallenge)));
         else
-            publisher.publishEvent(new OnEvolution(userChallenge, true));
-        // 완료 달성 체크를 할 대상은, bung date 와 condition text ( 아마도 like 검색, 위치, 의상 등은 아직 잘 모름 ) 을 조건으로 내걸고,
-        // Stage 값이 제일 낮으며 완수되지 않은 건으로 검색을 시도해서, count 조작을 시도한다. ** 현재로선 bung 에 조건 텍스트 필드가 없어 미구현
+            publisher.publishEvent(new OnEvolution(List.of(userChallenge)));
+    }
+
+    public void simpleChallengeIssue(UserChallenge userChallenge) {
+        publisher.publishEvent(new OnIssue(userChallenge));
     }
 }

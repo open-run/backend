@@ -1,19 +1,28 @@
 package io.openur.domain.challenge.event;
 
+import io.openur.domain.challenge.dto.GeneralChallengeDto.OnEvolution;
+import io.openur.domain.challenge.dto.GeneralChallengeDto.OnIssue;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnRaise;
+import io.openur.domain.challenge.model.ChallengeStage;
+import io.openur.domain.challenge.repository.ChallengeStageRepository;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChallengeEventsListener {
-
     private final UserChallengeRepository userChallengeRepository;
+    private final ChallengeStageRepository stageRepository;
+    private final ChallengeEventsPublisher eventsPublisher;
+
 
     private void airdropNFT(UserChallenge userChallenge) {
         // TODO: NFT 에어드랍
@@ -46,8 +55,9 @@ public class ChallengeEventsListener {
 //        userChallengeRepository.bulkUpdateCompletedChallenges(completedUserChallengeIds);
 //    }
 
-    @Transactional
-    public void simpleChallengeChecker(OnRaise event) {
+    // 이전의 벙 완료 트랜잭션이 반영되고 실행되어야함
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void simpleCountChallengeRaiser(OnRaise event) {
         userChallengeRepository.bulkIncrementCount(
             event.getUserChallenges()
                 .stream()
@@ -56,10 +66,39 @@ public class ChallengeEventsListener {
         );
     }
 
-    public void simpleCountFinisher(OnRaise event) {
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void simpleCountChallengeFinisher(OnEvolution event) {
+        userChallengeRepository.bulkUpdateCompletedChallenges(
+            event.getUserChallenges()
+                .stream()
+                .map(UserChallenge::getUserChallengeId)
+                .toList()
+        );
 
+        // 동일 challenge 에 해당하는, 다음 스테이지의 객체를 일괄 발급해야함
+        // 동시 달성시 각각의 event 가 일일히 조회를 하면서 도는 것보다는 스레드에 나눠주는게
+        event.getUserChallenges().forEach(eventsPublisher::simpleChallengeIssue);
     }
 
+    @TransactionalEventListener
+    public void simpleCountChallengeIssuer(OnIssue issue) {
+        UserChallenge userChallenge = issue.getUserChallenge();
+        ChallengeStage challengeStage = userChallenge.getChallengeStage();
+
+        Optional<ChallengeStage> optionalNextStage =
+            stageRepository.findByChallengeIdAndStageIsGreaterThan(
+                challengeStage.getChallengeId(), challengeStage.getStageNumber()
+            );
+
+        if(optionalNextStage.isEmpty()) return;
+        ChallengeStage nextStage = optionalNextStage.get();
+
+        UserChallenge newUserChallenge = new UserChallenge(
+            userChallenge, nextStage
+        );
+
+        userChallengeRepository.save(newUserChallenge);
+    }
 
 //    @Async
 //    @Transactional

@@ -74,8 +74,9 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
         queryFactory
             .update(userChallengeEntity)
+            .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
             .set(userChallengeEntity.completedDate, LocalDateTime.now())
-            .set(userChallengeEntity.nftCompleted, true)
+            .set(userChallengeEntity.nftCompleted, false)
             .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
             .execute();
 
@@ -261,7 +262,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public Optional<UserChallenge> findBySimpleRepetitiveChallenge(String userId
+    public Optional<UserChallenge> findFirstBySimpleRepetitiveChallenge(String userId
     ) {
         return Optional.ofNullable(
             queryFactory
