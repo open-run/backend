@@ -1,30 +1,36 @@
 package io.openur.domain.user.service.login;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.SmartWalletUserInfoDto;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
 import io.openur.global.common.validation.ValidEthereumAddress;
 import io.openur.global.jwt.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j(topic = "Smart Wallet Login")
 @Service
+@RequiredArgsConstructor
 public class SmartWalletService extends LoginService {
     private final JwtUtil jwtUtil;
     private final UserRepositoryImpl userRepository;
+    private final ChallengeEventsPublisher eventsPublisher;
 
     public SmartWalletService(
         RestTemplate restTemplate,
         JwtUtil jwtUtil,
-        UserRepositoryImpl userRepository
+        UserRepositoryImpl userRepository,
+        ChallengeEventsPublisher eventsPublisher
     ) {
         super(restTemplate);
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.eventsPublisher = eventsPublisher;
     }
 
     @Override
@@ -59,6 +65,9 @@ public class SmartWalletService extends LoginService {
         if (user == null) {
             // 없으면 회원가입
             User newUser = new User(blockchainAddress);
+
+            eventsPublisher.newUserRegistration(newUser);
+
             return userRepository.save(newUser);
         } else {
             return user;

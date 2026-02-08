@@ -48,6 +48,32 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             userChallengeJpaRepository.save(userChallenge.toEntity()));
     }
 
+    @Transactional
+    @Override
+    public void bulkInsertUserChallenges(List<UserChallenge> userChallenges) {
+        int count = 0;
+        int batchSize = 100;
+
+        for (UserChallenge userChallenge : userChallenges) {
+            // Domain → Entity 변환
+            UserChallengeEntity entity = userChallenge.toEntity();
+
+            // 1. 영속성 컨텍스트에 추가
+            entityManager.persist(entity);
+            count++;
+
+            // 2. BATCH_SIZE마다 flush & clear
+            if (count % batchSize == 0) {
+                entityManager.flush();  // DB에 쓰기
+                entityManager.clear();  // 영속성 컨텍스트 비우기 (메모리 해제)
+            }
+        }
+
+        // 3. 남은 데이터 flush
+        entityManager.flush();
+        entityManager.clear();
+    }
+
     @Override
     @Transactional
     public void bulkIncrementCount(List<Long> userChallengeIds) {

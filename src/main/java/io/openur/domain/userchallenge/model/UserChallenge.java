@@ -34,6 +34,15 @@ public class UserChallenge {
         this.currentProgress = (float) (this.currentCount / nextStage.getConditionAsCount());
     }
 
+    public UserChallenge(User user, ChallengeStage stage) {
+        this.user = user;
+        this.challengeStage = stage;
+        this.completedDate = null;
+        this.nftCompleted = false;
+        this.currentCount = 0;
+        this.currentProgress = 0.0f;
+    }
+
     public static UserChallenge from(final UserChallengeEntity userChallengeEntity) {
         return new UserChallenge(
             userChallengeEntity.getUserChallengeId(),

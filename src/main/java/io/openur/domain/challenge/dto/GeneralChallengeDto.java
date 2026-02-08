@@ -4,6 +4,7 @@ import io.openur.domain.challenge.enums.ChallengeType;
 import io.openur.domain.challenge.enums.CompletedType;
 import io.openur.domain.challenge.model.Challenge;
 import io.openur.domain.challenge.model.ChallengeStage;
+import io.openur.domain.user.model.User;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,6 +73,12 @@ public class GeneralChallengeDto {
     @RequiredArgsConstructor
     public static class OnIssue {
         private final UserChallenge userChallenge;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class OnUserRegistration {
+        private final User user;
     }
 
     @Getter

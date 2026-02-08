@@ -6,10 +6,14 @@ import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface UserChallengeRepository {
 
     UserChallenge save(UserChallenge userChallenge);
+
+    @Transactional
+    void bulkInsertUserChallenges(List<UserChallenge> userChallenges);
 
     /**
      * Increments the currentCount for challenges of type COUNT
