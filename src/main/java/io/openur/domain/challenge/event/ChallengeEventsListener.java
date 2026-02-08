@@ -3,13 +3,19 @@ package io.openur.domain.challenge.event;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnEvolution;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnIssue;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnRaise;
+import io.openur.domain.challenge.dto.GeneralChallengeDto.OnUserRegistration;
 import io.openur.domain.challenge.model.ChallengeStage;
 import io.openur.domain.challenge.repository.ChallengeStageRepository;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -80,7 +86,7 @@ public class ChallengeEventsListener {
         event.getUserChallenges().forEach(eventsPublisher::simpleChallengeIssue);
     }
 
-    @TransactionalEventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void simpleCountChallengeIssuer(OnIssue issue) {
         UserChallenge userChallenge = issue.getUserChallenge();
         ChallengeStage challengeStage = userChallenge.getChallengeStage();
@@ -98,6 +104,28 @@ public class ChallengeEventsListener {
         );
 
         userChallengeRepository.save(newUserChallenge);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNewUserRegistration(OnUserRegistration userRegistration) {
+        Pageable pageable = PageRequest.of(0, 100);
+
+        Page<ChallengeStage> challengeStages;
+        List<UserChallenge> newUserChallenges = new ArrayList<>();
+
+        do {
+            challengeStages = stageRepository.findAllByMinimumStages(pageable);
+
+            challengeStages.forEach(
+                stage -> newUserChallenges.add(
+                    new UserChallenge(userRegistration.getUser(), stage)
+                )
+            );
+
+            pageable = pageable.next();
+        } while (challengeStages.hasNext());
+
+        userChallengeRepository.bulkInsertUserChallenges(newUserChallenges);
     }
 
 //    @Async

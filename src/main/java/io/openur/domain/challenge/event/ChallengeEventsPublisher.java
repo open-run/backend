@@ -1,9 +1,12 @@
 package io.openur.domain.challenge.event;
 
 import io.openur.domain.bung.model.Bung;
+import io.openur.domain.challenge.dto.GeneralChallengeDto;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnEvolution;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnIssue;
 import io.openur.domain.challenge.dto.GeneralChallengeDto.OnRaise;
+import io.openur.domain.challenge.dto.GeneralChallengeDto.OnUserRegistration;
+import io.openur.domain.user.model.User;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.List;
@@ -69,7 +72,6 @@ public class ChallengeEventsPublisher {
 //    }
     public void bungIsCompleted(Bung bung, String userId) {
         simpleChallengeCheck(userId);
-
     }
 
     public void simpleChallengeCheck(String userId) {
@@ -91,5 +93,9 @@ public class ChallengeEventsPublisher {
 
     public void simpleChallengeIssue(UserChallenge userChallenge) {
         publisher.publishEvent(new OnIssue(userChallenge));
+    }
+
+    public void newUserRegistration(User user) {
+        publisher.publishEvent(new OnUserRegistration(user));
     }
 }
