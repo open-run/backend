@@ -66,7 +66,7 @@ public class SmartWalletService extends LoginService {
             // 없으면 회원가입
             User newUser = new User(blockchainAddress);
 
-            eventsPublisher.newUserRegistration(newUser);
+            eventsPublisher.publishUserRegistration(newUser);
 
             return userRepository.save(newUser);
         } else {
