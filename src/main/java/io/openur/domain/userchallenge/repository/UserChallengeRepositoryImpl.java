@@ -232,11 +232,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         String userId,
         Long challengeId
     ) {
-        // 1. 입력 검증
-        if (!StringUtils.hasText(userId) || challengeId == null) {
-            return Collections.emptyMap();
-        }
-
         // 2. fetchJoin으로 N+1 문제 해결
         List<UserChallengeEntity> entities = queryFactory
             .selectFrom(userChallengeEntity)
@@ -256,13 +251,12 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             return Collections.emptyMap();
         }
 
-        // 4. Map 변환 (중복 키 처리)
+        // 4. Map 변환
         return entities.stream()
             .map(UserChallenge::from)
             .collect(Collectors.toMap(
                 userChallenge -> userChallenge.getChallengeStage().getStageId(),
-                Function.identity(),
-                (existing, replacement) -> existing // ✅ 중복 키 발생 시 기존 값 유지
+                Function.identity()
             ));
     }
 

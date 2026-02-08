@@ -86,12 +86,12 @@ public class ChallengeController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable Long challengeId
     ) {
-        RepetitiveChallengeTreeDto challenges = challengeService
+        RepetitiveChallengeTreeDto challenge = challengeService
             .getRepetitiveChallengeDetail(userDetails, challengeId);
 
         return ResponseEntity.ok(
             Response.builder()
-                .data(challenges)
+                .data(challenge)
                 .message("success")
                 .build()
         );

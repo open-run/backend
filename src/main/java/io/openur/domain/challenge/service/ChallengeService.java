@@ -60,9 +60,11 @@ public class ChallengeService {
     public RepetitiveChallengeTreeDto getRepetitiveChallengeDetail(
         UserDetailsImpl userDetails, Long challengeId
     ) {
-        Map<Long, UserChallenge> userChallengeMap = userChallengeRepository.
-            findRepetitiveUserChallengesMappedByStageId(
-                userDetails.getUser().getUserId(), challengeId
+        User user = userRepository.findUser(userDetails.getUser());
+
+        Map<Long, UserChallenge> userChallengeMap = userChallengeRepository
+            .findRepetitiveUserChallengesMappedByStageId(
+                user.getUserId(), challengeId
             );
 
         if(userChallengeMap.isEmpty())

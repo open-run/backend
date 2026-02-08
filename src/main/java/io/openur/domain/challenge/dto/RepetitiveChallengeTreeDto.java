@@ -1,7 +1,9 @@
 package io.openur.domain.challenge.dto;
 
+import io.openur.domain.challenge.model.Challenge;
 import io.openur.domain.challenge.model.ChallengeStage;
 import io.openur.domain.userchallenge.model.UserChallenge;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -20,25 +22,35 @@ public class RepetitiveChallengeTreeDto {
     public RepetitiveChallengeTreeDto(
         Map<Long, UserChallenge> userChallengeMap, List<ChallengeStage> challengeStages
     ) {
-        ChallengeStage firstStage = challengeStages.get(0);
-        int accumulatedCount = 0;
-        for (ChallengeStage challengeStage : challengeStages) {
-            if(userChallengeMap.get(challengeStage.getStageId()).getCompletedDate() == null)
+        Challenge challenge = challengeStages.get(0).getChallenge();
+        int previousCompletedCount = 0;
+        UserChallenge currentChallenge = null;
+
+        for (ChallengeStage stage : challengeStages) {
+            UserChallenge uc = userChallengeMap.get(stage.getStageId());
+            
+            if(uc == null) continue;
+            
+            if(uc.getCompletedDate() == null) {
+                currentChallenge = uc;
                 break;
-            accumulatedCount = challengeStage.getConditionAsCount();
+            }
+            
+            previousCompletedCount = uc.getCurrentCount();
         }
 
-        final int finalAccumulatedCount = accumulatedCount;
-        this.challengeTrees = challengeStages.stream().map(stage ->
-            new RepetitiveChallengeDto(
-                stage, userChallengeMap.get(stage.getStageId()),
-                finalAccumulatedCount
-            )
-        ).toList();
+        final int prevCount = previousCompletedCount;
+        final int currCount = currentChallenge != null ? currentChallenge.getCurrentCount() : 0;
 
-        // 공통 옵션
-        this.challengeId = firstStage.getChallenge().getChallengeId();
-        this.challengeName = firstStage.getChallenge().getChallengeName();
-        this.challengeDescription = firstStage.getChallenge().getChallengeDescription();
+        UserChallenge finalCurrentChallenge = currentChallenge;
+        this.challengeTrees = challengeStages.stream().map(stage -> {
+            UserChallenge uc = userChallengeMap.get(stage.getStageId());
+            int accumulated = (uc == finalCurrentChallenge) ? prevCount : prevCount + currCount;
+            return new RepetitiveChallengeDto(stage, uc, accumulated);
+        }).toList();
+
+        this.challengeId = challenge.getChallengeId();
+        this.challengeName = challenge.getChallengeName();
+        this.challengeDescription = challenge.getChallengeDescription();
     }
 }
