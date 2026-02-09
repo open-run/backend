@@ -31,7 +31,7 @@ public class UserChallenge {
         this.completedDate = null;
         this.nftCompleted = false;
         this.currentCount = prevChallenge.getCurrentCount();
-        this.currentProgress = (float) (this.currentCount / nextStage.getConditionAsCount());
+        this.currentProgress = (float) this.currentCount / nextStage.getConditionAsCount();
     }
 
     public UserChallenge(User user, ChallengeStage stage) {
