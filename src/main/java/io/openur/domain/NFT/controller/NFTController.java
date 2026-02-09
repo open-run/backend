@@ -4,8 +4,8 @@ import io.openur.domain.NFT.service.NFTService;
 import io.openur.domain.NFT.dto.NFTMetadataDto;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
-import io.openur.global.common.PagedResponse;
-import io.openur.global.common.Response;
+import io.openur.global.dto.PagedResponse;
+import io.openur.global.dto.Response;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

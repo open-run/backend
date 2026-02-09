@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
-import io.openur.global.common.Response;
+import io.openur.global.dto.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
