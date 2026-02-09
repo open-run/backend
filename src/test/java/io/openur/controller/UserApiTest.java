@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.domain.user.dto.GetUserResponseDto;
-import io.openur.global.common.Response;
+import io.openur.global.dto.Response;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

@@ -1,7 +1,7 @@
 package io.openur.domain.hashtag.controller;
 
 import io.openur.domain.hashtag.service.HashtagService;
-import io.openur.global.common.Response;
+import io.openur.global.dto.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

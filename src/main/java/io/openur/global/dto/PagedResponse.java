@@ -1,4 +1,4 @@
-package io.openur.global.common;
+package io.openur.global.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

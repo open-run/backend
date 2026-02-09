@@ -1,7 +1,7 @@
 package io.openur.domain.userbung.controller;
 
 import io.openur.domain.userbung.service.UserBungService;
-import io.openur.global.common.Response;
+import io.openur.global.dto.Response;
 import io.openur.global.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
