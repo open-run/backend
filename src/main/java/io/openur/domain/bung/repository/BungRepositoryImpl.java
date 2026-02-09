@@ -19,6 +19,7 @@ import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,6 +47,7 @@ public class BungRepositoryImpl implements BungRepository {
 
     private final JPAQueryFactory queryFactory;
     private final BungJpaRepository bungJpaRepository;
+    private final EntityManager entityManager;
 
     @Override
     public Page<BungInfoWithMemberListDto> findBungs(
@@ -190,8 +192,60 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     @Override
+    @Transactional
+    public void setAsFaded(List<Bung> bungs) {
+        if(bungs.isEmpty()) {
+            return;
+        }
+
+        for (Bung bung : bungs) {
+            bung.fadeBung();
+            BungEntity entity = bung.toEntity(Collections.emptyList());
+
+            entityManager.merge(entity);
+        }
+
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Override
     public Bung save(Bung bung, List<BungHashtag> bungHashtags) {
         return Bung.from(bungJpaRepository.save(bung.toEntity(bungHashtags)));
+    }
+
+    @Override
+    public Page<Bung> findBungsPastStartWithSingleParticipant(Pageable pageable) {
+        LocalDateTime now = LocalDateTime.now();
+
+        BooleanExpression dateCondition = bungEntity.startDateTime.loe(now);
+        BooleanExpression notFaded = bungEntity.faded.isFalse();
+
+        List<Bung> contents = queryFactory
+            .select(bungEntity)
+            .from(bungEntity)
+            .leftJoin(userBungEntity).on(userBungEntity.bungEntity.eq(bungEntity))
+            .where(dateCondition, notFaded)
+            .groupBy(bungEntity.bungId)
+            .having(userBungEntity.count().loe(1L))
+            .orderBy(bungEntity.startDateTime.asc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch()
+            .stream().map(Bung::from).toList();
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(bungEntity.countDistinct())
+            .from(bungEntity)
+            .leftJoin(userBungEntity).on(userBungEntity.bungEntity.eq(bungEntity))
+            .where(dateCondition, notFaded)
+            .groupBy(bungEntity.bungId)
+            .having(userBungEntity.count().loe(1L));
+
+        return PageableExecutionUtils.getPage(contents, pageable, () -> {
+            List<Long> counts = countQuery.fetch();
+            return counts != null ? counts.size() : 0L;
+        });
     }
 
     @Override

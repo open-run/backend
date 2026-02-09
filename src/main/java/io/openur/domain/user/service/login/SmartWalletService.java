@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j(topic = "Smart Wallet Login")
 @Service
-@RequiredArgsConstructor
 public class SmartWalletService extends LoginService {
     private final JwtUtil jwtUtil;
     private final UserRepositoryImpl userRepository;

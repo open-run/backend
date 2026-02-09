@@ -39,6 +39,7 @@ public class Bung {
     private Boolean hasAfterRun;
     private String afterRunDescription;
     private boolean isCompleted;
+    private boolean isFaded;
     private List<String> hashtags;
 
     public Bung(CreateBungDto dto) {
@@ -57,6 +58,8 @@ public class Bung {
         this.hasAfterRun = dto.getHasAfterRun();
         this.afterRunDescription = dto.getAfterRunDescription();
         this.mainImage = dto.getMainImage();
+        this.isCompleted = false;
+        this.isFaded = false;
     }
 
     public Bung(BungInfoDto dto) {
@@ -104,6 +107,7 @@ public class Bung {
             .hasAfterRun(bungEntity.getHasAfterRun())
             .afterRunDescription(bungEntity.getAfterRunDescription())
             .isCompleted(bungEntity.isCompleted())
+            .isFaded(bungEntity.isFaded())
             .mainImage(bungEntity.getMainImage())
             .hashtags(
                 bungEntity.getBungHashtags().stream()
@@ -131,6 +135,7 @@ public class Bung {
             .hasAfterRun(hasAfterRun)
             .afterRunDescription(afterRunDescription)
             .completed(isCompleted)
+            .faded(isFaded)
             .mainImage(mainImage)
             .bungHashtags(bungHashtags.stream().map(BungHashtag::toEntity).toList())
             .build();
@@ -139,4 +144,6 @@ public class Bung {
     public void completeBung() {
         this.isCompleted = true;
     }
+
+    public void fadeBung() { this.isFaded = true;}
 }
