@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -23,6 +24,7 @@ public class ChallengeEventsListener {
     private final ChallengeStageRepository stageRepository;
     private final ChallengeEventsPublisher eventsPublisher;
 
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeRaise(OnRaise event) {
         userChallengeRepository.bulkIncrementCount(
@@ -32,6 +34,7 @@ public class ChallengeEventsListener {
         );
     }
 
+    @Async
     @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeEvolution(OnEvolution event) {
