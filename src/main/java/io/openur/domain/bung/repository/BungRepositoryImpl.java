@@ -19,7 +19,7 @@ import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.entity.UserBungEntity;
-import jakarta.persistence.EntityManager;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,7 +47,6 @@ public class BungRepositoryImpl implements BungRepository {
 
     private final JPAQueryFactory queryFactory;
     private final BungJpaRepository bungJpaRepository;
-    private final EntityManager entityManager;
 
     @Override
     public Page<BungInfoWithMemberListDto> findBungs(
@@ -73,14 +72,13 @@ public class BungRepositoryImpl implements BungRepository {
         // 배치 조회 및 DTO 변환
         List<BungInfoWithMemberListDto> contents = fetchBungInfoWithMembers(bungIds);
 
-        // 카운트 쿼리 (최적화된 조건 사용)
-        long totalCount = queryFactory
+        // 카운트 쿼리 (lazy 평가 - 마지막 페이지가 아닐 때만 실행)
+        JPAQuery<Long> countQuery = queryFactory
             .select(bungEntity.countDistinct())
             .from(bungEntity)
-            .where(isAvailable(joinedBungIds))
-            .fetchOne();
+            .where(isAvailable(joinedBungIds));
 
-        return new PageImpl<>(contents, pageable, totalCount);
+        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
 
     @Override
@@ -93,11 +91,12 @@ public class BungRepositoryImpl implements BungRepository {
         // 2. 공통 조건 추출
         BooleanExpression locationCondition = bungEntity.location.containsIgnoreCase(keyword);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+        BooleanExpression notFadedCondition = bungEntity.faded.isFalse();
 
         // 3. Content 쿼리 - 필요시 fetchJoin 추가 가능
         List<BungEntity> bungs = queryFactory
             .selectFrom(bungEntity)
-            .where(locationCondition, dateCondition)
+            .where(locationCondition, dateCondition, notFadedCondition)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -113,7 +112,7 @@ public class BungRepositoryImpl implements BungRepository {
         JPAQuery<Long> countQuery = queryFactory
             .select(bungEntity.count())
             .from(bungEntity)
-            .where(locationCondition, dateCondition);
+            .where(locationCondition, dateCondition, notFadedCondition);
 
         return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
@@ -123,6 +122,7 @@ public class BungRepositoryImpl implements BungRepository {
         // 공통 조건
         BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.equalsIgnoreCase(hashTag);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+        BooleanExpression notFadedCondition = bungEntity.faded.isFalse();
 
         // 1. 먼저 정확한 총 개수 조회 (DISTINCT 기준)
         long total = queryFactory
@@ -130,7 +130,7 @@ public class BungRepositoryImpl implements BungRepository {
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
-            .where(hashtagCondition, dateCondition)
+            .where(hashtagCondition, dateCondition, notFadedCondition)
             .fetchOne();
 
         if (total == 0) {
@@ -143,7 +143,7 @@ public class BungRepositoryImpl implements BungRepository {
             .from(bungHashtagEntity)
             .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
             .join(bungHashtagEntity.bungEntity, bungEntity)
-            .where(hashtagCondition, dateCondition)
+            .where(hashtagCondition, dateCondition, notFadedCondition)
             .groupBy(bungEntity.bungId)           // ← GROUP BY로 중복 제거 (DISTINCT보다 효율적)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
@@ -198,15 +198,15 @@ public class BungRepositoryImpl implements BungRepository {
             return;
         }
 
-        for (Bung bung : bungs) {
-            bung.fadeBung();
-            BungEntity entity = bung.toEntity(Collections.emptyList());
+        List<String> bungIds = bungs.stream()
+            .map(Bung::getBungId)
+            .toList();
 
-            entityManager.merge(entity);
-        }
-
-        entityManager.flush();
-        entityManager.clear();
+        queryFactory
+            .update(bungEntity)
+            .set(bungEntity.faded, true)
+            .where(bungEntity.bungId.in(bungIds))
+            .execute();
     }
 
     @Override
@@ -220,12 +220,13 @@ public class BungRepositoryImpl implements BungRepository {
 
         BooleanExpression dateCondition = bungEntity.startDateTime.loe(now);
         BooleanExpression notFaded = bungEntity.faded.isFalse();
+        BooleanExpression notCompleted = bungEntity.completed.isFalse();
 
         List<Bung> contents = queryFactory
             .select(bungEntity)
             .from(bungEntity)
             .leftJoin(userBungEntity).on(userBungEntity.bungEntity.eq(bungEntity))
-            .where(dateCondition, notFaded)
+            .where(dateCondition, notFaded, notCompleted)
             .groupBy(bungEntity.bungId)
             .having(userBungEntity.count().loe(1L))
             .orderBy(bungEntity.startDateTime.asc())
@@ -238,7 +239,7 @@ public class BungRepositoryImpl implements BungRepository {
             .select(bungEntity.countDistinct())
             .from(bungEntity)
             .leftJoin(userBungEntity).on(userBungEntity.bungEntity.eq(bungEntity))
-            .where(dateCondition, notFaded)
+            .where(dateCondition, notFaded, notCompleted)
             .groupBy(bungEntity.bungId)
             .having(userBungEntity.count().loe(1L));
 
@@ -250,8 +251,14 @@ public class BungRepositoryImpl implements BungRepository {
 
     @Override
     public Boolean isBungStarted(String bungId) {
-        Bung bung = this.findBungById(bungId);
-        return bung.getStartDateTime().isBefore(LocalDateTime.now());
+        return queryFactory
+            .selectOne()
+            .from(bungEntity)
+            .where(
+                bungEntity.bungId.eq(bungId),
+                bungEntity.startDateTime.loe(LocalDateTime.now())
+            )
+            .fetchFirst() != null;
     }
 
     private Set<String> getJoinedBungIds(User user) {
@@ -265,7 +272,9 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     private BooleanExpression isAvailable(Set<String> joinedBungIds) {
-        BooleanExpression baseCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+        BooleanExpression baseCondition = bungEntity
+            .startDateTime.gt(LocalDateTime.now())
+            .and(bungEntity.faded.isFalse());
 
         if (joinedBungIds.isEmpty()) {
             return baseCondition;
