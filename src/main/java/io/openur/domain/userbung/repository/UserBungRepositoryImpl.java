@@ -84,13 +84,14 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
         BooleanExpression nicknameCondition = userBungEntity.userEntity.nickname.equalsIgnoreCase(nickname);
         BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
+        BooleanExpression notFadedCondition = bungEntity.faded.isFalse();
 
         // 1. 먼저 DISTINCT된 전체 개수 조회
         long total = queryFactory
             .select(userBungEntity.bungEntity.bungId.countDistinct())
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
-            .where(nicknameCondition, dateCondition)
+            .where(nicknameCondition, dateCondition, notFadedCondition)
             .fetchOne();
 
         if (total == 0) {
@@ -102,7 +103,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .select(bungEntity)
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
-            .where(nicknameCondition, dateCondition)
+            .where(nicknameCondition, dateCondition, notFadedCondition)
             .groupBy(bungEntity.bungId)  // GROUP BY로 중복 제거 (성능 최적화)
             .orderBy(bungEntity.startDateTime.asc())
             .offset(pageable.getOffset())
