@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -24,7 +25,7 @@ public class ChallengeEventsListener {
     private final ChallengeStageRepository stageRepository;
     private final ChallengeEventsPublisher eventsPublisher;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeRaise(OnRaise event) {
         userChallengeRepository.bulkIncrementCount(
@@ -35,7 +36,7 @@ public class ChallengeEventsListener {
     }
 
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeEvolution(OnEvolution event) {
         userChallengeRepository.bulkUpdateCompletedChallenges(
@@ -47,7 +48,7 @@ public class ChallengeEventsListener {
         event.getUserChallenges().forEach(eventsPublisher::publishChallengeIssue);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeIssue(OnIssue issue) {
         UserChallenge userChallenge = issue.getUserChallenge();
@@ -65,7 +66,7 @@ public class ChallengeEventsListener {
         );
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserRegistration(OnUserRegistration event) {
         Pageable pageable = PageRequest.of(0, 100);
