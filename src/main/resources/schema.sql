@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS tb_bungs
     has_after_run         BOOLEAN       DEFAULT FALSE,
     after_run_description VARCHAR(4096) DEFAULT NULL,
     is_completed          BOOLEAN       DEFAULT FALSE                NOT NULL,
+    is_faded              BOOLEAN       DEFAULT FALSE                NOT NULL,
     main_image            VARCHAR(255)  DEFAULT NULL
 );
 
