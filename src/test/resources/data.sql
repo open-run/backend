@@ -14,15 +14,15 @@ VALUES ('9e1bfc60-f76a-47dc-9147-803653707192', 'test', FALSE, 'smart_wallet', F
 ;
 
 INSERT INTO tb_bungs (bung_id, name, description, location, latitude, longitude, start_datetime, end_datetime, distance, pace, member_number, current_member_number,
-                      has_after_run, after_run_description, is_completed, main_image)
+                      has_after_run, after_run_description, is_completed, is_faded, main_image)
 VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'temp_description', 'Seoul', 37.5665, 126.9780,
-        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, 2, false, null, false, 'image1.png'),
+        CURRENT_TIMESTAMP + 1, CURRENT_TIMESTAMP + 2, 3, '5"55', 2, 2, false, null, false, false, 'image1.png'),
        ('90477004-1422-4551-acce-04584b34612e', 'test2_bung', 'second_bung_data', 'Bangkok', 13.7563, 100.5018,
-        CURRENT_TIMESTAMP + 3, CURRENT_TIMESTAMP + 4, 1, '6"30', 2, 1, true, 'chicken & beer', false, 'image2.png'),
+        CURRENT_TIMESTAMP + 3, CURRENT_TIMESTAMP + 4, 1, '6"30', 2, 1, true, 'chicken & beer', false, false, 'image2.png'),
        ('a1234567-89ab-cdef-0123-456789abcdef', 'past_bung_incompleted', 'past_bung_description', 'New York', 40.7128, -74.0060,
-        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, 2, false, null, false, 'image3.png'),
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, 2, false, null, false, false, 'image3.png'),
        ('a1234567-89ab-cdef-0123-1982ey1kbjas', 'past_bung_completed', 'past_bung_description', 'New York', 40.7128, -74.0060,
-        CURRENT_TIMESTAMP - 4, CURRENT_TIMESTAMP - 3, 5, '7"00', 3, 3, false, null, true, 'image4.png')
+        CURRENT_TIMESTAMP - 4, CURRENT_TIMESTAMP - 3, 5, '7"00', 3, 3, false, null, true, false, 'image4.png')
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
