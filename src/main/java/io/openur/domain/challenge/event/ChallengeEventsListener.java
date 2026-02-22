@@ -6,7 +6,6 @@ import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +22,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class ChallengeEventsListener {
     private final UserChallengeRepository userChallengeRepository;
     private final ChallengeStageRepository stageRepository;
-    private final ChallengeEventsPublisher eventsPublisher;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -45,27 +43,17 @@ public class ChallengeEventsListener {
                 .toList()
         );
 
-        event.getUserChallenges().forEach(eventsPublisher::publishChallengeIssue);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleChallengeIssue(OnIssue issue) {
-        UserChallenge userChallenge = issue.getUserChallenge();
-        ChallengeStage challengeStage = userChallenge.getChallengeStage();
-
-        Optional<ChallengeStage> optionalNextStage = stageRepository
-            .findByChallengeIdAndStageIsGreaterThan(
-                challengeStage.getChallengeId(), challengeStage.getStageNumber()
+        event.getUserChallenges().forEach(userChallenge -> {
+            ChallengeStage currentStage = userChallenge.getChallengeStage();
+            stageRepository.findByChallengeIdAndStageIsGreaterThan(
+                currentStage.getChallengeId(), currentStage.getStageNumber()
+            ).ifPresent(nextStage ->
+                userChallengeRepository.save(new UserChallenge(userChallenge, nextStage))
             );
-
-        if(optionalNextStage.isEmpty()) return;
-
-        userChallengeRepository.save(
-            new UserChallenge(userChallenge, optionalNextStage.get())
-        );
+        });
     }
 
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserRegistration(OnUserRegistration event) {

@@ -11,6 +11,7 @@ import io.openur.global.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j(topic = "Smart Wallet Login")
@@ -57,6 +58,7 @@ public class SmartWalletService extends LoginService {
         }
     }
 
+    @Transactional
     protected User registerUserIfNew(SmartWalletUserInfoDto smartWalletUserInfoDto) {
         // DB 에 중복된 블록체인 주소의 유저가 있는지 확인
         String blockchainAddress = smartWalletUserInfoDto.getBlockchainAddress();
