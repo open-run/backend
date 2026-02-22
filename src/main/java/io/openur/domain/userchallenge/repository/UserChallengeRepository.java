@@ -45,5 +45,7 @@ public interface UserChallengeRepository {
 
     Optional<UserChallenge> findFirstBySimpleRepetitiveChallenge(String userId);
 
+    List<UserChallenge> findAllBySimpleRepetitiveChallenge(String userId);
+
     void delete(UserChallenge userChallenge);
 } 

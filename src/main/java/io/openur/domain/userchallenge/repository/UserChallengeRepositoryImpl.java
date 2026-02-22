@@ -307,6 +307,25 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
+    public List<UserChallenge> findAllBySimpleRepetitiveChallenge(String userId) {
+        return queryFactory
+            .selectFrom(userChallengeEntity)
+            .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .join(challengeStageEntity.challengeEntity, challengeEntity)
+            .where(
+                userChallengeEntity.userEntity.userId.eq(userId),
+                userChallengeEntity.completedDate.isNull(),
+                challengeEntity.conditionAsDate.isNull(),
+                challengeEntity.conditionAsText.isNull()
+            )
+            .orderBy(challengeStageEntity.stageNumber.asc())
+            .fetch()
+            .stream()
+            .map(UserChallenge::from)
+            .toList();
+    }
+
+    @Override
     public void delete(UserChallenge userChallenge) {
         userChallengeJpaRepository.delete(userChallenge.toEntity());
     }
