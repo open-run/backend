@@ -113,6 +113,7 @@ public class Bung {
                 bungEntity.getBungHashtags().stream()
                 .map(BungHashtagEntity::getHashtagEntity)
                 .map(HashtagEntity::getHashtagStr)
+                .distinct()
                 .toList()
             )
             .build();
