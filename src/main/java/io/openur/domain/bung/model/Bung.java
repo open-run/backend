@@ -10,8 +10,10 @@ import io.openur.domain.bunghashtag.entity.BungHashtagEntity;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.hashtag.entity.HashtagEntity;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -111,10 +113,10 @@ public class Bung {
             .mainImage(bungEntity.getMainImage())
             .hashtags(
                 bungEntity.getBungHashtags().stream()
-                .map(BungHashtagEntity::getHashtagEntity)
-                .map(HashtagEntity::getHashtagStr)
-                .distinct()
-                .toList()
+                    .map(BungHashtagEntity::getHashtagEntity)
+                    .map(HashtagEntity::getHashtagStr)
+                    .collect(Collectors.toCollection(LinkedHashSet::new))
+                    .stream().toList()
             )
             .build();
     }

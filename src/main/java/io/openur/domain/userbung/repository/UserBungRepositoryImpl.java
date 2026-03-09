@@ -63,6 +63,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .join(userBungEntity.userEntity).fetchJoin()
             .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
             .where(userBungEntity.bungEntity.bungId.eq(bungId))
+            .distinct()
             .fetch();
 
         if (members.isEmpty()) {

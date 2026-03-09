@@ -10,13 +10,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "tb_bungs_hashtags")
+@Table(
+    name = "tb_bungs_hashtags",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"bung_id", "hashtag_id"})
+)
 @NoArgsConstructor
 @AllArgsConstructor
 public class BungHashtagEntity {

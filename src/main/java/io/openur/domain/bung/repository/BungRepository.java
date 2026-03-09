@@ -28,7 +28,11 @@ public interface BungRepository {
     void setAsFaded(List<Bung> bungs);
     
     Bung save(Bung bung, List<BungHashtag> hashtags);
-    
+
+    void updateBung(Bung bung);
+
+    void setAsCompleted(String bungId);
+
     Boolean isBungStarted(String bungId);
 
     Page<Bung> findBungsPastStartWithSingleParticipant(Pageable pageable);
