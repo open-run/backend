@@ -31,7 +31,7 @@ public class Hashtag {
         return new Hashtag(
             hashtagEntity.getHashtagId(),
             hashtagEntity.getHashtagStr(),
-            hashtagEntity.getBungHashtags()
+            null // bungHashtags는 역방향 참조 — Hashtag 모델 내에서 사용되지 않으므로 lazy loading 방지
         );
     }
 

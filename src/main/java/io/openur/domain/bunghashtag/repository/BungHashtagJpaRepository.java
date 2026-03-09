@@ -22,8 +22,9 @@ public interface BungHashtagJpaRepository extends JpaRepository<BungHashtagEntit
     
     @Modifying
     @Transactional
+    @Query("DELETE FROM BungHashtagEntity bhe WHERE bhe.bungEntity.bungId = :bungId AND bhe.hashtagEntity.hashtagStr NOT IN :hashtagStrs")
     void deleteAllByBungEntity_BungIdAndHashtagEntity_HashtagStrNotIn(
-        String bungEntityBungId,
-        Set<String> hashtagEntityHashtagStr
+        @Param("bungId") String bungEntityBungId,
+        @Param("hashtagStrs") Set<String> hashtagEntityHashtagStr
     );
 }
