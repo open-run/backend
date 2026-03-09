@@ -188,7 +188,7 @@ public class BungService {
 
     private void updateHashtagConnection(Bung bung, List<String> hashtagStrList) {
         // 변경 요청 해시태그가 공백인데, 원래도 공백이면 할거 없고
-        if(hashtagStrList.isEmpty()) {
+        if(hashtagStrList == null || hashtagStrList.isEmpty()) {
             if(bung.getHashtags().isEmpty()) return;
             
             bungHashtagRepository.deleteByBungId(bung.getBungId());
