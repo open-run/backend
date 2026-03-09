@@ -180,8 +180,8 @@ public class BungService {
         }
 
         bung.update(editBungDto);
-        bung = bungRepository.save(bung, Collections.emptyList());
-        
+        bungRepository.updateBung(bung);
+
         this.updateHashtagConnection(bung, editBungDto.getHashtags());
         return EditBungResultEnum.SUCCESSFULLY_EDITED;
     }
@@ -214,8 +214,7 @@ public class BungService {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED);
         }
 
-        bung.completeBung();
-        bungRepository.save(bung, Collections.emptyList());
+        bungRepository.setAsCompleted(bungId);
 
         //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
         getBungDetail(bungId).getMemberList().stream()

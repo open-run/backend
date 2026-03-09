@@ -215,6 +215,31 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     @Override
+    @Transactional
+    public void updateBung(Bung bung) {
+        queryFactory
+            .update(bungEntity)
+            .set(bungEntity.name, bung.getName())
+            .set(bungEntity.description, bung.getDescription())
+            .set(bungEntity.mainImage, bung.getMainImage())
+            .set(bungEntity.memberNumber, bung.getMemberNumber())
+            .set(bungEntity.hasAfterRun, bung.getHasAfterRun())
+            .set(bungEntity.afterRunDescription, bung.getAfterRunDescription())
+            .where(bungEntity.bungId.eq(bung.getBungId()))
+            .execute();
+    }
+
+    @Override
+    @Transactional
+    public void setAsCompleted(String bungId) {
+        queryFactory
+            .update(bungEntity)
+            .set(bungEntity.completed, true)
+            .where(bungEntity.bungId.eq(bungId))
+            .execute();
+    }
+
+    @Override
     public Page<Bung> findBungsPastStartWithSingleParticipant(Pageable pageable) {
         LocalDateTime now = LocalDateTime.now();
 

@@ -4,6 +4,7 @@ import io.openur.domain.hashtag.entity.HashtagEntity;
 import io.openur.domain.hashtag.model.Hashtag;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,22 +25,26 @@ public class HashtagRepositoryImpl implements HashtagRepository {
      * @return List<Hashtag></HashTag>
      */
     @Override
+    @Transactional
     public List<Hashtag> saveNotListedTags(List<String> hashtagStrings) {
         if(hashtagStrings.isEmpty()) return Collections.emptyList();
-        
+
+        // 호출자가 중복 문자열을 넘겨도 안전하도록 순서를 유지하며 중복 제거
+        List<String> uniqueStrings = new ArrayList<>(new LinkedHashSet<>(hashtagStrings));
+
         // 이미 DB 에 존재하는 해시태그를 가져온다, 만일 전부 존재할 경우 하기 로직을 거칠 이유가 없다
-        List<Hashtag> theExistHashtags = findByHashtagStrIn(hashtagStrings);
-        if(hashtagStrings.size() == theExistHashtags.size()) {
+        List<Hashtag> theExistHashtags = findByHashtagStrIn(uniqueStrings);
+        if(uniqueStrings.size() == theExistHashtags.size()) {
             return theExistHashtags;
         }
-        
+
         // set 으로 변환하고 contain 을 사용하는 것으로 간단하게 O(1) 필터가 가능하다
-        Set<String> theExistStrings =  theExistHashtags.stream()
+        Set<String> theExistStrings = theExistHashtags.stream()
             .map(Hashtag::getHashtagStr)
             .collect(Collectors.toSet());
-        
+
         // 등록된 해시태그를 필터하고, 새 entity 로 만들어 저장하고 dto 로 매핑
-        List<HashtagEntity> toSave = hashtagStrings.stream()
+        List<HashtagEntity> toSave = uniqueStrings.stream()
             .filter(hashtag -> !theExistStrings.contains(hashtag))
             .map(Hashtag::new)
             .map(Hashtag::toEntity)
