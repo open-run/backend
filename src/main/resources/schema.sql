@@ -112,3 +112,58 @@ CREATE TABLE IF NOT EXISTS tb_bungs_hashtags
     CONSTRAINT tb_bungs_hashtags_tb_hashtags_hashtag_id_fk
         FOREIGN KEY (hashtag_id) REFERENCES tb_hashtags (hashtag_id)
 );
+
+-- tb_nfts 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_nfts
+(
+    nft_id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    name           VARCHAR(100)                            NOT NULL,
+    category       ENUM ('body_acc', 'head_acc', 'ear_acc', 'top', 'shoes', 'face', 'skin', 'pants', 'hair')
+                                                        NOT NULL,
+    rarity         ENUM ('common', 'rare', 'epic')        NOT NULL,
+    thumbnail_cid  VARCHAR(255)                           DEFAULT NULL,
+    thumbnail_file VARCHAR(255)                           DEFAULT NULL,
+    avatar_cid     VARCHAR(255)                           DEFAULT NULL,
+    avatar_file    VARCHAR(255)                           DEFAULT NULL,
+    CONSTRAINT uq_name_category UNIQUE (name, category)
+);
+
+-- tb_nft_tokens 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_nft_tokens
+(
+    token_id   VARCHAR(78)                                          PRIMARY KEY NOT NULL,
+    nft_id     INT UNSIGNED                                                      NOT NULL,
+    image_role ENUM ('thumbnail', 'avatar', 'avatar_back')                        NOT NULL,
+    CONSTRAINT uq_nft_role UNIQUE (nft_id, image_role),
+    CONSTRAINT tb_nft_tokens_tb_nfts_nft_id_fk
+        FOREIGN KEY (nft_id) REFERENCES tb_nfts (nft_id)
+);
+
+-- tb_nft_items 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_nft_items
+(
+    nft_item_id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    name                  VARCHAR(100)                               NOT NULL,
+    category              ENUM ('top', 'pants', 'shoes', 'face', 'skin', 'hair', 'head_acc', 'ear_acc', 'body_acc')
+                                                                    NOT NULL,
+    rarity                ENUM ('common', 'rare', 'epic')            NOT NULL,
+    nft_token_id          VARCHAR(78)                                DEFAULT NULL,
+    thumbnail_storage_key VARCHAR(512)                               NOT NULL,
+    thumbnail_url         VARCHAR(1024)                              DEFAULT NULL,
+    enabled               BOOLEAN                                    DEFAULT TRUE NOT NULL,
+    CONSTRAINT uq_nft_items_name_category UNIQUE (name, category)
+);
+
+-- tb_nft_item_equip_images 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_nft_item_equip_images
+(
+    nft_item_equip_image_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nft_item_id             BIGINT UNSIGNED                            NOT NULL,
+    equip_position          ENUM ('single', 'front', 'back')           NOT NULL,
+    storage_key             VARCHAR(512)                               NOT NULL,
+    image_url               VARCHAR(1024)                              DEFAULT NULL,
+    sort_order              INT                                        DEFAULT 0 NOT NULL,
+    CONSTRAINT uq_nft_item_equip_position UNIQUE (nft_item_id, equip_position),
+    CONSTRAINT tb_nft_item_equip_images_tb_nft_items_nft_item_id_fk
+        FOREIGN KEY (nft_item_id) REFERENCES tb_nft_items (nft_item_id)
+);
