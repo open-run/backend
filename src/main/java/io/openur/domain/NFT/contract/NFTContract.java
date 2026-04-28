@@ -106,6 +106,38 @@ public class NFTContract extends Contract {
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
+    public RemoteCall<List<BigInteger>> balanceOfBatch(String account, List<BigInteger> tokenIds) {
+        return balanceOfBatch(Collections.nCopies(tokenIds.size(), account), tokenIds);
+    }
+
+    public RemoteCall<List<BigInteger>> balanceOfBatch(List<String> accounts, List<BigInteger> tokenIds) {
+        if (accounts.size() != tokenIds.size()) {
+            throw new IllegalArgumentException("accounts and tokenIds must have the same size");
+        }
+
+        DynamicArray<Address> accountsArray = new DynamicArray<>(
+            Address.class,
+            accounts.stream().map(Address::new).toList()
+        );
+        DynamicArray<Uint256> tokenIdsArray = new DynamicArray<>(
+            Uint256.class,
+            tokenIds.stream().map(Uint256::new).toList()
+        );
+        final Function function = new Function(
+            "balanceOfBatch",
+            Arrays.asList(accountsArray, tokenIdsArray),
+            Arrays.asList(new TypeReference<DynamicArray<Uint256>>() {})
+        );
+
+        return new RemoteCall<>(() -> {
+            @SuppressWarnings("unchecked")
+            DynamicArray<Uint256> response = executeCallSingleValueReturn(function);
+            return response.getValue().stream()
+                .map(Uint256::getValue)
+                .toList();
+        });
+    }
+
     public RemoteCall<String> uri(BigInteger tokenId) {
         final Function function = new Function(
             "uri",

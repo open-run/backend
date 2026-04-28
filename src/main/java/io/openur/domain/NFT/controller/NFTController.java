@@ -2,11 +2,14 @@ package io.openur.domain.NFT.controller;
 
 import io.openur.domain.NFT.service.NFTService;
 import io.openur.domain.NFT.dto.NFTMetadataDto;
+import io.openur.domain.NFT.dto.NftAvatarItemDto;
+import io.openur.domain.NFT.service.NftAvatarItemService;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import io.openur.global.dto.PagedResponse;
 import io.openur.global.dto.Response;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class NFTController {
 
     private final NFTService nftService;
+    private final NftAvatarItemService nftAvatarItemService;
 
     @PostMapping("/mint")
     public ResponseEntity<Response<NFTMetadataDto>> mintNFT(
@@ -44,5 +48,18 @@ public class NFTController {
         Pageable pageable = PageRequest.of(page, limit);
         Page<NFTMetadataDto> nfts = nftService.getNFTsByUserAddress(userAddress, pageable);
         return ResponseEntity.ok().body(PagedResponse.build(nfts, "All NFTs fetched successfully"));
+    }
+
+    @GetMapping("/avatar-items/me")
+    public ResponseEntity<Response<List<NftAvatarItemDto>>> getMyNftAvatarItems(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        String userAddress = userDetails.getUser().getBlockchainAddress();
+        List<NftAvatarItemDto> avatarItems = nftAvatarItemService.getOwnedAvatarItems(userAddress);
+
+        return ResponseEntity.ok().body(Response.<List<NftAvatarItemDto>>builder()
+            .data(avatarItems)
+            .message("Owned NFT avatar items fetched successfully")
+            .build());
     }
 }
