@@ -3,6 +3,8 @@ package io.openur.domain.NFT.controller;
 import io.openur.domain.NFT.service.NFTService;
 import io.openur.domain.NFT.dto.NFTMetadataDto;
 import io.openur.domain.NFT.dto.NftAvatarItemDto;
+import io.openur.domain.NFT.dto.NftWearingAvatarDto;
+import io.openur.domain.NFT.dto.NftWearingAvatarRequestDto;
 import io.openur.domain.NFT.service.NftAvatarItemService;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +62,35 @@ public class NFTController {
         return ResponseEntity.ok().body(Response.<List<NftAvatarItemDto>>builder()
             .data(avatarItems)
             .message("Owned NFT avatar items fetched successfully")
+            .build());
+    }
+
+    @GetMapping("/avatar-items/me/wearing")
+    public ResponseEntity<Response<NftWearingAvatarDto>> getMyWearingNftAvatar(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        NftWearingAvatarDto wearingAvatar = nftAvatarItemService.getWearingAvatar(userDetails.getUser().getUserId());
+
+        return ResponseEntity.ok().body(Response.<NftWearingAvatarDto>builder()
+            .data(wearingAvatar)
+            .message("Wearing NFT avatar fetched successfully")
+            .build());
+    }
+
+    @PutMapping("/avatar-items/me/wearing")
+    public ResponseEntity<Response<NftWearingAvatarDto>> saveMyWearingNftAvatar(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestBody NftWearingAvatarRequestDto request
+    ) {
+        NftWearingAvatarDto wearingAvatar = nftAvatarItemService.saveWearingAvatar(
+            userDetails.getUser().getUserId(),
+            userDetails.getUser().getBlockchainAddress(),
+            request
+        );
+
+        return ResponseEntity.ok().body(Response.<NftWearingAvatarDto>builder()
+            .data(wearingAvatar)
+            .message("Wearing NFT avatar saved successfully")
             .build());
     }
 }

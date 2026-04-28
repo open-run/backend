@@ -167,3 +167,17 @@ CREATE TABLE IF NOT EXISTS tb_nft_item_equip_images
     CONSTRAINT tb_nft_item_equip_images_tb_nft_items_nft_item_id_fk
         FOREIGN KEY (nft_item_id) REFERENCES tb_nft_items (nft_item_id)
 );
+
+-- tb_user_nft_avatar_wearing 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_user_nft_avatar_wearing
+(
+    user_id      VARCHAR(36)                                                                                              NOT NULL,
+    wearing_slot ENUM ('upper_clothing', 'lower_clothing', 'footwear', 'face', 'skin', 'hair', 'head_accessories',
+        'eye_accessories', 'ear_accessories', 'body_accessories')                                                         NOT NULL,
+    nft_item_id  BIGINT UNSIGNED                                                                                          NOT NULL,
+    PRIMARY KEY (user_id, wearing_slot),
+    CONSTRAINT tb_user_nft_avatar_wearing_tb_users_user_id_fk
+        FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
+    CONSTRAINT tb_user_nft_avatar_wearing_tb_nft_items_nft_item_id_fk
+        FOREIGN KEY (nft_item_id) REFERENCES tb_nft_items (nft_item_id)
+);

@@ -1,9 +1,7 @@
 package io.openur.domain.NFT.dto;
 
 import io.openur.domain.NFT.entity.NftItemEntity;
-import io.openur.domain.NFT.service.NftAssetUrlResolver;
 import java.math.BigInteger;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,37 +13,41 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NftAvatarItemDto {
 
+    private String id;
     private Long nftItemId;
     private String tokenId;
     private String balance;
     private String name;
-    private String category;
     private String rarity;
+    private String mainCategory;
+    private String subCategory;
+    private Object imageUrl;
+    private String storageKey;
     private String thumbnailStorageKey;
     private String thumbnailUrl;
-    private List<NftAvatarItemEquipImageDto> equipImages;
 
     public static NftAvatarItemDto from(
         NftItemEntity nftItem,
         BigInteger balance,
-        List<NftAvatarItemEquipImageDto> equipImages,
-        NftAssetUrlResolver assetUrlResolver
+        String mainCategory,
+        String subCategory,
+        Object imageUrl,
+        String storageKey,
+        String thumbnailUrl
     ) {
-        String resolvedThumbnailUrl = assetUrlResolver.resolve(
-            nftItem.getThumbnailUrl(),
-            nftItem.getThumbnailStorageKey()
-        );
-
         return NftAvatarItemDto.builder()
+            .id(nftItem.getNftItemId().toString())
             .nftItemId(nftItem.getNftItemId())
             .tokenId(nftItem.getNftTokenId())
-            .balance(balance.toString())
+            .balance(balance == null ? null : balance.toString())
             .name(nftItem.getName())
-            .category(nftItem.getCategory().name())
             .rarity(nftItem.getRarity().name())
+            .mainCategory(mainCategory)
+            .subCategory(subCategory)
+            .imageUrl(imageUrl)
+            .storageKey(storageKey)
             .thumbnailStorageKey(nftItem.getThumbnailStorageKey())
-            .thumbnailUrl(resolvedThumbnailUrl)
-            .equipImages(equipImages)
+            .thumbnailUrl(thumbnailUrl)
             .build();
     }
 }
