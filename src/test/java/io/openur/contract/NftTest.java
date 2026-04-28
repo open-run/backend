@@ -36,11 +36,11 @@ public class NftTest {
         nftService.setBaseURI(baseUri);
     }
 
-   @Test
-   @Disabled
-   @DisplayName("test mintNFT")
-   void mint_nft() throws Exception {
-       String to = "0xA83F8f7f67F54F4D946E08CD6565700113B9a5Fb";
-       nftService.mintNFT(to, 2L);
-   }
+    @Test
+    @Disabled("Submits a real NFT mint transaction. Run manually only when explicitly needed.")
+    @DisplayName("test mintNFT")
+    void mint_nft() throws Exception {
+        String to = "0xA83F8f7f67F54F4D946E08CD6565700113B9a5Fb";
+        nftService.mintNFT(to, 2L);
+    }
 }
