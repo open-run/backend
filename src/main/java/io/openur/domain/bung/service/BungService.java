@@ -3,8 +3,11 @@ package io.openur.domain.bung.service;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
+import io.openur.domain.bung.dto.BungSearchCategoryResultDto;
+import io.openur.domain.bung.dto.BungSearchResponseDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.BungSearchCategory;
 import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
@@ -29,10 +32,12 @@ import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -103,31 +108,43 @@ public class BungService {
             .map(BungInfoWithOwnershipDto::new);
     }
 
-    public Page<BungInfoDto> searchBungByLocation(
-        UserDetailsImpl userDetails, String location, Pageable pageable
+    public BungSearchResponseDto searchBungs(
+        UserDetailsImpl userDetails,
+        String keyword,
+        BungSearchCategory category,
+        Pageable pageable
     ) {
-        if(!StringUtils.hasText(location) || location.length() < 2)
-            throw new SearchBungException(SearchBungResultEnum.NO_LOCATION_SPECIFIED);
+        String normalizedKeyword = keyword == null ? "" : keyword.trim();
+        if (!StringUtils.hasText(normalizedKeyword) || normalizedKeyword.length() < 2) {
+            throw new SearchBungException(SearchBungResultEnum.NO_KEYWORD_PROVIDED);
+        }
 
-        return bungRepository.findBungsWithLocation(location, pageable);
-    }
+        if (category != null) {
+            Page<BungInfoWithMemberListDto> result = bungRepository.searchBungs(
+                category,
+                normalizedKeyword,
+                pageable
+            );
+            return new BungSearchResponseDto(
+                normalizedKeyword,
+                List.of(new BungSearchCategoryResultDto(category, result))
+            );
+        }
 
-    public Page<BungInfoWithMemberListDto> searchBungByNickname(
-        UserDetailsImpl userDetails, String nickname, Pageable pageable
-    ) {
-        if(!StringUtils.hasText(nickname) || nickname.length() < 2)
-            throw new SearchBungException(SearchBungResultEnum.NO_NICKNAME_PROVIDED);
+        Pageable previewPageable = PageRequest.of(0, pageable.getPageSize());
+        List<BungSearchCategoryResultDto> categories = new ArrayList<>();
+        for (BungSearchCategory searchCategory : BungSearchCategory.values()) {
+            Page<BungInfoWithMemberListDto> result = bungRepository.searchBungs(
+                searchCategory,
+                normalizedKeyword,
+                previewPageable
+            );
+            if (!result.isEmpty()) {
+                categories.add(new BungSearchCategoryResultDto(searchCategory, result));
+            }
+        }
 
-        return userBungRepository.findBungsWithUserName(nickname, pageable);
-    }
-
-    public Page<BungInfoDto> searchBungByHashtag(
-        UserDetailsImpl userDetails, String hashtag, Pageable pageable
-    ) {
-        if(!StringUtils.hasText(hashtag)|| hashtag.length() < 2)
-            throw new SearchBungException(SearchBungResultEnum.NO_HASHTAG_PROVIDED);
-
-        return bungRepository.findBungWithHashtag(hashtag, pageable);
+        return new BungSearchResponseDto(normalizedKeyword, categories);
     }
 
     @Transactional

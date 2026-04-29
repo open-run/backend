@@ -136,153 +136,163 @@ public class BungApiTest extends TestSupport {
     }
 
     @Nested
-    @DisplayName("벙 검색 - 위치")
-    class searchByLocationTest {
+    @DisplayName("벙 통합 검색")
+    class searchBungsTest {
 
         @Test
-        @DisplayName("200 OK - 위치 검색 성공")
-        void searchByLocation_isOk() throws Exception {
+        @DisplayName("벙 이름 일부로 검색하면 이름 카테고리에 결과가 반환된다")
+        @Transactional
+        void searchBungs_matchesNameByPartialKeyword() throws Exception {
             String token = getTestUserToken2();
-            String location = "강남";
-
-            MvcResult result = mockMvc.perform(
-                get(PREFIX + "/location")
-                    .header(AUTH_HEADER, token)
-                    .param("location", location)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk()).andReturn();
-
-            PagedResponse<BungInfoDto> response = parseResponse(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
+            createBung(
+                token,
+                "[MOCK] 아침 초보환영 런 #057",
+                "서울시 강남구",
+                List.of("초보", "아침런")
             );
 
-            assertNotNull(response);
-            assertNotNull(response.getData());
-
-            // 검색 결과가 있는 경우 위치 정보 확인
-            if (!response.getData().isEmpty()) {
-                BungInfoDto bung = response.getData().get(0);
-                assertNotNull(bung.getLocation());
-            }
+            mockMvc.perform(
+                get(PREFIX + "/search")
+                    .header(AUTH_HEADER, token)
+                    .param("keyword", "초보환영")
+                    .param("limit", "5")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.keyword").value("초보환영"))
+                .andExpect(jsonPath("$.data.categories", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data.categories[0].category").value("NAME"))
+                .andExpect(jsonPath("$.data.categories[0].label").value("이름"))
+                .andExpect(jsonPath("$.data.categories[0].data[0].name").value("[MOCK] 아침 초보환영 런 #057"))
+                .andExpect(jsonPath("$.data.categories[0].empty").value(false));
         }
 
         @Test
-        @DisplayName("400 Bad Request - 위치 파라미터 누락")
-        void searchByLocation_missingLocationParam() throws Exception {
+        @DisplayName("위치 일부로 검색하면 위치 카테고리에 결과가 반환된다")
+        void searchBungs_matchesLocationByPartialKeyword() throws Exception {
             String token = getTestUserToken2();
 
             mockMvc.perform(
-                get(PREFIX + "/location")
+                get(PREFIX + "/search")
                     .header(AUTH_HEADER, token)
+                    .param("keyword", "Seou")
+                    .param("limit", "5")
                     .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isBadRequest());
-        }
-    }
-
-    @Nested
-    @DisplayName("벙 검색 - 닉네임")
-    class searchByNicknameTest {
-
-        @Test
-        @DisplayName("200 OK - 닉네임 검색 성공")
-        void searchByNickname_isOk() throws Exception {
-            String token = getTestUserToken2();
-            String nickname = "테스트";
-
-            MvcResult result = mockMvc.perform(
-                get(PREFIX + "/nickname")
-                    .header(AUTH_HEADER, token)
-                    .param("nickname", nickname)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk()).andReturn();
-
-            PagedResponse<BungInfoWithMemberListDto> response = parseResponse(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
-            );
-
-            assertNotNull(response);
-            assertNotNull(response.getData());
-
-            // 검색 결과가 있는 경우 멤버 정보 확인
-            if (!response.getData().isEmpty()) {
-                BungInfoWithMemberListDto bung = response.getData().get(0);
-                assertNotNull(bung.getMemberList());
-                assertFalse(bung.getMemberList().isEmpty());
-
-                // 멤버 중 검색한 닉네임이 포함되어 있는지 확인
-                boolean nicknameFound = bung.getMemberList().stream()
-                    .anyMatch(
-                        member -> member.getNickname().contains(nickname));
-                assertTrue(nicknameFound);
-            }
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.keyword").value("Seou"))
+                .andExpect(jsonPath("$.data.categories", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data.categories[0].category").value("LOCATION"))
+                .andExpect(jsonPath("$.data.categories[0].label").value("위치"))
+                .andExpect(jsonPath("$.data.categories[0].data[0].location").value("Seoul"));
         }
 
         @Test
-        @DisplayName("400 Bad Request - 닉네임 파라미터 누락")
-        void searchByNickname_missingNicknameParam() throws Exception {
+        @DisplayName("해시태그 일부로 검색하면 해시태그 카테고리에 결과가 반환된다")
+        void searchBungs_matchesHashtagByPartialKeyword() throws Exception {
             String token = getTestUserToken2();
 
             mockMvc.perform(
-                get(PREFIX + "/nickname")
+                get(PREFIX + "/search")
                     .header(AUTH_HEADER, token)
+                    .param("keyword", "런린")
+                    .param("limit", "5")
                     .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isBadRequest());
-        }
-    }
-
-    @Nested
-    @DisplayName("벙 검색 - 해시태그")
-    class searchByHashtagTest {
-
-        @Test
-        @DisplayName("200 OK - 해시태그 검색 성공")
-        void searchByHashtag_isOk() throws Exception {
-            String token = getTestUserToken2();
-            String hashtag = "모임";
-
-            MvcResult result = mockMvc.perform(
-                get(PREFIX + "/hashtag")
-                    .header(AUTH_HEADER, token)
-                    .param("hashtag", hashtag)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk()).andReturn();
-
-            PagedResponse<BungInfoDto> response = parseResponse(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
-            );
-
-            assertNotNull(response);
-            assertNotNull(response.getData());
-
-            // 검색 결과가 있는 경우 해시태그 정보 확인
-            if (!response.getData().isEmpty()) {
-                BungInfoDto bung = response.getData().get(0);
-                assertNotNull(bung.getHashtags());
-                assertFalse(bung.getHashtags().isEmpty());
-
-                // 해시태그 중 검색한 키워드가 포함되어 있는지 확인
-                boolean hashtagFound = bung.getHashtags().stream()
-                    .anyMatch(tag -> tag.contains(hashtag));
-                assertTrue(hashtagFound);
-            }
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.keyword").value("런린"))
+                .andExpect(jsonPath("$.data.categories", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data.categories[0].category").value("HASHTAG"))
+                .andExpect(jsonPath("$.data.categories[0].label").value("해시태그"))
+                .andExpect(jsonPath("$.data.categories[0].data[0].hashtags[1]").value("런린이"));
         }
 
         @Test
-        @DisplayName("400 Bad Request - 해시태그 파라미터 누락")
-        void searchByHashtag_missingHashtagParam() throws Exception {
+        @DisplayName("멤버 닉네임 일부로 검색하면 멤버 카테고리에 결과가 반환된다")
+        void searchBungs_matchesMemberByPartialKeyword() throws Exception {
             String token = getTestUserToken2();
 
             mockMvc.perform(
-                get(PREFIX + "/hashtag")
+                get(PREFIX + "/search")
+                    .header(AUTH_HEADER, token)
+                    .param("keyword", "est3")
+                    .param("limit", "5")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.keyword").value("est3"))
+                .andExpect(jsonPath("$.data.categories", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data.categories[0].category").value("MEMBER"))
+                .andExpect(jsonPath("$.data.categories[0].label").value("멤버"))
+                .andExpect(jsonPath("$.data.categories[0].data[0].memberList[0].nickname").value("test3"));
+        }
+
+        @Test
+        @DisplayName("카테고리를 지정하면 해당 카테고리만 페이지 조회된다")
+        void searchBungs_withCategoryReturnsOneCategoryPage() throws Exception {
+            String token = getTestUserToken2();
+
+            mockMvc.perform(
+                get(PREFIX + "/search")
+                    .header(AUTH_HEADER, token)
+                    .param("keyword", "test1")
+                    .param("category", "NAME")
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.keyword").value("test1"))
+                .andExpect(jsonPath("$.data.categories", org.hamcrest.Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data.categories[0].category").value("NAME"))
+                .andExpect(jsonPath("$.data.categories[0].totalElements").value(1))
+                .andExpect(jsonPath("$.data.categories[0].first").value(true))
+                .andExpect(jsonPath("$.data.categories[0].last").value(true))
+                .andExpect(jsonPath("$.data.categories[0].data[0].name").value("test1_bung"));
+        }
+
+        @Test
+        @DisplayName("검색어가 없거나 두 글자 미만이면 검색할 수 없다")
+        void searchBungs_rejectsInvalidKeyword() throws Exception {
+            String token = getTestUserToken2();
+
+            mockMvc.perform(
+                get(PREFIX + "/search")
                     .header(AUTH_HEADER, token)
                     .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isBadRequest());
+            )
+                .andExpect(status().isBadRequest());
+
+            mockMvc.perform(
+                get(PREFIX + "/search")
+                    .header(AUTH_HEADER, token)
+                    .param("keyword", "a")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest());
+        }
+
+        private void createBung(String token, String name, String location, List<String> hashtags) throws Exception {
+            var submittedBung = new HashMap<>();
+            submittedBung.put("name", name);
+            submittedBung.put("description", "통합 검색 테스트 벙");
+            submittedBung.put("location", location);
+            submittedBung.put("startDateTime", LocalDateTime.now().plusDays(3).toString());
+            submittedBung.put("endDateTime", LocalDateTime.now().plusDays(4).toString());
+            submittedBung.put("distance", "5.7");
+            submittedBung.put("pace", "6'00\"");
+            submittedBung.put("memberNumber", 5);
+            submittedBung.put("hasAfterRun", false);
+            submittedBung.put("afterRunDescription", "");
+            submittedBung.put("hashtags", hashtags);
+            submittedBung.put("mainImage", "search-test.png");
+
+            mockMvc.perform(
+                post(PREFIX)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(submittedBung))
+            ).andExpect(status().isCreated());
         }
     }
 

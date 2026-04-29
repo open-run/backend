@@ -1,8 +1,6 @@
 package io.openur.domain.userbung.repository;
 
 
-import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.group.GroupBy.list;
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.enums.BungStatus.ACCOMPLISHED;
 import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
@@ -24,20 +22,15 @@ import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -76,70 +69,6 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         BungEntity bung = members.get(0).getBungEntity();
 
         return Optional.of(new BungInfoWithMemberListDto(bung, members, userProfileImageUrlResolver));
-    }
-
-    @Override
-    public Page<BungInfoWithMemberListDto> findBungsWithUserName(String nickname, Pageable pageable) {
-        if (!StringUtils.hasText(nickname)) {
-            return Page.empty(pageable);
-        }
-
-        BooleanExpression nicknameCondition = userBungEntity.userEntity.nickname.equalsIgnoreCase(nickname);
-        BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
-        BooleanExpression notFadedCondition = bungEntity.faded.isFalse();
-
-        // 1. 먼저 DISTINCT된 전체 개수 조회
-        long total = queryFactory
-            .select(userBungEntity.bungEntity.bungId.countDistinct())
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .where(nicknameCondition, dateCondition, notFadedCondition)
-            .fetchOne();
-
-        if (total == 0) {
-            return new PageImpl<>(Collections.emptyList(), pageable, 0);
-        }
-
-        // 2. DISTINCT 기준으로 정확한 페이징 적용
-        List<BungEntity> distinctBungs = queryFactory
-            .select(bungEntity)
-            .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity)
-            .where(nicknameCondition, dateCondition, notFadedCondition)
-            .groupBy(bungEntity.bungId)  // GROUP BY로 중복 제거 (성능 최적화)
-            .orderBy(bungEntity.startDateTime.asc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        if (distinctBungs.isEmpty()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, total);
-        }
-
-        List<String> bungIds = distinctBungs.stream()
-            .map(BungEntity::getBungId)
-            .toList();
-
-        // 3. 상세 데이터 조회
-        Map<String, List<UserBungEntity>> bungMap = queryFactory
-            .selectFrom(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-            .join(userBungEntity.userEntity, userEntity).fetchJoin()
-            .where(bungEntity.bungId.in(bungIds))
-            .transform(groupBy(bungEntity.bungId).as(list(userBungEntity)));
-
-        // 4. 정렬 순서 보장하며 DTO 변환
-        List<BungInfoWithMemberListDto> contents = bungIds.stream()
-            .map(bungMap::get)
-            .filter(Objects::nonNull)
-            .map(members -> new BungInfoWithMemberListDto(
-                members.get(0).getBungEntity(),
-                members,
-                userProfileImageUrlResolver
-            ))
-            .toList();
-
-        return new PageImpl<>(contents, pageable, total);
     }
 
     @Override

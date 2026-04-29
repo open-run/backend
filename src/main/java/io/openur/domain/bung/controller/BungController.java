@@ -3,8 +3,10 @@ package io.openur.domain.bung.controller;
 import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.dto.BungInfoWithOwnershipDto;
+import io.openur.domain.bung.dto.BungSearchResponseDto;
 import io.openur.domain.bung.dto.CreateBungDto;
 import io.openur.domain.bung.dto.EditBungDto;
+import io.openur.domain.bung.enums.BungSearchCategory;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.enums.EditBungResultEnum;
 import io.openur.domain.bung.enums.JoinBungResultEnum;
@@ -75,63 +77,25 @@ public class BungController {
             PagedResponse.build(contents, "success"));
     }
 
-    @GetMapping("/location")
-    @Operation(summary = "벙 검색 - 위치")
-    public ResponseEntity<PagedResponse<BungInfoDto>> searchByLocation(
+    @GetMapping("/search")
+    @Operation(summary = "벙 통합 검색")
+    public ResponseEntity<Response<BungSearchResponseDto>> searchBungs(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "위치에 따른 검색, 최소 두글자 제한"
-            + "인원수 필드 값 추가 확인 바람")
-        @RequestParam String location,
+        @Parameter(description = "검색어, 최소 두 글자")
+        @RequestParam String keyword,
+        @RequestParam(required = false) BungSearchCategory category,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "5") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoDto> contents = bungService.searchBungByLocation(
-            userDetails, location, pageable
+        BungSearchResponseDto contents = bungService.searchBungs(
+            userDetails, keyword, category, pageable
         );
 
-        return ResponseEntity.ok().body(
-            PagedResponse.build(contents, "success"));
-    }
-
-    @GetMapping("/nickname")
-    @Operation(summary = "벙 검색 - 닉네임")
-    public ResponseEntity<PagedResponse<BungInfoWithMemberListDto>> searchByNickname(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "참가 사용자 닉네임에 따른 검색, 최소 두글자 제한,"
-            + " 개인 프로필 이미지 추후 첨부 예정, 인원수 필드 값 추가 확인 바람"
-        )
-        @RequestParam String nickname,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "5") int limit
-    ) {
-        Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoWithMemberListDto> contents = bungService.searchBungByNickname(
-            userDetails, nickname, pageable
-        );
-
-        return ResponseEntity.ok().body(
-            PagedResponse.build(contents, "success")
-        );
-    }
-
-    @GetMapping("/hashtag")
-    @Operation(summary = "벙 검색 - 해시태그")
-    public ResponseEntity<PagedResponse<BungInfoDto>> searchByHashtag(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Parameter(description = "검색할 해시태그, 최소 두 글자 제한,")
-        @RequestParam(required = true) String hashtag,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "5") int limit
-    ) {
-        Pageable pageable = PageRequest.of(page, limit);
-        Page<BungInfoDto> contents = bungService.searchBungByHashtag(
-            userDetails, hashtag, pageable
-        );
-
-        return ResponseEntity.ok().body(
-            PagedResponse.build(contents, "success")
-        );
+        return ResponseEntity.ok().body(Response.<BungSearchResponseDto>builder()
+            .message("success")
+            .data(contents)
+            .build());
     }
 
     @GetMapping("/my-bungs")
@@ -256,4 +220,3 @@ public class BungController {
             .build());
     }
 }
-

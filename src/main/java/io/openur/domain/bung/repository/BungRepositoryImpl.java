@@ -10,9 +10,9 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.openur.domain.bung.dto.BungInfoDto;
 import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
+import io.openur.domain.bung.enums.BungSearchCategory;
 import io.openur.domain.bung.enums.GetBungResultEnum;
 import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.model.Bung;
@@ -84,96 +84,121 @@ public class BungRepositoryImpl implements BungRepository {
     }
 
     @Override
-    public Page<BungInfoDto> findBungsWithLocation(String keyword, Pageable pageable) {
-        // 1. 입력 검증
+    public Page<BungInfoWithMemberListDto> searchBungs(
+        BungSearchCategory category,
+        String keyword,
+        Pageable pageable
+    ) {
         if (!StringUtils.hasText(keyword)) {
             return Page.empty(pageable);
         }
 
-        // 2. 공통 조건 추출
-        BooleanExpression locationCondition = bungEntity.location.containsIgnoreCase(keyword);
-        BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
-        BooleanExpression notFadedCondition = bungEntity.faded.isFalse();
+        String searchKeyword = normalizeKeyword(category, keyword);
+        if (!StringUtils.hasText(searchKeyword)) {
+            return Page.empty(pageable);
+        }
 
-        // 3. Content 쿼리 - 필요시 fetchJoin 추가 가능
-        List<BungEntity> bungs = queryFactory
-            .selectFrom(bungEntity)
-            .where(locationCondition, dateCondition, notFadedCondition)
-            .orderBy(bungEntity.startDateTime.asc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        // 4. DTO 변환
-        List<BungInfoDto> contents = bungs.stream()
-            .map(Bung::from)
-            .map(BungInfoDto::new)
-            .toList();
-
-        // 5. Count 쿼리 최적화 (동일한 조건 사용)
-        JPAQuery<Long> countQuery = queryFactory
-            .select(bungEntity.count())
-            .from(bungEntity)
-            .where(locationCondition, dateCondition, notFadedCondition);
-
-        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
-    }
-
-    @Override
-    public Page<BungInfoDto> findBungWithHashtag(String hashTag, Pageable pageable) {
-        // 공통 조건
-        BooleanExpression hashtagCondition = hashtagEntity.hashtagStr.equalsIgnoreCase(hashTag);
-        BooleanExpression dateCondition = bungEntity.startDateTime.gt(LocalDateTime.now());
-        BooleanExpression notFadedCondition = bungEntity.faded.isFalse();
-
-        // 1. 먼저 정확한 총 개수 조회 (DISTINCT 기준)
-        long total = queryFactory
-            .select(bungHashtagEntity.bungEntity.bungId.countDistinct())
-            .from(bungHashtagEntity)
-            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
-            .join(bungHashtagEntity.bungEntity, bungEntity)
-            .where(hashtagCondition, dateCondition, notFadedCondition)
-            .fetchOne();
-
+        long total = countSearchBungs(category, searchKeyword);
         if (total == 0) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        // 2. GROUP BY를 사용하여 중복 제거 후 페이징 적용 (성능 최적화)
-        List<BungEntity> distinctBungs = queryFactory
-            .select(bungEntity)
-            .from(bungHashtagEntity)
-            .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
-            .join(bungHashtagEntity.bungEntity, bungEntity)
-            .where(hashtagCondition, dateCondition, notFadedCondition)
-            .groupBy(bungEntity.bungId)           // ← GROUP BY로 중복 제거 (DISTINCT보다 효율적)
-            .orderBy(bungEntity.startDateTime.asc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        if (distinctBungs.isEmpty()) {
+        List<String> bungIds = searchBungIds(category, searchKeyword, pageable);
+        if (bungIds.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, total);
         }
 
-        List<String> bungIds = distinctBungs.stream()
-            .map(BungEntity::getBungId)
-            .toList();
-
-        // 3. 상세 데이터 조회 (정렬 순서 보장)
-        List<BungEntity> bungs = queryFactory
-            .selectFrom(bungEntity)
-            .where(bungEntity.bungId.in(bungIds))
-            .orderBy(bungEntity.startDateTime.asc())  // 동일한 정렬 조건 적용
-            .fetch();
-
-        // 4. DTO 변환
-        List<BungInfoDto> contents = bungs.stream()
-            .map(Bung::from)
-            .map(BungInfoDto::new)
-            .toList();
+        List<BungInfoWithMemberListDto> contents = fetchBungInfoWithMembers(bungIds);
 
         return new PageImpl<>(contents, pageable, total);
+    }
+
+    private long countSearchBungs(BungSearchCategory category, String keyword) {
+        Long count = switch (category) {
+            case NAME -> queryFactory
+                .select(bungEntity.bungId.countDistinct())
+                .from(bungEntity)
+                .where(bungEntity.name.containsIgnoreCase(keyword), isSearchable())
+                .fetchOne();
+            case LOCATION -> queryFactory
+                .select(bungEntity.bungId.countDistinct())
+                .from(bungEntity)
+                .where(bungEntity.location.containsIgnoreCase(keyword), isSearchable())
+                .fetchOne();
+            case HASHTAG -> queryFactory
+                .select(bungHashtagEntity.bungEntity.bungId.countDistinct())
+                .from(bungHashtagEntity)
+                .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+                .join(bungHashtagEntity.bungEntity, bungEntity)
+                .where(hashtagEntity.hashtagStr.containsIgnoreCase(keyword), isSearchable())
+                .fetchOne();
+            case MEMBER -> queryFactory
+                .select(userBungEntity.bungEntity.bungId.countDistinct())
+                .from(userBungEntity)
+                .join(userBungEntity.bungEntity, bungEntity)
+                .join(userBungEntity.userEntity, userEntity)
+                .where(userEntity.nickname.containsIgnoreCase(keyword), isSearchable())
+                .fetchOne();
+        };
+
+        return Optional.ofNullable(count).orElse(0L);
+    }
+
+    private List<String> searchBungIds(BungSearchCategory category, String keyword, Pageable pageable) {
+        return switch (category) {
+            case NAME -> queryFactory
+                .select(bungEntity.bungId)
+                .from(bungEntity)
+                .where(bungEntity.name.containsIgnoreCase(keyword), isSearchable())
+                .orderBy(bungEntity.startDateTime.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+            case LOCATION -> queryFactory
+                .select(bungEntity.bungId)
+                .from(bungEntity)
+                .where(bungEntity.location.containsIgnoreCase(keyword), isSearchable())
+                .orderBy(bungEntity.startDateTime.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+            case HASHTAG -> queryFactory
+                .select(bungEntity.bungId)
+                .from(bungHashtagEntity)
+                .join(bungHashtagEntity.hashtagEntity, hashtagEntity)
+                .join(bungHashtagEntity.bungEntity, bungEntity)
+                .where(hashtagEntity.hashtagStr.containsIgnoreCase(keyword), isSearchable())
+                .groupBy(bungEntity.bungId)
+                .orderBy(bungEntity.startDateTime.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+            case MEMBER -> queryFactory
+                .select(bungEntity.bungId)
+                .from(userBungEntity)
+                .join(userBungEntity.bungEntity, bungEntity)
+                .join(userBungEntity.userEntity, userEntity)
+                .where(userEntity.nickname.containsIgnoreCase(keyword), isSearchable())
+                .groupBy(bungEntity.bungId)
+                .orderBy(bungEntity.startDateTime.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+        };
+    }
+
+    private String normalizeKeyword(BungSearchCategory category, String keyword) {
+        String normalizedKeyword = keyword.trim();
+        if (BungSearchCategory.HASHTAG.equals(category)) {
+            return normalizedKeyword.replaceFirst("^#+", "");
+        }
+
+        return normalizedKeyword;
+    }
+
+    private BooleanExpression isSearchable() {
+        return bungEntity.startDateTime.gt(LocalDateTime.now())
+            .and(bungEntity.faded.isFalse());
     }
 
     @Override
