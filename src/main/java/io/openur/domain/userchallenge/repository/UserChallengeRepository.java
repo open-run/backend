@@ -27,6 +27,8 @@ public interface UserChallengeRepository {
      */
     void bulkUpdateCompletedChallenges(List<Long> completedUserChallengeIds);
 
+    void markNftCompleted(Long userChallengeId);
+
     Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
     );

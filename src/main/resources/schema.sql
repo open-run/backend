@@ -182,3 +182,27 @@ CREATE TABLE IF NOT EXISTS tb_user_nft_avatar_wearing
     CONSTRAINT tb_user_nft_avatar_wearing_tb_nft_items_nft_item_id_fk
         FOREIGN KEY (nft_item_id) REFERENCES tb_nft_items (nft_item_id)
 );
+
+-- tb_nft_mint_jobs 테이블 생성
+CREATE TABLE IF NOT EXISTS tb_nft_mint_jobs
+(
+    mint_job_id      BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    user_id          VARCHAR(36)                       NOT NULL,
+    user_challenge_id BIGINT                           NOT NULL,
+    status           ENUM ('PENDING', 'MINTING', 'SUCCESS', 'FAILED') NOT NULL,
+    token_id         VARCHAR(78)                       DEFAULT NULL,
+    transaction_hash VARCHAR(128)                      DEFAULT NULL,
+    error_message    VARCHAR(1024)                     DEFAULT NULL,
+    nft_name         VARCHAR(100)                      DEFAULT NULL,
+    nft_description  VARCHAR(1024)                     DEFAULT NULL,
+    nft_image        VARCHAR(1024)                     DEFAULT NULL,
+    nft_category     VARCHAR(64)                       DEFAULT NULL,
+    nft_rarity       VARCHAR(64)                       DEFAULT NULL,
+    created_at       TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_nft_mint_jobs_user_challenge UNIQUE (user_challenge_id),
+    CONSTRAINT tb_nft_mint_jobs_tb_users_user_id_fk
+        FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
+    CONSTRAINT tb_nft_mint_jobs_tb_users_challenges_user_challenge_id_fk
+        FOREIGN KEY (user_challenge_id) REFERENCES tb_users_challenges (user_challenge_id)
+);

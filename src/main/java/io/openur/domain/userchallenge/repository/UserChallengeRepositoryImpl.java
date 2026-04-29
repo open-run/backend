@@ -111,6 +111,19 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
+    @Transactional
+    public void markNftCompleted(Long userChallengeId) {
+        queryFactory
+            .update(userChallengeEntity)
+            .set(userChallengeEntity.nftCompleted, true)
+            .where(userChallengeEntity.userChallengeId.eq(userChallengeId))
+            .execute();
+
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Override
     public Page<UserChallenge> findUncompletedChallengesByUserId(
         String userId,
         Pageable pageable

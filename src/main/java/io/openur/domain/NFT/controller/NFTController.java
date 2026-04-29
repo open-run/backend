@@ -2,10 +2,12 @@ package io.openur.domain.NFT.controller;
 
 import io.openur.domain.NFT.service.NFTService;
 import io.openur.domain.NFT.dto.NFTMetadataDto;
+import io.openur.domain.NFT.dto.NftMintJobDto;
 import io.openur.domain.NFT.dto.NftAvatarItemDto;
 import io.openur.domain.NFT.dto.NftWearingAvatarDto;
 import io.openur.domain.NFT.dto.NftWearingAvatarRequestDto;
 import io.openur.domain.NFT.service.NftAvatarItemService;
+import io.openur.domain.NFT.service.NftMintJobService;
 import io.openur.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import io.openur.global.dto.PagedResponse;
@@ -28,6 +30,7 @@ public class NFTController {
 
     private final NFTService nftService;
     private final NftAvatarItemService nftAvatarItemService;
+    private final NftMintJobService nftMintJobService;
 
     @PostMapping("/mint")
     public ResponseEntity<Response<NFTMetadataDto>> mintNFT(
@@ -40,6 +43,31 @@ public class NFTController {
         return ResponseEntity.ok().body(Response.<NFTMetadataDto>builder()
             .data(metadata)
             .message("NFT minted successfully")
+            .build());
+    }
+
+    @PostMapping("/mint-jobs")
+    public ResponseEntity<Response<NftMintJobDto>> requestMintJob(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam Long userChallengeId
+    ) {
+        NftMintJobDto mintJob = nftMintJobService.requestMintJob(userDetails, userChallengeId);
+
+        return ResponseEntity.ok().body(Response.<NftMintJobDto>builder()
+            .data(mintJob)
+            .message("NFT mint job accepted")
+            .build());
+    }
+
+    @GetMapping("/mint-jobs/me")
+    public ResponseEntity<Response<List<NftMintJobDto>>> getMyMintJobs(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        List<NftMintJobDto> mintJobs = nftMintJobService.getMyMintJobs(userDetails);
+
+        return ResponseEntity.ok().body(Response.<List<NftMintJobDto>>builder()
+            .data(mintJobs)
+            .message("NFT mint jobs fetched successfully")
             .build());
     }
 
