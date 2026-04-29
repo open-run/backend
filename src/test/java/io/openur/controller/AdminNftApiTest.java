@@ -53,6 +53,9 @@ public class AdminNftApiTest extends TestSupport {
         mockMvc.perform(get(PREFIX + "/nft/avatar-items"))
             .andExpect(status().is4xxClientError());
 
+        mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on"))
+            .andExpect(status().is4xxClientError());
+
         mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
@@ -83,6 +86,10 @@ public class AdminNftApiTest extends TestSupport {
             .andExpect(status().isForbidden());
 
         mockMvc.perform(get(PREFIX + "/nft/avatar-items")
+                .header(AUTH_HEADER, nonAdminToken))
+            .andExpect(status().isForbidden());
+
+        mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on")
                 .header(AUTH_HEADER, nonAdminToken))
             .andExpect(status().isForbidden());
 
@@ -213,6 +220,43 @@ public class AdminNftApiTest extends TestSupport {
             .andExpect(jsonPath("$.data[3].subCategory").value("eye-accessories"))
             .andExpect(jsonPath("$.data[*].nftItemId").value(not(hasItem(3))))
             .andExpect(jsonPath("$.data[*].nftItemId").value(not(hasItem(5))));
+    }
+
+    @Test
+    @DisplayName("admin은 enabled NFT Item 전체를 아바타 장착 테스트용으로 조회한다")
+    void getTryOnNftAvatarItems_returnsEnabledItems() throws Exception {
+        mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on")
+                .header(AUTH_HEADER, getTestUserToken1()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.message").value("Admin NFT avatar try-on items fetched successfully"))
+            .andExpect(jsonPath("$.data", hasSize(8)))
+            .andExpect(jsonPath("$.data[0].id").value("1"))
+            .andExpect(jsonPath("$.data[0].nftItemId").value(1))
+            .andExpect(jsonPath("$.data[0].tokenId").value("100"))
+            .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
+            .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
+            .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
+            .andExpect(jsonPath("$.data[0].rarity").value("common"))
+            .andExpect(jsonPath("$.data[0].imageUrl").value("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/top/1/equip/single.png"))
+            .andExpect(jsonPath("$.data[0].storageKey").value("nft-assets/v1/nft-items/top/1/equip/single.png"))
+            .andExpect(jsonPath("$.data[0].thumbnailStorageKey").value("nft-assets/v1/nft-items/top/1/thumbnail.png"))
+            .andExpect(jsonPath("$.data[0].thumbnailUrl").value("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/top/1/thumbnail.png"))
+            .andExpect(jsonPath("$.data[1].nftItemId").value(2))
+            .andExpect(jsonPath("$.data[1].imageUrl", hasSize(2)))
+            .andExpect(jsonPath("$.data[1].imageUrl[0]").value("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/hair/2/equip/front.png"))
+            .andExpect(jsonPath("$.data[1].imageUrl[1]").value("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/hair/2/equip/back.png"))
+            .andExpect(jsonPath("$.data[*].nftItemId").value(hasItem(3)))
+            .andExpect(jsonPath("$.data[*].nftItemId").value(not(hasItem(5))))
+            .andExpect(jsonPath("$.data[6].nftItemId").value(8))
+            .andExpect(jsonPath("$.data[6].name").value("장착 이미지 없는 아이템"))
+            .andExpect(jsonPath("$.data[6].imageUrl").value(nullValue()))
+            .andExpect(jsonPath("$.data[6].storageKey").value(nullValue()))
+            .andExpect(jsonPath("$.data[6].thumbnailUrl").value("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/body_acc/8/thumbnail.png"))
+            .andExpect(jsonPath("$.data[7].nftItemId").value(9))
+            .andExpect(jsonPath("$.data[7].name").value("장착 이미지 없는 헤어"))
+            .andExpect(jsonPath("$.data[7].imageUrl").value(nullValue()))
+            .andExpect(jsonPath("$.data[7].storageKey").value(nullValue()))
+            .andExpect(jsonPath("$.data[7].thumbnailUrl").value("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/hair/9/thumbnail.png"));
     }
 
     @Test

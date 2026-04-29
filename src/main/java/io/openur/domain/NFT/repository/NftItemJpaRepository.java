@@ -9,5 +9,7 @@ public interface NftItemJpaRepository extends JpaRepository<NftItemEntity, Long>
 
     List<NftItemEntity> findByEnabledTrueAndNftTokenIdIsNotNullOrderByNftItemIdAsc();
 
+    List<NftItemEntity> findByEnabledTrueOrderByNftItemIdAsc();
+
     List<NftItemEntity> findByNftItemIdIn(Collection<Long> nftItemIds);
 }

@@ -1,5 +1,6 @@
 package io.openur.domain.admin.controller;
 
+import io.openur.domain.NFT.dto.NftAvatarItemDto;
 import io.openur.domain.admin.dto.AdminMeDto;
 import io.openur.domain.admin.dto.AdminNftGrantRequestDto;
 import io.openur.domain.admin.dto.AdminNftGrantResponseDto;
@@ -63,6 +64,18 @@ public class AdminController {
         return ResponseEntity.ok(Response.<List<AdminNftItemDto>>builder()
             .data(adminNftService.getMintedAvatarItems())
             .message("Admin NFT avatar items fetched successfully")
+            .build());
+    }
+
+    @GetMapping("/nft/avatar-items/try-on")
+    public ResponseEntity<Response<List<NftAvatarItemDto>>> getTryOnNftAvatarItems(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        adminAuthorizationService.assertAdmin(userDetails);
+
+        return ResponseEntity.ok(Response.<List<NftAvatarItemDto>>builder()
+            .data(adminNftService.getTryOnAvatarItems())
+            .message("Admin NFT avatar try-on items fetched successfully")
             .build());
     }
 

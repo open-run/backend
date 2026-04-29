@@ -88,7 +88,9 @@ VALUES (1, '테스트 상의', 'top', 'common', '100', 'nft-assets/v1/nft-items/
        (4, '미보유 신발', 'shoes', 'epic', '300', 'nft-assets/v1/nft-items/shoes/4/thumbnail.png', NULL, true),
        (5, '비활성 하의', 'pants', 'common', '400', 'nft-assets/v1/nft-items/pants/5/thumbnail.png', NULL, false),
        (6, '동글이안경', 'head_acc', 'common', '500', 'nft-assets/v1/nft-items/head_acc/6/thumbnail.png', NULL, true),
-       (7, '반짝 대머리', 'hair', 'common', '600', 'nft-assets/v1/nft-items/hair/7/thumbnail.png', NULL, true);
+       (7, '반짝 대머리', 'hair', 'common', '600', 'nft-assets/v1/nft-items/hair/7/thumbnail.png', NULL, true),
+       (8, '장착 이미지 없는 아이템', 'body_acc', 'common', NULL, 'nft-assets/v1/nft-items/body_acc/8/thumbnail.png', NULL, true),
+       (9, '장착 이미지 없는 헤어', 'hair', 'common', NULL, 'nft-assets/v1/nft-items/hair/9/thumbnail.png', NULL, true);
 
 INSERT INTO tb_nft_item_equip_images (nft_item_equip_image_id, nft_item_id, equip_position, storage_key, image_url, sort_order)
 VALUES (1, 1, 'single', 'nft-assets/v1/nft-items/top/1/equip/single.png', NULL, 0),
