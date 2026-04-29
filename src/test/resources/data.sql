@@ -1,16 +1,17 @@
 -- h2 data sql sheet for test implementation, ** must be executed in order of foreign key constraints **
 INSERT INTO tb_users (user_id, nickname, identity_authenticated, provider, blacklisted,
                       created_date, last_login_date, blockchain_address, running_pace,
-                      running_frequency, feedback)
+                      profile_image_storage_key, running_frequency, feedback)
 VALUES ('9e1bfc60-f76a-47dc-9147-803653707192', 'test', FALSE, 'smart_wallet', FALSE, CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
-        '0x1234567890123456789012345678901234567890', NULL, NULL, 0),
+        '0x1234567890123456789012345678901234567890', NULL, NULL, NULL, 0),
        ('91b4928f-8288-44dc-a04d-640911f0b2be', 'test2', FALSE, 'smart_wallet', FALSE, CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
-        '0x1234567890123456789012345678901234567891', NULL, NULL, 0),
+        '0x1234567890123456789012345678901234567891', NULL, NULL, NULL, 0),
        ('5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', 'test3', FALSE, 'smart_wallet', FALSE, CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
-        '0x1234567890123456789012345678901234567892', NULL, NULL, 0)
+        '0x1234567890123456789012345678901234567892', NULL,
+        'profile-images/users/5d22bd65-f1ed-4e7b-bc7b-0a59580d3176/profile.png', NULL, 0)
 ;
 
 INSERT INTO tb_bungs (bung_id, name, description, location, latitude, longitude, start_datetime, end_datetime, distance, pace, member_number, current_member_number,

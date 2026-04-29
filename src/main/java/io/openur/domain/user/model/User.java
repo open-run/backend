@@ -24,6 +24,7 @@ public class User {
     private LocalDateTime createdDate;
     private LocalDateTime lastLoginDate;
     private String blockchainAddress;
+    private String profileImageStorageKey;
     private String runningPace;
     private Integer runningFrequency;
     private Integer feedback;
@@ -40,6 +41,7 @@ public class User {
         this.createdDate = LocalDateTime.now();
         this.lastLoginDate = LocalDateTime.now();
         this.blockchainAddress = "0x";
+        this.profileImageStorageKey = null;
         this.runningPace = null;
         this.runningFrequency = null;
         this.feedback = 0;
@@ -54,6 +56,7 @@ public class User {
         this.createdDate = LocalDateTime.now();
         this.lastLoginDate = LocalDateTime.now();
         this.blockchainAddress = blockchainAddress;
+        this.profileImageStorageKey = null;
         this.runningPace = null;
         this.runningFrequency = null;
         this.feedback = 0;
@@ -69,6 +72,7 @@ public class User {
             userEntity.getCreatedDate(),
             userEntity.getLastLoginDate(),
             userEntity.getBlockchainAddress(),
+            userEntity.getProfileImageStorageKey(),
             userEntity.getRunningPace(),
             userEntity.getRunningFrequency(),
             userEntity.getFeedback()
@@ -85,10 +89,15 @@ public class User {
             createdDate,
             lastLoginDate,
             blockchainAddress,
+            profileImageStorageKey,
             runningPace,
             runningFrequency,
             feedback
         );
+    }
+
+    public void updateProfileImageStorageKey(String profileImageStorageKey) {
+        this.profileImageStorageKey = profileImageStorageKey;
     }
 
     public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {

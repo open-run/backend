@@ -9,6 +9,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -114,7 +115,12 @@ public class BungApiTest extends TestSupport {
                 get(PREFIX)
                     .header(AUTH_HEADER, token)
                     .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk()).andReturn();
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].memberList[0].profileImageUrl")
+                    .value("http://localhost:8080/local-nft-assets/profile-images/users/"
+                        + "5d22bd65-f1ed-4e7b-bc7b-0a59580d3176/profile.png"))
+                .andReturn();
 
             PagedResponse<BungInfoWithMemberListDto> response = parseResponse(
                 result.getResponse().getContentAsString(),

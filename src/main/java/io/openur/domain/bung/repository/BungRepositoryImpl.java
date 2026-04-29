@@ -18,6 +18,7 @@ import io.openur.domain.bung.exception.GetBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.user.model.User;
+import io.openur.domain.user.service.UserProfileImageUrlResolver;
 import io.openur.domain.userbung.entity.UserBungEntity;
 
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class BungRepositoryImpl implements BungRepository {
 
     private final JPAQueryFactory queryFactory;
     private final BungJpaRepository bungJpaRepository;
+    private final UserProfileImageUrlResolver userProfileImageUrlResolver;
 
     @Override
     public Page<BungInfoWithMemberListDto> findBungs(
@@ -332,7 +334,11 @@ public class BungRepositoryImpl implements BungRepository {
 
         // 정렬된 결과 반환
         return bungMap.entrySet().stream()
-            .map(entry -> new BungInfoWithMemberListDto(entry.getKey(), entry.getValue()))
+            .map(entry -> new BungInfoWithMemberListDto(
+                entry.getKey(),
+                entry.getValue(),
+                userProfileImageUrlResolver
+            ))
             .sorted(Comparator.comparing(dto -> orderMap.get(dto.getBungId())))
             .collect(Collectors.toList());
     }

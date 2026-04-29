@@ -19,6 +19,7 @@ import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.entity.BungEntity;
 import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.user.model.User;
+import io.openur.domain.user.service.UserProfileImageUrlResolver;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
 import java.awt.HeadlessException;
@@ -45,6 +46,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
     private final UserBungJpaRepository userBungJpaRepository;
     private final JPAQueryFactory queryFactory;
+    private final UserProfileImageUrlResolver userProfileImageUrlResolver;
 
     @Override
     public int countParticipantsByBungId(String bungId) {
@@ -73,7 +75,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         // 첫 번째 멤버에서 BungEntity 추출 (모든 멤버는 동일한 Bung을 참조)
         BungEntity bung = members.get(0).getBungEntity();
 
-        return Optional.of(new BungInfoWithMemberListDto(bung, members));
+        return Optional.of(new BungInfoWithMemberListDto(bung, members, userProfileImageUrlResolver));
     }
 
     @Override
@@ -130,7 +132,11 @@ public class UserBungRepositoryImpl implements UserBungRepository {
         List<BungInfoWithMemberListDto> contents = bungIds.stream()
             .map(bungMap::get)
             .filter(Objects::nonNull)
-            .map(members -> new BungInfoWithMemberListDto(members.get(0).getBungEntity(), members))
+            .map(members -> new BungInfoWithMemberListDto(
+                members.get(0).getBungEntity(),
+                members,
+                userProfileImageUrlResolver
+            ))
             .toList();
 
         return new PageImpl<>(contents, pageable, total);

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS tb_users
     created_date           TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_date        TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     blockchain_address     VARCHAR(42)                      NOT NULL DEFAULT '0x',
+    profile_image_storage_key VARCHAR(512)                  DEFAULT NULL,
     running_pace           VARCHAR(8)                       DEFAULT NULL,
     running_frequency      SMALLINT(4)                      DEFAULT NULL,
     feedback               INT(4) UNSIGNED                  DEFAULT 0 NOT NULL

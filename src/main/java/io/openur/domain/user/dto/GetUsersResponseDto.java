@@ -3,6 +3,7 @@ package io.openur.domain.user.dto;
 import com.querydsl.core.Tuple;
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
+import io.openur.domain.user.service.UserProfileImageUrlResolver;
 import lombok.Getter;
 
 @Getter
@@ -13,8 +14,13 @@ public class GetUsersResponseDto {
     private final String runningPace;
     private final Integer runningFrequency;
     private final Long collabCount;
+    private final String profileImageUrl;
 
     public GetUsersResponseDto(Tuple userCounts) {
+        this(userCounts, null);
+    }
+
+    public GetUsersResponseDto(Tuple userCounts, UserProfileImageUrlResolver profileImageUrlResolver) {
         User user = User.from(userCounts.get(0, UserEntity.class));
 
         this.userId = user.getUserId();
@@ -22,5 +28,8 @@ public class GetUsersResponseDto {
         this.runningPace = user.getRunningPace();
         this.runningFrequency = user.getRunningFrequency();
         this.collabCount = userCounts.get(1, Long.class);
+        this.profileImageUrl = profileImageUrlResolver == null
+            ? null
+            : profileImageUrlResolver.resolve(user.getProfileImageStorageKey());
     }
 }

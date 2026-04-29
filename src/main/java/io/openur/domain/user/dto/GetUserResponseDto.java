@@ -25,8 +25,13 @@ public class GetUserResponseDto {
     private String runningPace;
     private Integer runningFrequency;
     private Integer feedback;
+    private String profileImageUrl;
 
     public GetUserResponseDto(User user) {
+        this(user, null);
+    }
+
+    public GetUserResponseDto(User user, String profileImageUrl) {
         this.userId = user.getUserId();
         this.nickname = user.getNickname();
         this.identityAuthenticated = user.getIdentityAuthenticated();
@@ -38,5 +43,6 @@ public class GetUserResponseDto {
         this.runningPace = user.getRunningPace();
         this.runningFrequency = user.getRunningFrequency();
         this.feedback = user.getFeedback();
+        this.profileImageUrl = profileImageUrl;
     }
 }

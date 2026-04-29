@@ -53,9 +53,40 @@ public class UserEntity {
     // TODO: blockchain address 생성 및 기본 아바타 추가 기능
     private String blockchainAddress;
 
+    private String profileImageStorageKey;
+
     private String runningPace;
 
     private Integer runningFrequency;
 
     private Integer feedback;
+
+    public UserEntity(
+        String userId,
+        String nickname,
+        Boolean identityAuthenticated,
+        Provider provider,
+        Boolean blacklisted,
+        LocalDateTime createdDate,
+        LocalDateTime lastLoginDate,
+        String blockchainAddress,
+        String runningPace,
+        Integer runningFrequency,
+        Integer feedback
+    ) {
+        this(
+            userId,
+            nickname,
+            identityAuthenticated,
+            provider,
+            blacklisted,
+            createdDate,
+            lastLoginDate,
+            blockchainAddress,
+            null,
+            runningPace,
+            runningFrequency,
+            feedback
+        );
+    }
 }
