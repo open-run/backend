@@ -15,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserBungRepository userBungRepository;
-    private final UserProfileImageStorageService userProfileImageStorageService;
     private final UserProfileImageUrlResolver userProfileImageUrlResolver;
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -59,19 +57,6 @@ public class UserService {
         return userBungRepository
             .findAllFrequentUsers(bungIds, userDetails.getUser(), pageable)
             .map(userCounts -> new GetUsersResponseDto(userCounts, userProfileImageUrlResolver));
-    }
-
-    @Transactional
-    public GetUserResponseDto saveProfileImage(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        MultipartFile image
-    ) {
-        User user = userRepository.findUser(userDetails.getUser());
-        String storageKey = userProfileImageStorageService.store(user.getUserId(), image);
-        user.updateProfileImageStorageKey(storageKey);
-        userRepository.update(user);
-
-        return new GetUserResponseDto(user, userProfileImageUrlResolver.resolve(storageKey));
     }
 
     @Transactional

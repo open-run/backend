@@ -15,9 +15,11 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1/nft")
@@ -77,20 +79,22 @@ public class NFTController {
             .build());
     }
 
-    @PutMapping("/avatar-items/me/wearing")
-    public ResponseEntity<Response<NftWearingAvatarDto>> saveMyWearingNftAvatar(
+    @PutMapping(value = "/avatar-items/me/wearing/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Response<NftWearingAvatarDto>> saveMyWearingNftAvatarWithProfileImage(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestBody NftWearingAvatarRequestDto request
+        @RequestPart("wearingAvatar") NftWearingAvatarRequestDto request,
+        @RequestPart("image") MultipartFile image
     ) {
-        NftWearingAvatarDto wearingAvatar = nftAvatarItemService.saveWearingAvatar(
+        NftWearingAvatarDto wearingAvatar = nftAvatarItemService.saveWearingAvatarWithProfileImage(
             userDetails.getUser().getUserId(),
             userDetails.getUser().getBlockchainAddress(),
-            request
+            request,
+            image
         );
 
         return ResponseEntity.ok().body(Response.<NftWearingAvatarDto>builder()
             .data(wearingAvatar)
-            .message("Wearing NFT avatar saved successfully")
+            .message("Wearing NFT avatar and profile image saved successfully")
             .build());
     }
 }

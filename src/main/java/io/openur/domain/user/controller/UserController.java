@@ -29,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,10 +38,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -96,20 +92,6 @@ public class UserController {
             .body(Response.<List<GetUserResponseDto>>builder()
                 .message("success")
                 .data(users)
-                .build());
-    }
-
-    @PutMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "유저 프로필 이미지 저장")
-    public ResponseEntity<Response<GetUserResponseDto>> saveProfileImage(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestPart("image") MultipartFile image
-    ) {
-        GetUserResponseDto user = userService.saveProfileImage(userDetails, image);
-        return ResponseEntity.ok()
-            .body(Response.<GetUserResponseDto>builder()
-                .message("success")
-                .data(user)
                 .build());
     }
 

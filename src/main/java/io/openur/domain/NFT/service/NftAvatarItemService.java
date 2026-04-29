@@ -10,6 +10,9 @@ import io.openur.domain.NFT.enums.NftAvatarWearingSlot;
 import io.openur.domain.NFT.repository.NftAvatarWearingJpaRepository;
 import io.openur.domain.NFT.repository.NftItemEquipImageJpaRepository;
 import io.openur.domain.NFT.repository.NftItemJpaRepository;
+import io.openur.domain.user.model.User;
+import io.openur.domain.user.repository.UserRepository;
+import io.openur.domain.user.service.UserProfileImageStorageService;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +28,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,8 @@ public class NftAvatarItemService {
     private final NftBalanceReader nftBalanceReader;
     private final NftAvatarItemViewMapper nftAvatarItemViewMapper;
     private final PlatformTransactionManager transactionManager;
+    private final UserRepository userRepository;
+    private final UserProfileImageStorageService userProfileImageStorageService;
 
     public List<NftAvatarItemDto> getOwnedAvatarItems(String ownerAddress) {
         List<NftItemEntity> candidates = runInReadOnlyTransaction(this::getNftItemCandidates);
@@ -92,8 +98,25 @@ public class NftAvatarItemService {
     }
 
     @Transactional
-    public NftWearingAvatarDto saveWearingAvatar(
+    public NftWearingAvatarDto saveWearingAvatarWithProfileImage(
         String userId,
+        String ownerAddress,
+        NftWearingAvatarRequestDto request,
+        MultipartFile image
+    ) {
+        Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot = resolveWearingItems(ownerAddress, request);
+        String storageKey = userProfileImageStorageService.store(userId, image);
+
+        replaceWearingItems(userId, wearingItemsBySlot);
+
+        User user = userRepository.findById(userId);
+        user.updateProfileImageStorageKey(storageKey);
+        userRepository.update(user);
+
+        return buildWearingAvatarDto(wearingItemsBySlot);
+    }
+
+    private Map<NftAvatarWearingSlot, NftItemEntity> resolveWearingItems(
         String ownerAddress,
         NftWearingAvatarRequestDto request
     ) {
@@ -133,13 +156,15 @@ public class NftAvatarItemService {
         });
         assertOwnedAvatarItems(ownerAddress, wearingItemsBySlot.values());
 
+        return wearingItemsBySlot;
+    }
+
+    private void replaceWearingItems(String userId, Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot) {
         nftAvatarWearingJpaRepository.deleteByUserId(userId);
         nftAvatarWearingJpaRepository.saveAll(wearingItemsBySlot.entrySet()
             .stream()
             .map(entry -> new NftAvatarWearingEntity(userId, entry.getKey(), entry.getValue()))
             .toList());
-
-        return buildWearingAvatarDto(wearingItemsBySlot);
     }
 
     private List<NftItemEntity> getNftItemCandidates() {
