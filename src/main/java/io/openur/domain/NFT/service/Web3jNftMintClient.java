@@ -35,7 +35,7 @@ public class Web3jNftMintClient implements NftMintClient {
         Web3j web3j = Web3j.build(new HttpService(rpcUrl));
         Credentials credentials = Credentials.create(privateKey);
         TransactionManager transactionManager = new RawTransactionManager(web3j, credentials, chainId);
-        this.nftContract = NFTContract.load(contractAddress, web3j, transactionManager, new GaslessGasProvider());
+        this.nftContract = NFTContract.load(contractAddress, web3j, transactionManager, new NetworkGasProvider(web3j));
     }
 
     @Override
