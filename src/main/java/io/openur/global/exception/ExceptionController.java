@@ -1,6 +1,7 @@
 package io.openur.global.exception;
 
 import io.openur.domain.NFT.exception.MintException;
+import io.openur.domain.admin.exception.AdminChallengeConflictException;
 import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.bung.exception.EditBungException;
 import io.openur.domain.bung.exception.GetBungException;
@@ -66,7 +67,7 @@ public class ExceptionController {
         return createResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
-    @ExceptionHandler({JoinBungException.class, CompleteBungException.class})
+    @ExceptionHandler({JoinBungException.class, CompleteBungException.class, AdminChallengeConflictException.class})
     public ResponseEntity<ExceptionDto> handleJoinBungException(Exception e) {
         return createResponse(HttpStatus.CONFLICT, e.getMessage());
     }

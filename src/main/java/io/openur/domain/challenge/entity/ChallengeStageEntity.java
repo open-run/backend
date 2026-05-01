@@ -30,4 +30,13 @@ public class ChallengeStageEntity {
     @ManyToOne(targetEntity = ChallengeEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "challenge_id")
     private ChallengeEntity challengeEntity;
+
+    public void update(Integer stageNumber, Integer conditionAsCount) {
+        this.stageNumber = stageNumber;
+        this.conditionAsCount = conditionAsCount;
+    }
+
+    public void assignChallenge(ChallengeEntity challengeEntity) {
+        this.challengeEntity = challengeEntity;
+    }
 }

@@ -13,4 +13,8 @@ public interface UserChallengeJpaRepository extends JpaRepository<UserChallengeE
         "challengeStageEntity.challengeEntity"
     })
     Optional<UserChallengeEntity> findByUserChallengeId(Long userChallengeId);
+
+    long countByChallengeStageEntityStageId(Long stageId);
+
+    long countByChallengeStageEntityChallengeEntityChallengeId(Long challengeId);
 } 

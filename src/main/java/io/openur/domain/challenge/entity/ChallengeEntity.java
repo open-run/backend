@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -58,4 +59,39 @@ public class ChallengeEntity {
 
     @OneToMany(mappedBy = "challengeEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChallengeStageEntity> challengeStages;
+
+    public void update(
+        String name,
+        String description,
+        ChallengeType challengeType,
+        RewardType rewardType,
+        CompletedType completedType,
+        LocalDateTime conditionAsDate,
+        String conditionAsText
+    ) {
+        this.name = name;
+        this.description = description;
+        this.challengeType = challengeType;
+        this.rewardType = rewardType;
+        this.completedType = completedType;
+        this.conditionAsDate = conditionAsDate;
+        this.conditionAsText = conditionAsText;
+    }
+
+    public void addStage(ChallengeStageEntity stage) {
+        if (this.challengeStages == null) {
+            this.challengeStages = new ArrayList<>();
+        }
+
+        stage.assignChallenge(this);
+        this.challengeStages.add(stage);
+    }
+
+    public void removeStage(ChallengeStageEntity stage) {
+        if (this.challengeStages == null) {
+            return;
+        }
+
+        this.challengeStages.remove(stage);
+    }
 }
