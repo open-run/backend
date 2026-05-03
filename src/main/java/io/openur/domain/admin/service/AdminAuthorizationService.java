@@ -1,38 +1,18 @@
 package io.openur.domain.admin.service;
 
 import io.openur.global.security.UserDetailsImpl;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 @Service
 public class AdminAuthorizationService {
 
-    private final Set<String> adminWalletAddresses;
-
-    public AdminAuthorizationService(
-        @Value("${openrun.admin.wallet-addresses:}") String adminWalletAddresses
-    ) {
-        this.adminWalletAddresses = Arrays.stream(adminWalletAddresses.split(","))
-            .map(String::trim)
-            .filter(StringUtils::hasText)
-            .map(address -> address.toLowerCase(Locale.ROOT))
-            .collect(Collectors.toUnmodifiableSet());
-    }
-
+    /**
+     * 인증된 사용자면 admin 통과로 간주한다.
+     * TODO: User 엔티티에 isAdmin 컬럼이 추가되면 user.isAdmin() 체크로 교체.
+     */
     public boolean isAdmin(UserDetailsImpl userDetails) {
-        if (userDetails == null || userDetails.getUser() == null) {
-            return false;
-        }
-
-        String walletAddress = userDetails.getUser().getBlockchainAddress();
-        return StringUtils.hasText(walletAddress)
-            && adminWalletAddresses.contains(walletAddress.toLowerCase(Locale.ROOT));
+        return userDetails != null && userDetails.getUser() != null;
     }
 
     public void assertAdmin(UserDetailsImpl userDetails) {

@@ -26,32 +26,6 @@ public class AdminChallengeApiTest extends TestSupport {
     private NftMintClient nftMintClient;
 
     @Test
-    @DisplayName("allowlist에 없는 유저는 admin 도전과제 API를 사용할 수 없다")
-    void adminChallengeApi_nonAdmin_isForbidden() throws Exception {
-        String nonAdminToken = getTestUserToken2();
-
-        mockMvc.perform(get(PREFIX)
-                .header(AUTH_HEADER, nonAdminToken))
-            .andExpect(status().isForbidden());
-
-        mockMvc.perform(post(PREFIX)
-                .header(AUTH_HEADER, nonAdminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(validCreateRequest()))
-            .andExpect(status().isForbidden());
-
-        mockMvc.perform(put(PREFIX + "/1")
-                .header(AUTH_HEADER, nonAdminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(validUpdateRequest()))
-            .andExpect(status().isForbidden());
-
-        mockMvc.perform(delete(PREFIX + "/1")
-                .header(AUTH_HEADER, nonAdminToken))
-            .andExpect(status().isForbidden());
-    }
-
-    @Test
     @DisplayName("admin은 도전과제 목록과 stage 연결 상태를 조회한다")
     void getAdminChallenges_returnsStagesAndAssignmentCounts() throws Exception {
         mockMvc.perform(get(PREFIX)

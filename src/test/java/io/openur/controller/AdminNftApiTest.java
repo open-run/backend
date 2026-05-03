@@ -63,7 +63,7 @@ public class AdminNftApiTest extends TestSupport {
     }
 
     @Test
-    @DisplayName("admin 여부를 로그인 유저 address 기준으로 반환한다")
+    @DisplayName("인증된 사용자는 admin 권한을 가진다")
     void getAdminMe_returnsAdminStatus() throws Exception {
         mockMvc.perform(get(PREFIX + "/me")
                 .header(AUTH_HEADER, getTestUserToken1()))
@@ -73,38 +73,7 @@ public class AdminNftApiTest extends TestSupport {
         mockMvc.perform(get(PREFIX + "/me")
                 .header(AUTH_HEADER, getTestUserToken2()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.admin").value(false));
-    }
-
-    @Test
-    @DisplayName("allowlist에 없는 유저는 admin NFT 목록과 부여 API를 사용할 수 없다")
-    void adminNftApi_nonAdmin_isForbidden() throws Exception {
-        String nonAdminToken = getTestUserToken2();
-
-        mockMvc.perform(get(PREFIX + "/users")
-                .header(AUTH_HEADER, nonAdminToken))
-            .andExpect(status().isForbidden());
-
-        mockMvc.perform(get(PREFIX + "/nft/avatar-items")
-                .header(AUTH_HEADER, nonAdminToken))
-            .andExpect(status().isForbidden());
-
-        mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on")
-                .header(AUTH_HEADER, nonAdminToken))
-            .andExpect(status().isForbidden());
-
-        mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
-                .header(AUTH_HEADER, nonAdminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "recipientAddress": "0x9999999999999999999999999999999999999999",
-                      "nftItemId": 1
-                    }
-                    """))
-            .andExpect(status().isForbidden());
-
-        verifyNoInteractions(nftMintClient);
+            .andExpect(jsonPath("$.data.admin").value(true));
     }
 
     @Test
