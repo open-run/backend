@@ -8,11 +8,10 @@ import org.junit.jupiter.api.Test;
 class NftAssetUrlResolverTest {
 
     @Test
-    @DisplayName("local asset 서빙이 켜져 있으면 storage key를 localhost URL로 변환한다")
-    void resolve_localAssetUrl() {
+    @DisplayName("storage key가 있으면 GCS public URL로 변환한다")
+    void resolve_returnsGcsPublicUrlWhenStorageKeyExists() {
         NftAssetUrlResolver resolver = new NftAssetUrlResolver(
-            true,
-            "http://localhost:8080/local-nft-assets/"
+            "https://storage.googleapis.com/openrun-nft/"
         );
 
         String resolvedUrl = resolver.resolve(
@@ -21,19 +20,18 @@ class NftAssetUrlResolverTest {
         );
 
         assertThat(resolvedUrl)
-            .isEqualTo("http://localhost:8080/local-nft-assets/nft-assets/v1/nft-items/hair/57/equip/front.png");
+            .isEqualTo("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/57/equip/front.png");
     }
 
     @Test
-    @DisplayName("local asset 서빙이 꺼져 있으면 DB URL이 있을 때만 반환한다")
-    void resolve_storedUrlOnlyWhenLocalAssetDisabled() {
+    @DisplayName("storage key가 없으면 stored URL로 fallback한다")
+    void resolve_fallbackToStoredUrlWhenStorageKeyMissing() {
         NftAssetUrlResolver resolver = new NftAssetUrlResolver(
-            false,
-            "http://localhost:8080/local-nft-assets"
+            "https://storage.googleapis.com/openrun-nft"
         );
 
-        assertThat(resolver.resolve("https://cdn.example.com/item.png", "storage/key.png"))
+        assertThat(resolver.resolve("https://cdn.example.com/item.png", null))
             .isEqualTo("https://cdn.example.com/item.png");
-        assertThat(resolver.resolve(null, "storage/key.png")).isNull();
+        assertThat(resolver.resolve(null, null)).isNull();
     }
 }
