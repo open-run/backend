@@ -63,7 +63,6 @@ public class SecurityConfig {
                     "/v1/users/nickname/exist",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/local-nft-assets/**",
                     "/health",
                     "/docs"
                 ).permitAll() // unauthenticated group에 포함된 endpoint에 한해서만 접근 허가

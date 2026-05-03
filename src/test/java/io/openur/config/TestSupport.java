@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.cloud.storage.Storage;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +34,8 @@ public class TestSupport {
     private WebApplicationContext context;
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    protected Storage gcsStorage;
 
     /**
      * If using RestDocs for extended description of API documents, Add RestDocumentation Extension

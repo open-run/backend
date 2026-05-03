@@ -1,12 +1,10 @@
 package io.openur.domain.user.service;
 
+import io.openur.global.storage.GcsStorageService;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -16,39 +14,21 @@ public class UserProfileImageStorageService {
         (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
     };
 
-    private final Path localAssetRoot;
+    private final GcsStorageService gcsStorageService;
     private final long maxImageBytes;
 
     public UserProfileImageStorageService(
-        @Value("${openrun.nft.assets.local-root:}") String localAssetRoot,
+        GcsStorageService gcsStorageService,
         @Value("${openrun.users.profile-image.max-size-bytes:2097152}") long maxImageBytes
     ) {
-        this.localAssetRoot = StringUtils.hasText(localAssetRoot)
-            ? Path.of(localAssetRoot).toAbsolutePath().normalize()
-            : null;
+        this.gcsStorageService = gcsStorageService;
         this.maxImageBytes = maxImageBytes;
     }
 
     public String store(String userId, MultipartFile image) {
         byte[] bytes = validateAndRead(image);
         String storageKey = "profile-images/users/" + userId + "/profile.png";
-
-        if (localAssetRoot == null) {
-            throw new IllegalStateException("Local asset root is not configured");
-        }
-
-        Path target = localAssetRoot.resolve(storageKey).normalize();
-        if (!target.startsWith(localAssetRoot)) {
-            throw new IllegalArgumentException("Invalid profile image path");
-        }
-
-        try {
-            Files.createDirectories(target.getParent());
-            Files.write(target, bytes);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to store profile image", e);
-        }
-
+        gcsStorageService.upload(storageKey, bytes, MediaType.IMAGE_PNG_VALUE);
         return storageKey;
     }
 

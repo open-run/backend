@@ -118,7 +118,7 @@ public class BungApiTest extends TestSupport {
             )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].memberList[0].profileImageUrl")
-                    .value("http://localhost:8080/local-nft-assets/profile-images/users/"
+                    .value("https://storage.googleapis.com/openrun-nft/profile-images/users/"
                         + "5d22bd65-f1ed-4e7b-bc7b-0a59580d3176/profile.png"))
                 .andReturn();
 

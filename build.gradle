@@ -50,6 +50,8 @@ dependencies {
 
     implementation 'org.web3j:core:4.10.0'
 
+    implementation platform('com.google.cloud:libraries-bom:26.43.0')
+    implementation 'com.google.cloud:google-cloud-storage'
 
     testRuntimeOnly 'com.h2database:h2:2.2.224'
     runtimeOnly 'com.mysql:mysql-connector-j'
