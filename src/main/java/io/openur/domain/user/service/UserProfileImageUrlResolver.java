@@ -7,20 +7,23 @@ import org.springframework.util.StringUtils;
 @Component
 public class UserProfileImageUrlResolver {
 
-    private final String publicBaseUrl;
+    private final boolean serveLocalNftAssets;
+    private final String localAssetBaseUrl;
 
     public UserProfileImageUrlResolver(
-        @Value("${openrun.gcs.public-base-url}") String publicBaseUrl
+        @Value("${openrun.nft.assets.serve-local:false}") boolean serveLocalNftAssets,
+        @Value("${openrun.nft.assets.public-base-url:http://localhost:8080/local-nft-assets}") String localAssetBaseUrl
     ) {
-        this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
+        this.serveLocalNftAssets = serveLocalNftAssets;
+        this.localAssetBaseUrl = trimTrailingSlash(localAssetBaseUrl);
     }
 
     public String resolve(String storageKey) {
-        if (!StringUtils.hasText(storageKey)) {
+        if (!serveLocalNftAssets || !StringUtils.hasText(storageKey)) {
             return null;
         }
 
-        return publicBaseUrl + "/" + storageKey;
+        return localAssetBaseUrl + "/" + storageKey;
     }
 
     private String trimTrailingSlash(String value) {
