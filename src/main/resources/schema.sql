@@ -71,9 +71,12 @@ CREATE TABLE IF NOT EXISTS tb_challenge_stages
 (
     stage_id        BIGINT AUTO_INCREMENT
         PRIMARY KEY,
-    stage_number    INT           NOT NULL,
-    condition_count INT DEFAULT 1 NOT NULL,
-    challenge_id    BIGINT        NOT NULL,
+    stage_number    INT            NOT NULL,
+    condition_count INT DEFAULT 1  NOT NULL,
+    challenge_id    BIGINT         NOT NULL,
+    weight_common   INT DEFAULT 70 NOT NULL,
+    weight_rare     INT DEFAULT 25 NOT NULL,
+    weight_epic     INT DEFAULT 5  NOT NULL,
     CONSTRAINT tb_challenge_stages_challenge_id_fk
         FOREIGN KEY (challenge_id) REFERENCES tb_challenges (challenge_id)
 );
