@@ -237,7 +237,7 @@ public class BungService {
         getBungDetail(bungId).getMemberList().stream()
             .filter(UserBungInfoDto::isParticipationStatus)
             .map(UserBungInfoDto::getUserId)
-            .forEach(challengeEventsPublisher::publishChallengeCheck);
+            .forEach(challengeEventsPublisher::publishBulkChallengeCheck);
 
         return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }
