@@ -8,6 +8,7 @@ import io.openur.domain.NFT.repository.NftMintJobJpaRepository;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import io.openur.global.security.UserDetailsImpl;
+import java.math.BigInteger;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,7 +24,7 @@ public class NftMintJobService {
     private final NftMintJobJpaRepository nftMintJobJpaRepository;
     private final UserChallengeJpaRepository userChallengeJpaRepository;
     private final NftMintJobAsyncExecutor nftMintJobAsyncExecutor;
-    private final NftRewardMetadataResolver nftRewardMetadataResolver;
+    private final NftRewardSelector nftRewardSelector;
 
     @Transactional
     public NftMintJobDto requestMintJob(UserDetailsImpl userDetails, Long userChallengeId) {
@@ -41,14 +42,15 @@ public class NftMintJobService {
             .orElse(null);
 
         if (Boolean.TRUE.equals(userChallenge.getNftCompleted())) {
-            NFTMetadataDto metadata = null;
             if (mintJob == null) {
+                BigInteger tokenId = nftRewardSelector.selectTokenId(userChallenge);
+                NFTMetadataDto metadata = nftRewardSelector.resolveMetadata(tokenId);
                 mintJob = new NftMintJobEntity(userChallenge.getUserEntity(), userChallenge);
-                metadata = nftRewardMetadataResolver.getMetadata(nftRewardMetadataResolver.getRewardTokenId());
                 mintJob.markSuccess(null, metadata);
                 mintJob = nftMintJobJpaRepository.save(mintJob);
             } else if (!NftMintJobStatus.SUCCESS.equals(mintJob.getStatus())) {
-                metadata = nftRewardMetadataResolver.getMetadata(nftRewardMetadataResolver.getRewardTokenId());
+                BigInteger tokenId = nftRewardSelector.selectTokenId(userChallenge);
+                NFTMetadataDto metadata = nftRewardSelector.resolveMetadata(tokenId);
                 mintJob.markSuccess(mintJob.getTransactionHash(), metadata);
             }
             return NftMintJobDto.from(mintJob);

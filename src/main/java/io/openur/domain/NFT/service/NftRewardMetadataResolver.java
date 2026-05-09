@@ -1,5 +1,15 @@
 package io.openur.domain.NFT.service;
 
+// NOTE: 본 클래스는 NftRewardSelector 도입과 함께 무력화되었습니다.
+// - 보상 토큰 ID는 Challenge.rewardType + ChallengeStage 가중치 기반의
+//   NftRewardSelector.selectTokenId(...) 가 결정합니다.
+// - 메타데이터는 tb_nft_items 카탈로그에서 직접 조립하는
+//   NftRewardSelector.resolveMetadata(...) 가 제공합니다.
+// classpath:metadata/{tokenId}.json + Pinata IPFS 게이트웨이 의존이 더 이상 필요 없으나,
+// 향후 IPFS 메타 재도입 가능성에 대비해 코드 자체는 주석 형태로 보존합니다.
+// Spring 빈으로 등록되지 않도록 @Service 와 클래스 정의 전체를 블록 주석 처리합니다.
+
+/*
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.domain.NFT.dto.NFTMetadataDto;
@@ -55,3 +65,4 @@ public class NftRewardMetadataResolver {
         }
     }
 }
+*/
