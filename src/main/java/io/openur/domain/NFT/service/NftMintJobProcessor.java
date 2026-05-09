@@ -18,7 +18,7 @@ public class NftMintJobProcessor {
 
     private final NftMintJobJpaRepository nftMintJobJpaRepository;
     private final NftMintClient nftMintClient;
-    private final NftRewardMetadataResolver nftRewardMetadataResolver;
+    private final NftRewardSelector nftRewardSelector;
     private final UserChallengeRepository userChallengeRepository;
     private final TransactionTemplate transactionTemplate;
 
@@ -34,7 +34,7 @@ public class NftMintJobProcessor {
                 mintContext.tokenId(),
                 MINT_AMOUNT
             );
-            NFTMetadataDto metadata = nftRewardMetadataResolver.getMetadata(mintContext.tokenId());
+            NFTMetadataDto metadata = nftRewardSelector.resolveMetadata(mintContext.tokenId());
             markSuccess(mintJobId, mintContext.userChallengeId(), transactionHash, metadata);
         } catch (Exception e) {
             markFailed(mintJobId, e.getMessage());
@@ -48,7 +48,7 @@ public class NftMintJobProcessor {
                 return null;
             }
 
-            BigInteger tokenId = nftRewardMetadataResolver.getRewardTokenId();
+            BigInteger tokenId = nftRewardSelector.selectTokenId(mintJob.getUserChallengeEntity());
             mintJob.markMinting(tokenId.toString());
 
             return new MintContext(

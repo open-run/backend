@@ -7,6 +7,7 @@ import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +24,7 @@ public class ChallengeEventsListener {
     private final UserChallengeRepository userChallengeRepository;
     private final ChallengeStageRepository stageRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleChallengeRaise(OnRaise event) {
         userChallengeRepository.bulkIncrementCount(
             event.getUserChallenges().stream()
@@ -33,9 +33,7 @@ public class ChallengeEventsListener {
         );
     }
 
-    @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleChallengeEvolution(OnEvolution event) {
         userChallengeRepository.bulkUpdateCompletedChallenges(
             event.getUserChallenges().stream()
@@ -63,7 +61,7 @@ public class ChallengeEventsListener {
 
         do {
             challengeStages = stageRepository.findAllByMinimumStages(pageable);
-            challengeStages.forEach(stage -> 
+            challengeStages.forEach(stage ->
                 newUserChallenges.add(new UserChallenge(event.getUser(), stage))
             );
             pageable = pageable.next();
@@ -72,4 +70,3 @@ public class ChallengeEventsListener {
         userChallengeRepository.bulkInsertUserChallenges(newUserChallenges);
     }
 }
-

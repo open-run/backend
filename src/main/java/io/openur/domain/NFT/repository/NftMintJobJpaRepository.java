@@ -1,8 +1,12 @@
 package io.openur.domain.NFT.repository;
 
 import io.openur.domain.NFT.entity.NftMintJobEntity;
+import io.openur.domain.NFT.enums.NftMintJobStatus;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -23,4 +27,7 @@ public interface NftMintJobJpaRepository extends JpaRepository<NftMintJobEntity,
         "userChallengeEntity.challengeStageEntity.challengeEntity"
     })
     List<NftMintJobEntity> findTop20ByUserEntityUserIdOrderByUpdatedAtDesc(String userId);
+
+    Slice<NftMintJobEntity> findByStatusAndUpdatedAtBefore(
+        NftMintJobStatus status, LocalDateTime cutoff, Pageable pageable);
 }
