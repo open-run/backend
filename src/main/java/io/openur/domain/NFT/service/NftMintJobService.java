@@ -13,8 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -22,52 +21,27 @@ public class NftMintJobService {
 
     private final NftMintJobJpaRepository nftMintJobJpaRepository;
     private final UserChallengeJpaRepository userChallengeJpaRepository;
-    private final NftMintJobAsyncExecutor nftMintJobAsyncExecutor;
+    private final NftMintJobProcessor nftMintJobProcessor;
     private final EthereumAddressValidator ethereumAddressValidator;
+    private final TransactionTemplate transactionTemplate;
 
-    @Transactional
     public NftMintJobDto requestMintJob(UserDetailsImpl userDetails, Long userChallengeId) {
         String userId = userDetails.getUser().getUserId();
-        UserChallengeEntity userChallenge = userChallengeJpaRepository
-            .findByUserChallengeId(userChallengeId)
-            .orElseThrow(() -> new IllegalArgumentException("userChallenge not found"));
 
-        if (!userChallenge.getUserEntity().getUserId().equals(userId)) {
-            throw new AccessDeniedException("Cannot mint another user's challenge reward");
+        PrepResult prep = transactionTemplate.execute(status -> prepareJob(userId, userChallengeId));
+
+        if (prep.immediate() != null) {
+            return prep.immediate();
         }
 
-        NftMintJobEntity mintJob = nftMintJobJpaRepository
-            .findByUserChallengeEntityUserChallengeId(userChallengeId)
-            .orElse(null);
+        // Phase 2: synchronous processing — markMinting → mintToken → markSuccess|markFailed
+        // 각 단계는 NftMintJobProcessor 내부 TransactionTemplate 으로 자체 트랜잭션을 가진다.
+        nftMintJobProcessor.process(prep.mintJobId());
 
-        if (Boolean.TRUE.equals(userChallenge.getNftCompleted())) {
-            // 정상 흐름에서는 markSuccess 가 동일 트랜잭션으로 mintJob.status=SUCCESS 와 nftCompleted=true 를 묶는다.
-            // 이 분기에 도달했는데 mintJob 이 없거나 SUCCESS 가 아니면 데이터 불일치(수동 SQL/시드 등)이므로 즉시 실패시킨다.
-            if (mintJob == null || !NftMintJobStatus.SUCCESS.equals(mintJob.getStatus())) {
-                throw new IllegalStateException(
-                    "Inconsistent reward state: userChallenge.nftCompleted=true but mintJob is "
-                        + (mintJob == null ? "missing" : mintJob.getStatus())
-                        + " for userChallengeId=" + userChallengeId);
-            }
-            return NftMintJobDto.from(mintJob);
-        }
-
-        validateRewardable(userChallenge);
-
-        boolean shouldDispatch = false;
-        if (mintJob == null) {
-            mintJob = nftMintJobJpaRepository.save(new NftMintJobEntity(userChallenge.getUserEntity(), userChallenge));
-            shouldDispatch = true;
-        } else if (NftMintJobStatus.FAILED.equals(mintJob.getStatus())) {
-            mintJob.resetToPending();
-            shouldDispatch = true;
-        }
-
-        if (shouldDispatch) {
-            dispatchAfterCommit(mintJob.getMintJobId());
-        }
-
-        return NftMintJobDto.from(mintJob);
+        // Phase 3: 최종 상태(SUCCESS/FAILED 메타데이터 포함) 다시 읽어 DTO 반환
+        NftMintJobEntity result = transactionTemplate.execute(status ->
+            nftMintJobJpaRepository.findById(prep.mintJobId()).orElseThrow());
+        return NftMintJobDto.from(result);
     }
 
     @Transactional(readOnly = true)
@@ -77,6 +51,46 @@ public class NftMintJobService {
             .stream()
             .map(NftMintJobDto::from)
             .toList();
+    }
+
+    private PrepResult prepareJob(String userId, Long userChallengeId) {
+        UserChallengeEntity userChallenge = userChallengeJpaRepository
+            .findByUserChallengeId(userChallengeId)
+            .orElseThrow(() -> new IllegalArgumentException("userChallenge not found"));
+
+        if (!userChallenge.getUserEntity().getUserId().equals(userId)) {
+            throw new AccessDeniedException("Cannot mint another user's challenge reward");
+        }
+
+        NftMintJobEntity existing = nftMintJobJpaRepository
+            .findByUserChallengeEntityUserChallengeId(userChallengeId)
+            .orElse(null);
+
+        if (Boolean.TRUE.equals(userChallenge.getNftCompleted())) {
+            // 정상 흐름에서는 markSuccess 가 동일 트랜잭션으로 mintJob.status=SUCCESS 와 nftCompleted=true 를 묶는다.
+            // 이 분기에 도달했는데 mintJob 이 없거나 SUCCESS 가 아니면 데이터 불일치(수동 SQL/시드 등)이므로 즉시 실패시킨다.
+            if (existing == null || !NftMintJobStatus.SUCCESS.equals(existing.getStatus())) {
+                throw new IllegalStateException(
+                    "Inconsistent reward state: userChallenge.nftCompleted=true but mintJob is "
+                        + (existing == null ? "missing" : existing.getStatus())
+                        + " for userChallengeId=" + userChallengeId);
+            }
+            return PrepResult.immediate(NftMintJobDto.from(existing));
+        }
+
+        validateRewardable(userChallenge);
+
+        if (existing == null) {
+            NftMintJobEntity saved = nftMintJobJpaRepository
+                .save(new NftMintJobEntity(userChallenge.getUserEntity(), userChallenge));
+            return PrepResult.toProcess(saved.getMintJobId());
+        }
+        if (NftMintJobStatus.FAILED.equals(existing.getStatus())) {
+            existing.resetToPending();
+            return PrepResult.toProcess(existing.getMintJobId());
+        }
+        // 동기 환경에서는 거의 발생하지 않으나 경합/leftover PENDING/MINTING 방어
+        return PrepResult.immediate(NftMintJobDto.from(existing));
     }
 
     private void validateRewardable(UserChallengeEntity userChallenge) {
@@ -97,17 +111,13 @@ public class NftMintJobService {
         }
     }
 
-    private void dispatchAfterCommit(Long mintJobId) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            nftMintJobAsyncExecutor.processAsync(mintJobId);
-            return;
+    private record PrepResult(NftMintJobDto immediate, Long mintJobId) {
+        static PrepResult immediate(NftMintJobDto dto) {
+            return new PrepResult(dto, null);
         }
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                nftMintJobAsyncExecutor.processAsync(mintJobId);
-            }
-        });
+        static PrepResult toProcess(Long id) {
+            return new PrepResult(null, id);
+        }
     }
 }
