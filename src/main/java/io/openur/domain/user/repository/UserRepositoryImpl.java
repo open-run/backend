@@ -1,13 +1,15 @@
 package io.openur.domain.user.repository;
 
+import static io.openur.domain.user.entity.QUserEntity.userEntity;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.global.common.validation.EthereumAddressValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +22,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userJpaRepository;
     private final EthereumAddressValidator ethereumAddressValidator;
-
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
     @Override
     public User findUser(User user) {
@@ -73,21 +73,31 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public List<String> batchIncrementFeedback(List<String> targetUserIds) {
-        List<String> notFoundUserIds = new ArrayList<>(); // 조회되지 않은 userId를 저장할 리스트
-
-        for (String userId : targetUserIds) {
-            UserEntity userEntity = entityManager.find(UserEntity.class, userId);
-            if (userEntity != null) {
-                userEntity.setFeedback(userEntity.getFeedback() + 1);
-                entityManager.merge(userEntity);
-            } else {
-                notFoundUserIds.add(userId); // 조회되지 않은 userId를 리스트에 추가
-            }
+        if (targetUserIds == null || targetUserIds.isEmpty()) {
+            return List.of();
         }
-        entityManager.flush();
-        entityManager.clear();
 
-        return notFoundUserIds;
+        // 1. 존재 확인 (1 SELECT) — N+1 find 제거
+        Set<String> existingIds = new HashSet<>();
+        userJpaRepository.findAllById(targetUserIds)
+            .forEach(entity -> existingIds.add(entity.getUserId()));
+
+        // 2. 존재하는 사용자 feedback 단일 bulk update (1 UPDATE)
+        // 기존 dirty checking + merge 패턴은 영속 entity 에 대한 중복 호출이라 제거.
+        // QueryDSL bulk update 는 즉시 DB 반영되며, 호출자 트랜잭션 컨텍스트를 건드리지 않음.
+        if (!existingIds.isEmpty()) {
+            queryFactory
+                .update(userEntity)
+                .set(userEntity.feedback, userEntity.feedback.add(1))
+                .where(userEntity.userId.in(existingIds))
+                .execute();
+        }
+
+        // 3. 미존재 userId 리스트 (입력 순서 보존)
+        return targetUserIds.stream()
+            .filter(id -> !existingIds.contains(id))
+            .toList();
     }
 }
