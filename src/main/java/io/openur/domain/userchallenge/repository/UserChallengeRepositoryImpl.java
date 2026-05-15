@@ -219,6 +219,44 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
+    public Page<UserChallenge> findCompletedAndNftIssuedChallengesByUserId(
+        String userId,
+        Pageable pageable
+    ) {
+        BooleanExpression conditions = buildNftIssuedConditions(userId);
+
+        List<UserChallengeEntity> content = queryFactory
+            .selectFrom(userChallengeEntity)
+            .leftJoin(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .fetchJoin()
+            .leftJoin(challengeStageEntity.challengeEntity, challengeEntity)
+            .fetchJoin()
+            .where(conditions)
+            .orderBy(
+                userChallengeEntity.completedDate.desc(),
+                userChallengeEntity.userChallengeId.desc()
+            )
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (content.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        JPAQuery<Long> countQuery = queryFactory
+            .select(userChallengeEntity.count())
+            .from(userChallengeEntity)
+            .where(conditions);
+
+        List<UserChallenge> result = content.stream()
+            .map(UserChallenge::from)
+            .collect(Collectors.toList());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
+    @Override
     public Page<UserChallenge> findRepetitiveChallengesByUserId(String userId,
         Pageable pageable) {
 
@@ -366,5 +404,15 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
         return userChallengeEntity.userEntity.userId.eq(userId)
             .and(userChallengeEntity.completedDate.isNotNull()) // 완료됨
             .and(userChallengeEntity.nftCompleted.isFalse());  // NFT 미발급
+    }
+
+    /**
+     * NFT 발급 완료된 챌린지 조회 조건 구성
+     * completedDate IS NOT NULL && nftCompleted = true
+     */
+    private BooleanExpression buildNftIssuedConditions(String userId) {
+        return userChallengeEntity.userEntity.userId.eq(userId)
+            .and(userChallengeEntity.completedDate.isNotNull()) // 완료됨
+            .and(userChallengeEntity.nftCompleted.isTrue());   // NFT 발급 완료
     }
 }

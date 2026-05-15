@@ -1,5 +1,6 @@
 package io.openur.domain.challenge.controller;
 
+import io.openur.domain.challenge.dto.CompletedChallengeWithNftDto;
 import io.openur.domain.challenge.dto.GeneralChallengeDto;
 import io.openur.domain.challenge.dto.RepetitiveChallengeTreeDto;
 import io.openur.domain.challenge.service.ChallengeService;
@@ -54,6 +55,23 @@ public class ChallengeController {
         Page<GeneralChallengeDto> challenges = challengeService.getCompletedChallengeList(
             userDetails, pageable
         );
+
+        return ResponseEntity.ok(
+            PagedResponse.build(challenges, "success")
+        );
+    }
+
+    @GetMapping("/completed-with-nft")
+    public ResponseEntity<PagedResponse<CompletedChallengeWithNftDto>>
+    getCompletedChallengeListWithNft(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit);
+
+        Page<CompletedChallengeWithNftDto> challenges = challengeService
+            .getCompletedChallengesWithNft(userDetails, pageable);
 
         return ResponseEntity.ok(
             PagedResponse.build(challenges, "success")

@@ -59,18 +59,6 @@ public class NFTController {
             .build());
     }
 
-    @GetMapping("/mint-jobs/me")
-    public ResponseEntity<Response<List<NftMintJobDto>>> getMyMintJobs(
-        @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
-        List<NftMintJobDto> mintJobs = nftMintJobService.getMyMintJobs(userDetails);
-
-        return ResponseEntity.ok().body(Response.<List<NftMintJobDto>>builder()
-            .data(mintJobs)
-            .message("NFT mint jobs fetched successfully")
-            .build());
-    }
-
     @GetMapping("/user/{userAddress}")
     public ResponseEntity<PagedResponse<NFTMetadataDto>> getNFTsByUserAddress(
         @PathVariable String userAddress,
