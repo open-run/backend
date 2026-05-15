@@ -13,8 +13,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.challenge.enums.ChallengeType;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -39,9 +37,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     private final UserChallengeJpaRepository userChallengeJpaRepository;
     private final JPAQueryFactory queryFactory;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Override
     public UserChallenge save(UserChallenge userChallenge) {
         return UserChallenge.from(
@@ -51,27 +46,16 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     @Transactional
     @Override
     public void bulkInsertUserChallenges(List<UserChallenge> userChallenges) {
-        int count = 0;
-        int batchSize = 100;
-
-        for (UserChallenge userChallenge : userChallenges) {
-            // Domain → Entity 변환
-            UserChallengeEntity entity = userChallenge.toEntity();
-
-            // 1. 영속성 컨텍스트에 추가
-            entityManager.persist(entity);
-            count++;
-
-            // 2. BATCH_SIZE마다 flush & clear
-            if (count % batchSize == 0) {
-                entityManager.flush();  // DB에 쓰기
-                entityManager.clear();  // 영속성 컨텍스트 비우기 (메모리 해제)
-            }
+        if (userChallenges.isEmpty()) {
+            return;
         }
 
-        // 3. 남은 데이터 flush
-        entityManager.flush();
-        entityManager.clear();
+        // saveAll 은 hibernate.jdbc.batch_size 설정 시 batch insert 로 동작.
+        // 별도 persist 루프 + 수동 flush/clear 는 호출자 영속성 컨텍스트를 망가뜨려 제거.
+        List<UserChallengeEntity> entities = userChallenges.stream()
+            .map(UserChallenge::toEntity)
+            .toList();
+        userChallengeJpaRepository.saveAll(entities);
     }
 
     @Override
@@ -81,14 +65,13 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             return;
         }
 
+        // QueryDSL bulk update 는 즉시 DB 에 반영되므로 추가 flush 불필요.
+        // clear() 는 호출자 트랜잭션의 다른 영속 entity 를 detach 시키므로 제거.
         queryFactory
             .update(userChallengeEntity)
             .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
             .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
             .execute();
-
-        entityManager.flush();
-        entityManager.clear();
     }
 
     @Override
@@ -105,9 +88,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .set(userChallengeEntity.nftCompleted, false)
             .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
             .execute();
-
-        entityManager.flush();
-        entityManager.clear();
     }
 
     @Override
@@ -118,9 +98,6 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .set(userChallengeEntity.nftCompleted, true)
             .where(userChallengeEntity.userChallengeId.eq(userChallengeId))
             .execute();
-
-        entityManager.flush();
-        entityManager.clear();
     }
 
     @Override
