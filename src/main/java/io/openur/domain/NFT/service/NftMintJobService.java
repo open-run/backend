@@ -8,11 +8,9 @@ import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import io.openur.global.common.validation.EthereumAddressValidator;
 import io.openur.global.security.UserDetailsImpl;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
@@ -42,15 +40,6 @@ public class NftMintJobService {
         NftMintJobEntity result = transactionTemplate.execute(status ->
             nftMintJobJpaRepository.findById(prep.mintJobId()).orElseThrow());
         return NftMintJobDto.from(result);
-    }
-
-    @Transactional(readOnly = true)
-    public List<NftMintJobDto> getMyMintJobs(UserDetailsImpl userDetails) {
-        return nftMintJobJpaRepository
-            .findTop20ByUserEntityUserIdOrderByUpdatedAtDesc(userDetails.getUser().getUserId())
-            .stream()
-            .map(NftMintJobDto::from)
-            .toList();
     }
 
     private PrepResult prepareJob(String userId, Long userChallengeId) {

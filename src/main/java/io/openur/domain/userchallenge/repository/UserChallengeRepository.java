@@ -37,6 +37,10 @@ public interface UserChallengeRepository {
         String userId, Pageable pageable
     );
 
+    Page<UserChallenge> findCompletedAndNftIssuedChallengesByUserId(
+        String userId, Pageable pageable
+    );
+
     Page<UserChallenge> findRepetitiveChallengesByUserId(
         String userId, Pageable pageable
     );

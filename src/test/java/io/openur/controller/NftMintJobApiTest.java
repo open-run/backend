@@ -1,11 +1,8 @@
 package io.openur.controller;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.containsString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.config.TestSupport;
+import io.openur.domain.NFT.entity.NftMintJobEntity;
+import io.openur.domain.NFT.enums.NftMintJobStatus;
+import io.openur.domain.NFT.repository.NftMintJobJpaRepository;
 import io.openur.domain.NFT.service.NftMintJobProcessor;
 import io.openur.domain.NFT.service.NftMintClient;
 import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
@@ -38,6 +38,9 @@ public class NftMintJobApiTest extends TestSupport {
 
     @Autowired
     private UserChallengeJpaRepository userChallengeJpaRepository;
+
+    @Autowired
+    private NftMintJobJpaRepository nftMintJobJpaRepository;
 
     @Test
     @DisplayName("보상 가능한 userChallengeId로 민팅 작업을 생성한다")
@@ -75,12 +78,10 @@ public class NftMintJobApiTest extends TestSupport {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.userChallengeId").value(1));
 
-        mockMvc.perform(get(PREFIX + "/me")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data", hasSize(1)))
-            .andExpect(jsonPath("$.data[0].userChallengeId").value(1));
+        NftMintJobEntity job = nftMintJobJpaRepository
+            .findByUserChallengeEntityUserChallengeId(1L)
+            .orElseThrow();
+        assertThat(job.getUserChallengeEntity().getUserChallengeId()).isEqualTo(1L);
     }
 
     @Test
@@ -103,14 +104,11 @@ public class NftMintJobApiTest extends TestSupport {
 
         nftMintJobProcessor.process(mintJobId);
 
-        mockMvc.perform(get(PREFIX + "/me")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].status").value("SUCCESS"))
-            .andExpect(jsonPath("$.data[0].transactionHash").value("0xtxhash"))
-            .andExpect(jsonPath("$.data[0].tokenId").exists())
-            .andExpect(jsonPath("$.data[0].nftName").value("shoes1"));
+        NftMintJobEntity job = nftMintJobJpaRepository.findById(mintJobId).orElseThrow();
+        assertThat(job.getStatus()).isEqualTo(NftMintJobStatus.SUCCESS);
+        assertThat(job.getTransactionHash()).isEqualTo("0xtxhash");
+        assertThat(job.getTokenId()).isNotNull();
+        assertThat(job.getNftName()).isEqualTo("shoes1");
 
         assertThat(userChallengeJpaRepository.findById(1L).orElseThrow().getNftCompleted()).isTrue();
     }
@@ -125,12 +123,9 @@ public class NftMintJobApiTest extends TestSupport {
 
         nftMintJobProcessor.process(mintJobId);
 
-        mockMvc.perform(get(PREFIX + "/me")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data[0].status").value("FAILED"))
-            .andExpect(jsonPath("$.data[0].errorMessage", containsString("chain down")));
+        NftMintJobEntity job = nftMintJobJpaRepository.findById(mintJobId).orElseThrow();
+        assertThat(job.getStatus()).isEqualTo(NftMintJobStatus.FAILED);
+        assertThat(job.getErrorMessage()).contains("chain down");
 
         assertThat(userChallengeJpaRepository.findById(1L).orElseThrow().getNftCompleted()).isFalse();
     }
