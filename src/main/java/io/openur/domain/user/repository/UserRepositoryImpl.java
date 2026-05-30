@@ -6,6 +6,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.User;
 import io.openur.global.common.validation.EthereumAddressValidator;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -23,6 +25,9 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userJpaRepository;
     private final EthereumAddressValidator ethereumAddressValidator;
     private final JPAQueryFactory queryFactory;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public User findUser(User user) {
@@ -93,6 +98,10 @@ public class UserRepositoryImpl implements UserRepository {
                 .set(userEntity.feedback, userEntity.feedback.add(1))
                 .where(userEntity.userId.in(existingIds))
                 .execute();
+
+            // bulk update 는 1차 캐시를 우회하므로 flush → clear 로 stale entity 정리.
+            entityManager.flush();
+            entityManager.clear();
         }
 
         // 3. 미존재 userId 리스트 (입력 순서 보존)
