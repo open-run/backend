@@ -39,8 +39,9 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
                 .toList()
         );
 
-        // saveAll 후 findBungById 의 query 트리거 시 JPA AUTO flush 모드가 자동 flush.
-        // clear() 는 호출자 트랜잭션의 다른 영속 entity 까지 detach 시키므로 제거.
+        entityManager.flush();
+        entityManager.clear();
+
         return bungRepository.findBungById(bung.getBungId());
     }
     
@@ -65,8 +66,10 @@ public class BungHashtagRepositoryImpl implements BungHashtagRepository {
                 bung.getBungId(), newStrs
             );
 
-        // @Modifying JPQL DELETE 는 즉시 DB 반영. 후속 saveAll INSERT 와 키 충돌 없음.
-        // 별도 flush/clear 불필요 — clear 는 호출자 영속성 컨텍스트 영향이라 제거.
+        // @Modifying JPQL DELETE 후 1차 캐시에 잔존하는 BungHashtag 를 정리해
+        // 후속 findHashtagsByBungId 조회가 DB 기준 fresh 결과를 반환하도록 보장.
+        entityManager.flush();
+        entityManager.clear();
 
         // 추가 대상 처리 (벌크 연산): 비영속 객체 생성 없이 em.getReference 로 프록시 참조
         BungEntity bungRef = entityManager.getReference(BungEntity.class, bung.getBungId());

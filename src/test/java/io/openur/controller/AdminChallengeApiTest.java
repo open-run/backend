@@ -10,10 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
-import io.openur.domain.NFT.service.NftMintClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminChallengeApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/admin/challenges";
-
-    @MockBean
-    private NftMintClient nftMintClient;
 
     @Test
     @DisplayName("admin은 도전과제 목록과 stage 연결 상태를 조회한다")

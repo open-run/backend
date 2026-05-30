@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openur.config.TestSupport;
-import io.openur.domain.NFT.service.NftMintClient;
 import io.openur.domain.NFT.service.NftMintJobProcessor;
 import java.math.BigInteger;
 import org.junit.jupiter.api.DisplayName;
@@ -28,9 +27,6 @@ public class CompletedChallengeWithNftApiTest extends TestSupport {
 
     private static final String LIST_PATH = "/v1/challenges/completed-with-nft";
     private static final String MINT_JOB_PATH = "/v1/nft/mint-jobs";
-
-    @MockBean
-    private NftMintClient nftMintClient;
 
     @Autowired
     private NftMintJobProcessor nftMintJobProcessor;
