@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
     "spring.config.additional-location=classpath:application-test.properties"
 })
 @Transactional
+@Disabled("NFTService 실 web3j(RPC/contract) 연동 수동 테스트 — context 로드가 실 secret 의존")
 public class NftTest {
     @Autowired
     private NFTService nftService;

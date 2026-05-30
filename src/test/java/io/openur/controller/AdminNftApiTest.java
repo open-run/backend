@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.openur.config.TestSupport;
-import io.openur.domain.NFT.service.NftMintClient;
 import io.openur.domain.user.entity.UserEntity;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.repository.UserJpaRepository;
@@ -25,7 +24,6 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +33,6 @@ public class AdminNftApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/admin";
     private static final String RECIPIENT_ADDRESS = "0x9999999999999999999999999999999999999999";
-
-    @MockBean
-    private NftMintClient nftMintClient;
 
     @Autowired
     private UserJpaRepository userJpaRepository;

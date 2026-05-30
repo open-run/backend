@@ -65,27 +65,27 @@ INSERT INTO tb_challenges (challenge_id, name, description, challenge_type,
                            condition_date, condition_text
 )
 VALUES
-    (1, 'test_challenge', 'test_challenge_description', 'normal', 'face', 'count', null, null),
-    (2, 'test_challenge2', 'test_challenge2_description', 'repetitive', 'face', 'count', null, null)
+    (1, 'test_challenge', 'test_challenge_description', 'normal', 'footwear', 'count', null, null),
+    (2, 'test_challenge2', 'test_challenge2_description', 'repetitive', 'footwear', 'count', null, null)
 ;
 
-INSERT INTO tb_challenge_stages (stage_id, stage_number, condition_count, challenge_id)
+INSERT INTO tb_challenge_stages (stage_id, stage_number, condition_count, challenge_id, weight_common, weight_rare, weight_epic)
 VALUES
-    (1, 1, 1, 1),
-    (2, 1, 1, 2),
-    (3, 2, 3, 2),
-    (4, 3, 5, 2)
+    (1, 1, 1, 1, 100, 0, 0),
+    (2, 1, 1, 2, 100, 0, 0),
+    (3, 2, 3, 2, 100, 0, 0),
+    (4, 3, 5, 2, 100, 0, 0)
 ;
 
 INSERT INTO tb_users_challenges (user_challenge_id, user_id, challenge_stage_id, current_count, current_progress, nft_completed, completed_date)
 VALUES (1, '9e1bfc60-f76a-47dc-9147-803653707192', 1, 1, 100.0, false, CURRENT_TIMESTAMP),
-       (2, '9e1bfc60-f76a-47dc-9147-803653707192', 3, 2, 66.6, false, CURRENT_TIMESTAMP);
+       (2, '9e1bfc60-f76a-47dc-9147-803653707192', 3, 3, 100.0, false, CURRENT_TIMESTAMP);
 
 INSERT INTO tb_nft_items (nft_item_id, name, category, rarity, nft_token_id, thumbnail_storage_key, thumbnail_url, enabled)
 VALUES (1, '테스트 상의', 'top', 'common', '100', 'nft-assets/v1/nft-items/top/1/thumbnail.png', NULL, true),
        (2, '테스트 헤어', 'hair', 'rare', '200', 'nft-assets/v1/nft-items/hair/2/thumbnail.png', NULL, true),
        (3, '토큰 없는 아이템', 'face', 'common', NULL, 'nft-assets/v1/nft-items/face/3/thumbnail.png', NULL, true),
-       (4, '미보유 신발', 'shoes', 'epic', '300', 'nft-assets/v1/nft-items/shoes/4/thumbnail.png', NULL, true),
+       (4, 'shoes1', 'shoes', 'common', '300', 'nft-assets/v1/nft-items/shoes/4/thumbnail.png', NULL, true),
        (5, '비활성 하의', 'pants', 'common', '400', 'nft-assets/v1/nft-items/pants/5/thumbnail.png', NULL, false),
        (6, '동글이안경', 'head_acc', 'common', '500', 'nft-assets/v1/nft-items/head_acc/6/thumbnail.png', NULL, true),
        (7, '반짝 대머리', 'hair', 'common', '600', 'nft-assets/v1/nft-items/hair/7/thumbnail.png', NULL, true),

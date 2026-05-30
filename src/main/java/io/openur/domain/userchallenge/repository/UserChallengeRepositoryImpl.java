@@ -13,6 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openur.domain.challenge.enums.ChallengeType;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.model.UserChallenge;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,9 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     private final UserChallengeJpaRepository userChallengeJpaRepository;
     private final JPAQueryFactory queryFactory;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public UserChallenge save(UserChallenge userChallenge) {
@@ -65,13 +70,16 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             return;
         }
 
-        // QueryDSL bulk update 는 즉시 DB 에 반영되므로 추가 flush 불필요.
-        // clear() 는 호출자 트랜잭션의 다른 영속 entity 를 detach 시키므로 제거.
         queryFactory
             .update(userChallengeEntity)
             .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
             .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
             .execute();
+
+        // bulk update 는 영속성 컨텍스트를 우회하므로 1차 캐시가 stale.
+        // flush(선행 dirty 보존) → clear(stale 정리) 로 후속 조회가 DB fresh read 하도록 보장.
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override
@@ -88,6 +96,9 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .set(userChallengeEntity.nftCompleted, false)
             .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
             .execute();
+
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override
@@ -98,6 +109,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .set(userChallengeEntity.nftCompleted, true)
             .where(userChallengeEntity.userChallengeId.eq(userChallengeId))
             .execute();
+
+        // bulk update 후 flush → clear 로 같은 트랜잭션의 stale UserChallenge 제거.
+        // (NftMintJobProcessor.markSuccess 가 같은 트랜잭션에서 mintJob dirty 를 함께 flush)
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override
