@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.cloud.storage.Storage;
+import io.openur.domain.NFT.service.NFTService;
+import io.openur.domain.NFT.service.NftContractBalanceClient;
+import io.openur.domain.NFT.service.NftMintClient;
 import io.openur.global.jwt.JwtUtil;
 import io.openur.global.security.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +39,16 @@ public class TestSupport {
     private UserDetailsServiceImpl userDetailsService;
     @MockBean
     protected Storage gcsStorage;
+
+    // web3j @PostConstruct(NFTService, Web3jNftContractBalanceClient, Web3jNftMintClient) 가
+    // 시동 시 실 RPC/contract 에 ENS resolve 를 시도해 로컬 ApplicationContext 로드를 막으므로
+    // 모든 통합 test 에서 mock 으로 우회. CI 는 실제 secret 으로 동작하므로 무해.
+    @MockBean
+    protected NFTService nftService;
+    @MockBean
+    protected NftContractBalanceClient nftContractBalanceClient;
+    @MockBean
+    protected NftMintClient nftMintClient;
 
     /**
      * If using RestDocs for extended description of API documents, Add RestDocumentation Extension

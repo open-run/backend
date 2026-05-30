@@ -14,7 +14,6 @@ import io.openur.domain.NFT.entity.NftMintJobEntity;
 import io.openur.domain.NFT.enums.NftMintJobStatus;
 import io.openur.domain.NFT.repository.NftMintJobJpaRepository;
 import io.openur.domain.NFT.service.NftMintJobProcessor;
-import io.openur.domain.NFT.service.NftMintClient;
 import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import java.math.BigInteger;
 import org.junit.jupiter.api.DisplayName;
@@ -29,9 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class NftMintJobApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/nft/mint-jobs";
-
-    @MockBean
-    private NftMintClient nftMintClient;
 
     @Autowired
     private NftMintJobProcessor nftMintJobProcessor;
@@ -56,7 +52,7 @@ public class NftMintJobApiTest extends TestSupport {
             .andExpect(jsonPath("$.message").value("NFT mint job accepted"))
             .andExpect(jsonPath("$.data.userChallengeId").value(1))
             .andExpect(jsonPath("$.data.challengeName").value("test_challenge"))
-            .andExpect(jsonPath("$.data.status").value("PENDING"));
+            .andExpect(jsonPath("$.data.status").value("SUCCESS"));
     }
 
     @Test
