@@ -22,20 +22,10 @@ public class RepetitiveChallengeTreeDto {
         Map<Long, UserChallenge> userChallengeMap, List<ChallengeStage> challengeStages
     ) {
         Challenge challenge = challengeStages.get(0).getChallenge();
-        UserChallenge currentChallenge = null;
-
-        for (ChallengeStage stage : challengeStages) {
-            UserChallenge uc = userChallengeMap.get(stage.getStageId());
-            
-            if(uc == null) continue;
-            
-            if(uc.getCompletedDate() == null) {
-                currentChallenge = uc;
-                break;
-            }
-        }
-
-        final int currCount = currentChallenge != null ? currentChallenge.getCurrentCount() : 0;
+        final int currCount = userChallengeMap.values().stream()
+            .mapToInt(UserChallenge::getCurrentCount)
+            .max()
+            .orElse(0);
 
         this.challengeTrees = challengeStages.stream().map(stage -> {
             UserChallenge uc = userChallengeMap.get(stage.getStageId());

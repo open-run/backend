@@ -23,8 +23,8 @@ public interface UserChallengeRepository {
     void bulkIncrementCount(List<Long> userChallengeIds);
 
     /**
-     * Updates completion status after NFT airdrop
-     * @param completedUserChallengeIds List of challenges that have been completed and had NFT airdropped
+     * Marks challenges as achieved and ready for NFT reward issuance.
+     * @param completedUserChallengeIds List of challenges that reached their completion condition
      */
     void bulkUpdateCompletedChallenges(List<Long> completedUserChallengeIds);
 

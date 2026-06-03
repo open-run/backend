@@ -362,19 +362,63 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     /**
      * "표시할 stage" 결정 규칙:
-     * (A) 해당 user의 미완료 user_challenge가 이 stage에 있으면 이 stage가 표시 대상이다, 또는
-     * (B) 해당 user가 이 challenge에 user_challenge를 하나도 가지지 않았고 (= 신규 유저),
+     * (A) 보상 수령 가능한 완료 stage가 있으면 그 stage가 표시 대상이다.
+     * (B) 보상 수령 가능한 stage가 없고, 미완료 user_challenge가 있으면 그 stage가 표시 대상이다.
+     * (C) 해당 user가 이 challenge에 user_challenge를 하나도 가지지 않았고 (= 신규 유저),
      *     이 stage가 해당 challenge의 stage_number 최소값을 가진 stage이면 표시 대상이다.
      *
      * 결과적으로 challenge 1개당 최대 1개의 stage만 통과:
      * - 신규 유저: stage 1
      * - 진행 중 유저: 진행 중인 stage
-     * - 모든 stage가 완료된 challenge: 통과 안 함 (완료 탭 영역)
+     * - 달성 후 보상 미수령 유저: 보상 수령 가능한 stage
+     * - 모든 stage가 NFT 보상까지 완료된 challenge: 통과 안 함
      */
     private BooleanExpression buildStageIsCurrentForUser(String userId) {
         QUserChallengeEntity ucSub = new QUserChallengeEntity("ucSub");
         QChallengeStageEntity stageSub = new QChallengeStageEntity("stageSub");
         QChallengeStageEntity stageMinSub = new QChallengeStageEntity("stageMinSub");
+        QUserChallengeEntity rewardableUcSub = new QUserChallengeEntity("rewardableUcSub");
+        QChallengeStageEntity rewardableStageSub = new QChallengeStageEntity("rewardableStageSub");
+        QUserChallengeEntity incompleteUcSub = new QUserChallengeEntity("incompleteUcSub");
+        QChallengeStageEntity incompleteStageSub = new QChallengeStageEntity("incompleteStageSub");
+
+        BooleanExpression hasRewardableOnThisStage = JPAExpressions
+            .selectOne()
+            .from(ucSub)
+            .where(
+                ucSub.challengeStageEntity.stageId.eq(challengeStageEntity.stageId),
+                ucSub.userEntity.userId.eq(userId),
+                ucSub.completedDate.isNotNull(),
+                ucSub.nftCompleted.isFalse()
+            )
+            .exists();
+
+        BooleanExpression hasRewardableForThisChallenge = JPAExpressions
+            .selectOne()
+            .from(rewardableUcSub)
+            .join(rewardableUcSub.challengeStageEntity, rewardableStageSub)
+            .where(
+                rewardableStageSub.challengeEntity.challengeId.eq(
+                    challengeStageEntity.challengeEntity.challengeId),
+                rewardableUcSub.userEntity.userId.eq(userId),
+                rewardableUcSub.completedDate.isNotNull(),
+                rewardableUcSub.nftCompleted.isFalse()
+            )
+            .exists();
+
+        BooleanExpression isFirstRewardableStage = challengeStageEntity.stageNumber.eq(
+            JPAExpressions
+                .select(rewardableStageSub.stageNumber.min())
+                .from(rewardableUcSub)
+                .join(rewardableUcSub.challengeStageEntity, rewardableStageSub)
+                .where(
+                    rewardableStageSub.challengeEntity.challengeId.eq(
+                        challengeStageEntity.challengeEntity.challengeId),
+                    rewardableUcSub.userEntity.userId.eq(userId),
+                    rewardableUcSub.completedDate.isNotNull(),
+                    rewardableUcSub.nftCompleted.isFalse()
+                )
+        );
 
         BooleanExpression hasIncompleteOnThisStage = JPAExpressions
             .selectOne()
@@ -385,6 +429,31 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
                 ucSub.completedDate.isNull()
             )
             .exists();
+
+        BooleanExpression hasIncompleteForThisChallenge = JPAExpressions
+            .selectOne()
+            .from(incompleteUcSub)
+            .join(incompleteUcSub.challengeStageEntity, incompleteStageSub)
+            .where(
+                incompleteStageSub.challengeEntity.challengeId.eq(
+                    challengeStageEntity.challengeEntity.challengeId),
+                incompleteUcSub.userEntity.userId.eq(userId),
+                incompleteUcSub.completedDate.isNull()
+            )
+            .exists();
+
+        BooleanExpression isFirstIncompleteStage = challengeStageEntity.stageNumber.eq(
+            JPAExpressions
+                .select(incompleteStageSub.stageNumber.min())
+                .from(incompleteUcSub)
+                .join(incompleteUcSub.challengeStageEntity, incompleteStageSub)
+                .where(
+                    incompleteStageSub.challengeEntity.challengeId.eq(
+                        challengeStageEntity.challengeEntity.challengeId),
+                    incompleteUcSub.userEntity.userId.eq(userId),
+                    incompleteUcSub.completedDate.isNull()
+                )
+        );
 
         BooleanExpression hasNoUcForThisChallenge = JPAExpressions
             .selectOne()
@@ -403,7 +472,18 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
                 .where(stageMinSub.challengeEntity.challengeId.eq(challengeStageEntity.challengeEntity.challengeId))
         );
 
-        return hasIncompleteOnThisStage.or(hasNoUcForThisChallenge.and(isMinStage));
+        return hasRewardableOnThisStage.and(isFirstRewardableStage)
+            .or(
+                hasRewardableForThisChallenge.not()
+                    .and(hasIncompleteOnThisStage)
+                    .and(isFirstIncompleteStage)
+            )
+            .or(
+                hasRewardableForThisChallenge.not()
+                    .and(hasIncompleteForThisChallenge.not())
+                    .and(hasNoUcForThisChallenge)
+                    .and(isMinStage)
+            );
     }
 
     private Map<Long, UserChallengeEntity> fetchUserChallengeMap(

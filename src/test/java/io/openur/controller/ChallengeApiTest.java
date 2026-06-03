@@ -15,7 +15,9 @@ import io.openur.global.dto.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +25,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChallengeApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/challenges";
+    private static final String TEST_USER1_ID = "9e1bfc60-f76a-47dc-9147-803653707192";
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Nested
     @DisplayName("내 챌린지 목록 조회 - 조건별 테스트")
     class getMyChallengeListTest {
 
         @Test
-        @DisplayName("200 OK - 일반 챌린지 빈 결과 (challenge 1 fully completed by user1)")
-        void getGeneralChallengeList_emptyResult_isOk() throws Exception {
-            // given: user1은 normal challenge 1을 이미 완료한 상태이므로 진행 중 일반 탭은 비어 있음
+        @DisplayName("200 OK - 보상 수령 가능한 일반 챌린지는 진행 목록에 노출된다")
+        void getGeneralChallengeList_rewardableChallenge_isOk() throws Exception {
+            // given: user1은 normal challenge 1을 달성했고 아직 NFT 보상은 받지 않음
             String token = getTestUserToken1();
 
             // when
@@ -50,9 +56,13 @@ public class ChallengeApiTest extends TestSupport {
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).isEmpty();
-            assertThat(response.getTotalElements()).isEqualTo(0);
-            assertThat(response.getTotalPages()).isEqualTo(0);
+            assertThat(response.getData()).hasSize(1);
+            GeneralChallengeDto first = response.getData().get(0);
+            assertThat(first.getChallengeId()).isEqualTo(1L);
+            assertThat(first.getUserChallengeId()).isEqualTo(1L);
+            assertThat(first.getCompletedDate()).isNotNull();
+            assertThat(first.isNftCompleted()).isFalse();
+            assertThat(first.isAccomplished()).isTrue();
             assertThat(response.isFirst()).isTrue();
             assertThat(response.isLast()).isTrue();
         }
@@ -183,9 +193,9 @@ public class ChallengeApiTest extends TestSupport {
         }
 
         @Test
-        @DisplayName("200 OK - 반복 챌린지 빈 결과 (user1 has only completed/locked rows)")
-        void getRepetitiveChallengeList_emptyResult_isOk() throws Exception {
-            // given: user1은 challenge 2의 stage 2 완료, stage 3 row 없음 → 진행 중 stage 없음
+        @DisplayName("200 OK - 보상 수령 가능한 반복 챌린지는 진행 목록에 노출된다")
+        void getRepetitiveChallengeList_rewardableChallenge_isOk() throws Exception {
+            // given: user1은 challenge 2의 stage 2를 달성했고 아직 NFT 보상은 받지 않음
             String token = getTestUserToken1();
 
             // when
@@ -204,10 +214,92 @@ public class ChallengeApiTest extends TestSupport {
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).isEmpty();
-            assertThat(response.getTotalElements()).isEqualTo(0);
-            assertThat(response.getTotalPages()).isEqualTo(0);
+            assertThat(response.getData()).hasSize(1);
+            GeneralChallengeDto first = response.getData().get(0);
+            assertThat(first.getChallengeId()).isEqualTo(2L);
+            assertThat(first.getUserChallengeId()).isEqualTo(2L);
+            assertThat(first.getCompletedDate()).isNotNull();
+            assertThat(first.isNftCompleted()).isFalse();
+            assertThat(first.isAccomplished()).isTrue();
             assertThat(response.getMessage()).isEqualTo("success");
+        }
+
+        @Test
+        @DisplayName("200 OK - NFT 보상까지 완료한 도전과제는 진행 목록에서 제외된다")
+        void getChallengeLists_nftCompletedChallenge_isHidden() throws Exception {
+            // given
+            jdbcTemplate.update(
+                "UPDATE tb_users_challenges SET nft_completed = TRUE WHERE user_challenge_id IN (1, 2)");
+            String token = getTestUserToken1();
+
+            // when
+            MvcResult generalResult = mockMvc.perform(
+                get(PREFIX + "/general")
+                    .header(AUTH_HEADER, token)
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+            MvcResult repetitiveResult = mockMvc.perform(
+                get(PREFIX + "/repetitive")
+                    .header(AUTH_HEADER, token)
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            // then
+            PagedResponse<GeneralChallengeDto> generalResponse = parseResponse(
+                generalResult.getResponse().getContentAsString(),
+                new TypeReference<>() {}
+            );
+            PagedResponse<GeneralChallengeDto> repetitiveResponse = parseResponse(
+                repetitiveResult.getResponse().getContentAsString(),
+                new TypeReference<>() {}
+            );
+
+            assertThat(generalResponse.getData()).isEmpty();
+            assertThat(repetitiveResponse.getData()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("200 OK - 보상 수령 가능 stage는 다음 진행 stage보다 우선 노출된다")
+        void getRepetitiveChallengeList_rewardableStage_hasPriority() throws Exception {
+            // given: stage 2는 보상 수령 가능, stage 3은 다음 진행 stage
+            jdbcTemplate.update(
+                """
+                    INSERT INTO tb_users_challenges
+                        (user_challenge_id, user_id, challenge_stage_id, current_count,
+                         current_progress, nft_completed, completed_date)
+                    VALUES
+                        (10, ?, 4, 3, 60.0, FALSE, NULL)
+                    """,
+                TEST_USER1_ID
+            );
+            String token = getTestUserToken1();
+
+            // when
+            MvcResult result = mockMvc.perform(
+                get(PREFIX + "/repetitive")
+                    .header(AUTH_HEADER, token)
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            // then
+            PagedResponse<GeneralChallengeDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {}
+            );
+
+            assertThat(response.getData()).hasSize(1);
+            GeneralChallengeDto first = response.getData().get(0);
+            assertThat(first.getChallengeId()).isEqualTo(2L);
+            assertThat(first.getUserChallengeId()).isEqualTo(2L);
+            assertThat(first.getStageCount()).isEqualTo(2);
+            assertThat(first.getCompletedDate()).isNotNull();
+            assertThat(first.isNftCompleted()).isFalse();
         }
 
         @Test
