@@ -34,7 +34,7 @@ public class AdminNftService {
 
     @Transactional(readOnly = true)
     public List<AdminNftItemDto> getMintedAvatarItems() {
-        return nftTokenJpaRepository.findByImageRole(NftImageRole.avatar)
+        return nftTokenJpaRepository.findByImageRoleOrderByNftNftIdAsc(NftImageRole.avatar)
             .stream()
             .map(token -> AdminNftItemDto.from(
                 token.getNft(), token.getTokenId(), nftAssetUrlResolver, nftAvatarItemViewMapper))
@@ -43,7 +43,8 @@ public class AdminNftService {
 
     @Transactional(readOnly = true)
     public List<NftAvatarItemDto> getTryOnAvatarItems() {
-        Map<Integer, String> avatarTokenIdByNftId = nftTokenJpaRepository.findByImageRole(NftImageRole.avatar)
+        Map<Integer, String> avatarTokenIdByNftId = nftTokenJpaRepository
+            .findByImageRoleOrderByNftNftIdAsc(NftImageRole.avatar)
             .stream()
             .collect(Collectors.toMap(
                 token -> token.getNft().getNftId(),

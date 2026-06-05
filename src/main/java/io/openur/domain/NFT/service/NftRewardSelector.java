@@ -36,7 +36,7 @@ public class NftRewardSelector {
         NftItemRarity rarity = pickRarity(stage, random);
 
         long candidateCount = nftTokenJpaRepository
-            .countCandidates(NftImageRole.avatar, category, rarity);
+            .countByImageRoleAndNftCategoryAndNftRarity(NftImageRole.avatar, category, rarity);
         if (candidateCount == 0L) {
             throw new MintException(
                 "No available NFT (no avatar token) for category=" + category + " rarity=" + rarity);
@@ -48,7 +48,8 @@ public class NftRewardSelector {
 
         int offset = random.nextInt((int) candidateCount);
         List<NftTokenEntity> candidates = nftTokenJpaRepository
-            .findCandidates(NftImageRole.avatar, category, rarity, PageRequest.of(offset, 1));
+            .findByImageRoleAndNftCategoryAndNftRarityOrderByNftNftIdAsc(
+                NftImageRole.avatar, category, rarity, PageRequest.of(offset, 1));
         if (candidates.isEmpty()) {
             throw new MintException(
                 "Candidate disappeared between count and fetch: category=" + category

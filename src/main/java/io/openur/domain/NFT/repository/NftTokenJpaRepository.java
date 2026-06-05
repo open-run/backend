@@ -10,14 +10,11 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 public interface NftTokenJpaRepository extends JpaRepository<NftTokenEntity, String> {
 
     @EntityGraph(attributePaths = {"nft"})
-    @Query("select t from NftTokenEntity t where t.imageRole = :imageRole order by t.nft.nftId asc")
-    List<NftTokenEntity> findByImageRole(@Param("imageRole") NftImageRole imageRole);
+    List<NftTokenEntity> findByImageRoleOrderByNftNftIdAsc(NftImageRole imageRole);
 
     @EntityGraph(attributePaths = {"nft"})
     List<NftTokenEntity> findByTokenIdInAndImageRole(Collection<String> tokenIds, NftImageRole imageRole);
@@ -25,20 +22,10 @@ public interface NftTokenJpaRepository extends JpaRepository<NftTokenEntity, Str
     @EntityGraph(attributePaths = {"nft"})
     Optional<NftTokenEntity> findByTokenIdAndImageRole(String tokenId, NftImageRole imageRole);
 
-    @Query("select count(t) from NftTokenEntity t "
-        + "where t.imageRole = :imageRole and t.nft.category = :category and t.nft.rarity = :rarity")
-    long countCandidates(
-        @Param("imageRole") NftImageRole imageRole,
-        @Param("category") NftItemCategory category,
-        @Param("rarity") NftItemRarity rarity);
+    long countByImageRoleAndNftCategoryAndNftRarity(
+        NftImageRole imageRole, NftItemCategory category, NftItemRarity rarity);
 
     @EntityGraph(attributePaths = {"nft"})
-    @Query("select t from NftTokenEntity t "
-        + "where t.imageRole = :imageRole and t.nft.category = :category and t.nft.rarity = :rarity "
-        + "order by t.nft.nftId asc")
-    List<NftTokenEntity> findCandidates(
-        @Param("imageRole") NftImageRole imageRole,
-        @Param("category") NftItemCategory category,
-        @Param("rarity") NftItemRarity rarity,
-        Pageable pageable);
+    List<NftTokenEntity> findByImageRoleAndNftCategoryAndNftRarityOrderByNftNftIdAsc(
+        NftImageRole imageRole, NftItemCategory category, NftItemRarity rarity, Pageable pageable);
 }
