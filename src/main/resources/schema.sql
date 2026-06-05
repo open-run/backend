@@ -142,47 +142,18 @@ CREATE TABLE IF NOT EXISTS tb_nft_tokens
         FOREIGN KEY (nft_id) REFERENCES tb_nfts (nft_id)
 );
 
--- tb_nft_items 테이블 생성
-CREATE TABLE IF NOT EXISTS tb_nft_items
-(
-    nft_item_id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    name                  VARCHAR(100)                               NOT NULL,
-    category              ENUM ('top', 'pants', 'shoes', 'face', 'skin', 'hair', 'head_acc', 'ear_acc', 'body_acc')
-                                                                    NOT NULL,
-    rarity                ENUM ('common', 'rare', 'epic')            NOT NULL,
-    nft_token_id          VARCHAR(78)                                DEFAULT NULL,
-    thumbnail_storage_key VARCHAR(512)                               NOT NULL,
-    thumbnail_url         VARCHAR(1024)                              DEFAULT NULL,
-    enabled               BOOLEAN                                    DEFAULT TRUE NOT NULL,
-    CONSTRAINT uq_nft_items_name_category UNIQUE (name, category)
-);
-
--- tb_nft_item_equip_images 테이블 생성
-CREATE TABLE IF NOT EXISTS tb_nft_item_equip_images
-(
-    nft_item_equip_image_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    nft_item_id             BIGINT UNSIGNED                            NOT NULL,
-    equip_position          ENUM ('single', 'front', 'back')           NOT NULL,
-    storage_key             VARCHAR(512)                               NOT NULL,
-    image_url               VARCHAR(1024)                              DEFAULT NULL,
-    sort_order              INT                                        DEFAULT 0 NOT NULL,
-    CONSTRAINT uq_nft_item_equip_position UNIQUE (nft_item_id, equip_position),
-    CONSTRAINT tb_nft_item_equip_images_tb_nft_items_nft_item_id_fk
-        FOREIGN KEY (nft_item_id) REFERENCES tb_nft_items (nft_item_id)
-);
-
 -- tb_user_nft_avatar_wearing 테이블 생성
+-- Keyed on the stable avatar token_id (not the volatile tb_nfts.nft_id); no FK into the
+-- tool-owned catalog so wearing rows survive catalog re-syncs.
 CREATE TABLE IF NOT EXISTS tb_user_nft_avatar_wearing
 (
     user_id      VARCHAR(36)                                                                                              NOT NULL,
     wearing_slot ENUM ('upper_clothing', 'lower_clothing', 'footwear', 'face', 'skin', 'hair', 'head_accessories',
         'eye_accessories', 'ear_accessories', 'body_accessories')                                                         NOT NULL,
-    nft_item_id  BIGINT UNSIGNED                                                                                          NOT NULL,
+    token_id     VARCHAR(78)                                                                                              NOT NULL,
     PRIMARY KEY (user_id, wearing_slot),
     CONSTRAINT tb_user_nft_avatar_wearing_tb_users_user_id_fk
-        FOREIGN KEY (user_id) REFERENCES tb_users (user_id),
-    CONSTRAINT tb_user_nft_avatar_wearing_tb_nft_items_nft_item_id_fk
-        FOREIGN KEY (nft_item_id) REFERENCES tb_nft_items (nft_item_id)
+        FOREIGN KEY (user_id) REFERENCES tb_users (user_id)
 );
 
 -- tb_nft_mint_jobs 테이블 생성

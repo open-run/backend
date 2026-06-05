@@ -7,33 +7,32 @@ import org.junit.jupiter.api.Test;
 
 class NftAssetUrlResolverTest {
 
+    private static final String GCS_BASE = "https://storage.googleapis.com/openrun-nft";
+    private static final String GATEWAY = "https://swarm-api.yjkellyjoo.dev";
+    private static final String REF = "94a308cc28193a0af03e87d444e6feadd538275b5fa9d21ba6b11b56c7c4e01a";
+
     @Test
-    @DisplayName("storage key가 있으면 GCS public URL로 변환한다")
-    void resolve_returnsGcsPublicUrlWhenStorageKeyExists() {
-        NftAssetUrlResolver resolver = new NftAssetUrlResolver(
-            "https://storage.googleapis.com/openrun-nft/",
-            "https://swarm-api.yjkellyjoo.dev"
-        );
+    @DisplayName("ref가 있으면 Swarm 게이트웨이 URL(/bzz/<ref>)로 변환한다")
+    void resolve_returnsSwarmGatewayUrlWhenRefExists() {
+        NftAssetUrlResolver resolver = new NftAssetUrlResolver(GCS_BASE, GATEWAY);
 
-        String resolvedUrl = resolver.resolve(
-            null,
-            "nft-assets/v1/nft-items/hair/57/equip/front.png"
-        );
-
-        assertThat(resolvedUrl)
-            .isEqualTo("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/57/equip/front.png");
+        assertThat(resolver.resolve(REF)).isEqualTo(GATEWAY + "/bzz/" + REF);
     }
 
     @Test
-    @DisplayName("storage key가 없으면 stored URL로 fallback한다")
-    void resolve_fallbackToStoredUrlWhenStorageKeyMissing() {
-        NftAssetUrlResolver resolver = new NftAssetUrlResolver(
-            "https://storage.googleapis.com/openrun-nft",
-            "https://swarm-api.yjkellyjoo.dev"
-        );
+    @DisplayName("게이트웨이 URL의 끝 슬래시는 제거되어 이중 슬래시가 생기지 않는다")
+    void resolve_trimsTrailingSlashOnGateway() {
+        NftAssetUrlResolver resolver = new NftAssetUrlResolver(GCS_BASE, GATEWAY + "/");
 
-        assertThat(resolver.resolve("https://cdn.example.com/item.png", null))
-            .isEqualTo("https://cdn.example.com/item.png");
-        assertThat(resolver.resolve(null, null)).isNull();
+        assertThat(resolver.resolve(REF)).isEqualTo(GATEWAY + "/bzz/" + REF);
+    }
+
+    @Test
+    @DisplayName("ref가 없으면 null을 반환한다")
+    void resolve_returnsNullWhenRefMissing() {
+        NftAssetUrlResolver resolver = new NftAssetUrlResolver(GCS_BASE, GATEWAY);
+
+        assertThat(resolver.resolve(null)).isNull();
+        assertThat(resolver.resolve("")).isNull();
     }
 }

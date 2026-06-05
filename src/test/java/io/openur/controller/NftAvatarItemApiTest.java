@@ -38,6 +38,8 @@ public class NftAvatarItemApiTest extends TestSupport {
     private static final String PREFIX = "/v1/nft/avatar-items/me";
     private static final String TEST_USER_ID = "9e1bfc60-f76a-47dc-9147-803653707192";
     private static final String USER_ADDRESS = "0x1234567890123456789012345678901234567890";
+    private static final String GW = "https://swarm-api.yjkellyjoo.dev/bzz/";
+    private static final String F = "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefef";
     private static final byte[] PNG_BYTES = new byte[] {
         (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
         0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
@@ -126,31 +128,26 @@ public class NftAvatarItemApiTest extends TestSupport {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Owned NFT avatar items fetched successfully"))
             .andExpect(jsonPath("$.data", hasSize(4)))
-            .andExpect(jsonPath("$.data[0].id").value("1"))
-            .andExpect(jsonPath("$.data[0].nftItemId").value(1))
+            .andExpect(jsonPath("$.data[0].id").value("100"))
             .andExpect(jsonPath("$.data[0].tokenId").value("100"))
             .andExpect(jsonPath("$.data[0].balance").value("1"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
             .andExpect(jsonPath("$.data[0].rarity").value("common"))
             .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
             .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
-            .andExpect(jsonPath("$.data[0].imageUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/top/1/equip/single.png"))
-            .andExpect(jsonPath("$.data[0].storageKey").value("nft-assets/v1/nft-items/top/1/equip/single.png"))
-            .andExpect(jsonPath("$.data[0].thumbnailStorageKey").value("nft-assets/v1/nft-items/top/1/thumbnail.png"))
-            .andExpect(jsonPath("$.data[0].thumbnailUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/top/1/thumbnail.png"))
-            .andExpect(jsonPath("$.data[1].nftItemId").value(2))
+            .andExpect(jsonPath("$.data[0].imageUrl").value(GW + "01b0" + F))
+            .andExpect(jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F))
             .andExpect(jsonPath("$.data[1].tokenId").value("200"))
             .andExpect(jsonPath("$.data[1].balance").value("2"))
             .andExpect(jsonPath("$.data[1].name").value("테스트 헤어"))
             .andExpect(jsonPath("$.data[1].mainCategory").value("hair"))
             .andExpect(jsonPath("$.data[1].imageUrl", hasSize(2)))
-            .andExpect(jsonPath("$.data[1].imageUrl[0]").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/2/equip/front.png"))
-            .andExpect(jsonPath("$.data[1].imageUrl[1]").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/2/equip/back.png"))
-            .andExpect(jsonPath("$.data[1].storageKey").value("nft-assets/v1/nft-items/hair/2/equip/front.png"))
-            .andExpect(jsonPath("$.data[2].nftItemId").value(6))
+            .andExpect(jsonPath("$.data[1].imageUrl[0]").value(GW + "02b0" + F))
+            .andExpect(jsonPath("$.data[1].imageUrl[1]").value(GW + "02c0" + F))
+            .andExpect(jsonPath("$.data[2].tokenId").value("500"))
             .andExpect(jsonPath("$.data[2].mainCategory").value("accessories"))
             .andExpect(jsonPath("$.data[2].subCategory").value("eye-accessories"))
-            .andExpect(jsonPath("$.data[3].nftItemId").value(7))
+            .andExpect(jsonPath("$.data[3].tokenId").value("600"))
             .andExpect(jsonPath("$.data[3].mainCategory").value("hair"))
             .andExpect(jsonPath("$.data[3].imageUrl", hasSize(1)));
 
@@ -173,15 +170,15 @@ public class NftAvatarItemApiTest extends TestSupport {
                 .file(wearingAvatarPart("""
                     {
                       "fullSet": null,
-                      "upperClothing": 1,
+                      "upperClothing": "100",
                       "lowerClothing": null,
                       "footwear": null,
                       "face": null,
                       "skin": null,
-                      "hair": 2,
+                      "hair": "200",
                       "accessories": {
                         "head-accessories": null,
-                        "eye-accessories": 6,
+                        "eye-accessories": "500",
                         "ear-accessories": null,
                         "body-accessories": null
                       }
@@ -197,9 +194,9 @@ public class NftAvatarItemApiTest extends TestSupport {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Wearing NFT avatar and profile image saved successfully"))
             .andExpect(jsonPath("$.data.fullSet").value(nullValue()))
-            .andExpect(jsonPath("$.data.upperClothing.nftItemId").value(1))
-            .andExpect(jsonPath("$.data.hair.nftItemId").value(2))
-            .andExpect(jsonPath("$.data.accessories.eye-accessories.nftItemId").value(6));
+            .andExpect(jsonPath("$.data.upperClothing.tokenId").value("100"))
+            .andExpect(jsonPath("$.data.hair.tokenId").value("200"))
+            .andExpect(jsonPath("$.data.accessories.eye-accessories.tokenId").value("500"));
 
         String expectedKey = "profile-images/users/" + TEST_USER_ID + "/profile.png";
         verify(gcsStorageService).upload(eq(expectedKey), any(byte[].class), eq(MediaType.IMAGE_PNG_VALUE));
@@ -213,9 +210,9 @@ public class NftAvatarItemApiTest extends TestSupport {
         )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Wearing NFT avatar fetched successfully"))
-            .andExpect(jsonPath("$.data.upperClothing.nftItemId").value(1))
-            .andExpect(jsonPath("$.data.hair.nftItemId").value(2))
-            .andExpect(jsonPath("$.data.accessories.eye-accessories.nftItemId").value(6));
+            .andExpect(jsonPath("$.data.upperClothing.tokenId").value("100"))
+            .andExpect(jsonPath("$.data.hair.tokenId").value("200"))
+            .andExpect(jsonPath("$.data.accessories.eye-accessories.tokenId").value("500"));
     }
 
     @Test
@@ -227,7 +224,7 @@ public class NftAvatarItemApiTest extends TestSupport {
             multipart(PREFIX + "/wearing/profile-image")
                 .file(wearingAvatarPart("""
                     {
-                      "upperClothing": 2
+                      "upperClothing": "200"
                     }
                     """))
                 .file(profileImagePart())
@@ -253,7 +250,7 @@ public class NftAvatarItemApiTest extends TestSupport {
             multipart(PREFIX + "/wearing/profile-image")
                 .file(wearingAvatarPart("""
                     {
-                      "upperClothing": 1
+                      "upperClothing": "100"
                     }
                     """))
                 .file(profileImagePart())

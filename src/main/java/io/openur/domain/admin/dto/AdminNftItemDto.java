@@ -1,6 +1,6 @@
 package io.openur.domain.admin.dto;
 
-import io.openur.domain.NFT.entity.NftItemEntity;
+import io.openur.domain.NFT.entity.NftEntity;
 import io.openur.domain.NFT.service.NftAssetUrlResolver;
 import io.openur.domain.NFT.service.NftAvatarItemViewMapper;
 import lombok.Builder;
@@ -10,31 +10,28 @@ import lombok.Getter;
 @Builder
 public class AdminNftItemDto {
 
-    private Long nftItemId;
     private String tokenId;
     private String name;
     private String category;
     private String mainCategory;
     private String subCategory;
     private String rarity;
-    private String thumbnailStorageKey;
     private String thumbnailUrl;
 
     public static AdminNftItemDto from(
-        NftItemEntity nftItem,
+        NftEntity nft,
+        String tokenId,
         NftAssetUrlResolver assetUrlResolver,
         NftAvatarItemViewMapper viewMapper
     ) {
         return AdminNftItemDto.builder()
-            .nftItemId(nftItem.getNftItemId())
-            .tokenId(nftItem.getNftTokenId())
-            .name(nftItem.getName())
-            .category(nftItem.getCategory().name())
-            .mainCategory(viewMapper.getMainCategory(nftItem))
-            .subCategory(viewMapper.getSubCategory(nftItem))
-            .rarity(nftItem.getRarity().name())
-            .thumbnailStorageKey(nftItem.getThumbnailStorageKey())
-            .thumbnailUrl(assetUrlResolver.resolve(nftItem.getThumbnailUrl(), nftItem.getThumbnailStorageKey()))
+            .tokenId(tokenId)
+            .name(nft.getName())
+            .category(nft.getCategory().name())
+            .mainCategory(viewMapper.getMainCategory(nft))
+            .subCategory(viewMapper.getSubCategory(nft))
+            .rarity(nft.getRarity().name())
+            .thumbnailUrl(assetUrlResolver.resolve(nft.getThumbnailRef()))
             .build();
     }
 }

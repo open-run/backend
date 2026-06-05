@@ -16,7 +16,8 @@ import org.springframework.data.repository.query.Param;
 public interface NftTokenJpaRepository extends JpaRepository<NftTokenEntity, String> {
 
     @EntityGraph(attributePaths = {"nft"})
-    List<NftTokenEntity> findByImageRole(NftImageRole imageRole);
+    @Query("select t from NftTokenEntity t where t.imageRole = :imageRole order by t.nft.nftId asc")
+    List<NftTokenEntity> findByImageRole(@Param("imageRole") NftImageRole imageRole);
 
     @EntityGraph(attributePaths = {"nft"})
     List<NftTokenEntity> findByTokenIdInAndImageRole(Collection<String> tokenIds, NftImageRole imageRole);

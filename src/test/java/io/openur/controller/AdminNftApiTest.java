@@ -33,6 +33,8 @@ public class AdminNftApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/admin";
     private static final String RECIPIENT_ADDRESS = "0x9999999999999999999999999999999999999999";
+    private static final String GW = "https://swarm-api.yjkellyjoo.dev/bzz/";
+    private static final String F = "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefef";
 
     @Autowired
     private UserJpaRepository userJpaRepository;
@@ -170,57 +172,52 @@ public class AdminNftApiTest extends TestSupport {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Admin NFT avatar items fetched successfully"))
             .andExpect(jsonPath("$.data", hasSize(5)))
-            .andExpect(jsonPath("$.data[0].nftItemId").value(1))
             .andExpect(jsonPath("$.data[0].tokenId").value("100"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
             .andExpect(jsonPath("$.data[0].category").value("top"))
             .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
             .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
             .andExpect(jsonPath("$.data[0].rarity").value("common"))
-            .andExpect(jsonPath("$.data[0].thumbnailStorageKey").value("nft-assets/v1/nft-items/top/1/thumbnail.png"))
-            .andExpect(jsonPath("$.data[0].thumbnailUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/top/1/thumbnail.png"))
-            .andExpect(jsonPath("$.data[3].nftItemId").value(6))
+            .andExpect(jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F))
+            .andExpect(jsonPath("$.data[3].tokenId").value("500"))
             .andExpect(jsonPath("$.data[3].mainCategory").value("accessories"))
             .andExpect(jsonPath("$.data[3].subCategory").value("eye-accessories"))
-            .andExpect(jsonPath("$.data[*].nftItemId").value(not(hasItem(3))))
-            .andExpect(jsonPath("$.data[*].nftItemId").value(not(hasItem(5))));
+            .andExpect(jsonPath("$.data[*].tokenId").value(hasItem("600")))
+            .andExpect(jsonPath("$.data[*].name").value(not(hasItem("토큰 없는 아이템"))))
+            .andExpect(jsonPath("$.data[*].name").value(not(hasItem("비활성 하의"))));
     }
 
     @Test
-    @DisplayName("admin은 enabled NFT Item 전체를 아바타 장착 테스트용으로 조회한다")
-    void getTryOnNftAvatarItems_returnsEnabledItems() throws Exception {
+    @DisplayName("admin은 catalog NFT 전체를 아바타 장착 테스트용으로 조회한다")
+    void getTryOnNftAvatarItems_returnsAllCatalogItems() throws Exception {
         mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on")
                 .header(AUTH_HEADER, getTestUserToken1()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Admin NFT avatar try-on items fetched successfully"))
-            .andExpect(jsonPath("$.data", hasSize(8)))
-            .andExpect(jsonPath("$.data[0].id").value("1"))
-            .andExpect(jsonPath("$.data[0].nftItemId").value(1))
+            .andExpect(jsonPath("$.data", hasSize(9)))
+            .andExpect(jsonPath("$.data[0].id").value("100"))
             .andExpect(jsonPath("$.data[0].tokenId").value("100"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
             .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
             .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
             .andExpect(jsonPath("$.data[0].rarity").value("common"))
-            .andExpect(jsonPath("$.data[0].imageUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/top/1/equip/single.png"))
-            .andExpect(jsonPath("$.data[0].storageKey").value("nft-assets/v1/nft-items/top/1/equip/single.png"))
-            .andExpect(jsonPath("$.data[0].thumbnailStorageKey").value("nft-assets/v1/nft-items/top/1/thumbnail.png"))
-            .andExpect(jsonPath("$.data[0].thumbnailUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/top/1/thumbnail.png"))
-            .andExpect(jsonPath("$.data[1].nftItemId").value(2))
+            .andExpect(jsonPath("$.data[0].imageUrl").value(GW + "01b0" + F))
+            .andExpect(jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F))
+            .andExpect(jsonPath("$.data[1].tokenId").value("200"))
             .andExpect(jsonPath("$.data[1].imageUrl", hasSize(2)))
-            .andExpect(jsonPath("$.data[1].imageUrl[0]").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/2/equip/front.png"))
-            .andExpect(jsonPath("$.data[1].imageUrl[1]").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/2/equip/back.png"))
-            .andExpect(jsonPath("$.data[*].nftItemId").value(hasItem(3)))
-            .andExpect(jsonPath("$.data[*].nftItemId").value(not(hasItem(5))))
-            .andExpect(jsonPath("$.data[6].nftItemId").value(8))
-            .andExpect(jsonPath("$.data[6].name").value("장착 이미지 없는 아이템"))
-            .andExpect(jsonPath("$.data[6].imageUrl").value(nullValue()))
-            .andExpect(jsonPath("$.data[6].storageKey").value(nullValue()))
-            .andExpect(jsonPath("$.data[6].thumbnailUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/body_acc/8/thumbnail.png"))
-            .andExpect(jsonPath("$.data[7].nftItemId").value(9))
-            .andExpect(jsonPath("$.data[7].name").value("장착 이미지 없는 헤어"))
+            .andExpect(jsonPath("$.data[1].imageUrl[0]").value(GW + "02b0" + F))
+            .andExpect(jsonPath("$.data[1].imageUrl[1]").value(GW + "02c0" + F))
+            .andExpect(jsonPath("$.data[2].name").value("토큰 없는 아이템"))
+            .andExpect(jsonPath("$.data[2].tokenId").value(nullValue()))
+            .andExpect(jsonPath("$.data[4].name").value("비활성 하의"))
+            .andExpect(jsonPath("$.data[4].tokenId").value(nullValue()))
+            .andExpect(jsonPath("$.data[7].name").value("장착 이미지 없는 아이템"))
+            .andExpect(jsonPath("$.data[7].tokenId").value(nullValue()))
             .andExpect(jsonPath("$.data[7].imageUrl").value(nullValue()))
-            .andExpect(jsonPath("$.data[7].storageKey").value(nullValue()))
-            .andExpect(jsonPath("$.data[7].thumbnailUrl").value("https://storage.googleapis.com/openrun-nft/nft-assets/v1/nft-items/hair/9/thumbnail.png"));
+            .andExpect(jsonPath("$.data[7].thumbnailUrl").value(GW + "08a0" + F))
+            .andExpect(jsonPath("$.data[8].name").value("장착 이미지 없는 헤어"))
+            .andExpect(jsonPath("$.data[8].imageUrl").value(nullValue()))
+            .andExpect(jsonPath("$.data[8].thumbnailUrl").value(GW + "09a0" + F));
     }
 
     @Test
@@ -238,13 +235,12 @@ public class AdminNftApiTest extends TestSupport {
                 .content("""
                     {
                       "recipientAddress": "0x9999999999999999999999999999999999999999",
-                      "nftItemId": 1
+                      "tokenId": "100"
                     }
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Admin NFT avatar item granted successfully"))
             .andExpect(jsonPath("$.data.recipientAddress").value(RECIPIENT_ADDRESS))
-            .andExpect(jsonPath("$.data.nftItemId").value(1))
             .andExpect(jsonPath("$.data.tokenId").value("100"))
             .andExpect(jsonPath("$.data.transactionHash").value("0xtxhash"));
 
@@ -252,7 +248,7 @@ public class AdminNftApiTest extends TestSupport {
     }
 
     @Test
-    @DisplayName("mint token이 없는 NFT Item은 부여할 수 없다")
+    @DisplayName("avatar token이 없는 tokenId는 부여할 수 없다")
     void grantNftAvatarItem_rejectsUnmintedItem() throws Exception {
         mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
                 .header(AUTH_HEADER, getTestUserToken1())
@@ -260,29 +256,11 @@ public class AdminNftApiTest extends TestSupport {
                 .content("""
                     {
                       "recipientAddress": "0x9999999999999999999999999999999999999999",
-                      "nftItemId": 3
+                      "tokenId": "999"
                     }
                     """))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value(containsString("has no minted token")));
-
-        verifyNoInteractions(nftMintClient);
-    }
-
-    @Test
-    @DisplayName("비활성 NFT Item은 부여할 수 없다")
-    void grantNftAvatarItem_rejectsDisabledItem() throws Exception {
-        mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "recipientAddress": "0x9999999999999999999999999999999999999999",
-                      "nftItemId": 5
-                    }
-                    """))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value(containsString("disabled nftItemId")));
 
         verifyNoInteractions(nftMintClient);
     }
@@ -296,7 +274,7 @@ public class AdminNftApiTest extends TestSupport {
                 .content("""
                     {
                       "recipientAddress": "not-address",
-                      "nftItemId": 1
+                      "tokenId": "100"
                     }
                     """))
             .andExpect(status().isBadRequest())
