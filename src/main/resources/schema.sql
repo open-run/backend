@@ -125,10 +125,9 @@ CREATE TABLE IF NOT EXISTS tb_nfts
     category       ENUM ('body_acc', 'head_acc', 'ear_acc', 'top', 'shoes', 'face', 'skin', 'pants', 'hair')
                                                         NOT NULL,
     rarity         ENUM ('common', 'rare', 'epic')        NOT NULL,
-    thumbnail_cid  VARCHAR(255)                           DEFAULT NULL,
-    thumbnail_file VARCHAR(255)                           DEFAULT NULL,
-    avatar_cid     VARCHAR(255)                           DEFAULT NULL,
-    avatar_file    VARCHAR(255)                           DEFAULT NULL,
+    thumbnail_ref  VARCHAR(255)                           DEFAULT NULL,
+    avatar_ref     VARCHAR(255)                           DEFAULT NULL,
+    avatar2_ref    VARCHAR(255)                           DEFAULT NULL,
     CONSTRAINT uq_name_category UNIQUE (name, category)
 );
 
