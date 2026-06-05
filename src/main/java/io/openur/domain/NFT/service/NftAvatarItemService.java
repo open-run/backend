@@ -45,7 +45,7 @@ public class NftAvatarItemService {
 
     public List<NftAvatarItemDto> getOwnedAvatarItems(String ownerAddress) {
         List<NftTokenEntity> candidates = runInReadOnlyTransaction(
-            () -> nftTokenJpaRepository.findByImageRole(NftImageRole.avatar));
+            () -> nftTokenJpaRepository.findByImageRoleOrderByNftNftIdAsc(NftImageRole.avatar));
         if (candidates.isEmpty()) {
             return Collections.emptyList();
         }
