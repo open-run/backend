@@ -11,7 +11,8 @@ class NftAssetUrlResolverTest {
     @DisplayName("storage key가 있으면 GCS public URL로 변환한다")
     void resolve_returnsGcsPublicUrlWhenStorageKeyExists() {
         NftAssetUrlResolver resolver = new NftAssetUrlResolver(
-            "https://storage.googleapis.com/openrun-nft/"
+            "https://storage.googleapis.com/openrun-nft/",
+            "https://swarm-api.yjkellyjoo.dev"
         );
 
         String resolvedUrl = resolver.resolve(
@@ -27,7 +28,8 @@ class NftAssetUrlResolverTest {
     @DisplayName("storage key가 없으면 stored URL로 fallback한다")
     void resolve_fallbackToStoredUrlWhenStorageKeyMissing() {
         NftAssetUrlResolver resolver = new NftAssetUrlResolver(
-            "https://storage.googleapis.com/openrun-nft"
+            "https://storage.googleapis.com/openrun-nft",
+            "https://swarm-api.yjkellyjoo.dev"
         );
 
         assertThat(resolver.resolve("https://cdn.example.com/item.png", null))
