@@ -117,4 +117,9 @@ VALUES ('100', 1, 'avatar'),
        ('200', 2, 'avatar'),
        ('300', 4, 'avatar'),
        ('500', 6, 'avatar'),
-       ('600', 7, 'avatar');
+       ('600', 7, 'avatar'),
+       ('1001', 1, 'thumbnail'),
+       ('1002', 2, 'thumbnail'),
+       ('1004', 4, 'thumbnail'),
+       ('1006', 6, 'thumbnail'),
+       ('1007', 7, 'thumbnail');

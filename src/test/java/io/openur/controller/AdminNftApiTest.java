@@ -248,7 +248,7 @@ public class AdminNftApiTest extends TestSupport {
                 )
             )
             .andExpect(jsonPath("$.data", hasSize(5)))
-            .andExpect(jsonPath("$.data[0].tokenId").value("100"))
+            .andExpect(jsonPath("$.data[0].tokenId").value("1001"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
             .andExpect(jsonPath("$.data[0].category").value("top"))
             .andExpect(
@@ -259,12 +259,12 @@ public class AdminNftApiTest extends TestSupport {
             .andExpect(
                 jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F)
             )
-            .andExpect(jsonPath("$.data[3].tokenId").value("500"))
+            .andExpect(jsonPath("$.data[3].tokenId").value("1006"))
             .andExpect(jsonPath("$.data[3].mainCategory").value("accessories"))
             .andExpect(
                 jsonPath("$.data[3].subCategory").value("eye-accessories")
             )
-            .andExpect(jsonPath("$.data[*].tokenId").value(hasItem("600")))
+            .andExpect(jsonPath("$.data[*].tokenId").value(hasItem("1007")))
             .andExpect(
                 jsonPath("$.data[*].name").value(
                     not(hasItem("토큰 없는 아이템"))
