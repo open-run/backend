@@ -36,20 +36,81 @@ import org.springframework.transaction.annotation.Transactional;
 public class NftAvatarItemApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/nft/avatar-items/me";
-    private static final String TEST_USER_ID = "9e1bfc60-f76a-47dc-9147-803653707192";
-    private static final String USER_ADDRESS = "0x1234567890123456789012345678901234567890";
-    private static final String GW = "https://swarm-api.yjkellyjoo.dev/bzz/";
-    private static final String F = "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefef";
+    private static final String TEST_USER_ID =
+        "9e1bfc60-f76a-47dc-9147-803653707192";
+    private static final String USER_ADDRESS =
+        "0x1234567890123456789012345678901234567890";
+    private static final String GW = "https://api.gateway.ethswarm.org/bzz/";
+    private static final String F =
+        "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefef";
     private static final byte[] PNG_BYTES = new byte[] {
-        (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-        0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, (byte) 0xC4,
-        (byte) 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41,
-        0x54, 0x78, (byte) 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-        0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, (byte) 0xB4, 0x00,
-        0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, (byte) 0xAE,
-        0x42, 0x60, (byte) 0x82
+        (byte) 0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0x0D,
+        0x0A,
+        0x1A,
+        0x0A,
+        0x00,
+        0x00,
+        0x00,
+        0x0D,
+        0x49,
+        0x48,
+        0x44,
+        0x52,
+        0x00,
+        0x00,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x00,
+        0x01,
+        0x08,
+        0x06,
+        0x00,
+        0x00,
+        0x00,
+        0x1F,
+        0x15,
+        (byte) 0xC4,
+        (byte) 0x89,
+        0x00,
+        0x00,
+        0x00,
+        0x0A,
+        0x49,
+        0x44,
+        0x41,
+        0x54,
+        0x78,
+        (byte) 0x9C,
+        0x63,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x05,
+        0x00,
+        0x01,
+        0x0D,
+        0x0A,
+        0x2D,
+        (byte) 0xB4,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x49,
+        0x45,
+        0x4E,
+        0x44,
+        (byte) 0xAE,
+        0x42,
+        0x60,
+        (byte) 0x82,
     };
 
     @Autowired
@@ -63,52 +124,74 @@ public class NftAvatarItemApiTest extends TestSupport {
 
     @Test
     @DisplayName("보유 NFT 아바타 목록은 로그인 없이 조회할 수 없다")
-    void getMyNftAvatarItems_withoutAuthentication_isForbidden() throws Exception {
-        mockMvc.perform(
-            get(PREFIX)
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+    void getMyNftAvatarItems_withoutAuthentication_isForbidden()
+        throws Exception {
+        mockMvc
+            .perform(get(PREFIX).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().is4xxClientError());
     }
 
     @Test
     @DisplayName("착용 NFT 아바타는 로그인 없이 조회하거나 저장할 수 없다")
     void wearingAvatar_withoutAuthentication_isForbidden() throws Exception {
-        mockMvc.perform(
-            get(PREFIX + "/wearing")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        mockMvc
+            .perform(
+                get(PREFIX + "/wearing").contentType(MediaType.APPLICATION_JSON)
+            )
             .andExpect(status().is4xxClientError());
 
-        mockMvc.perform(
-            multipart(PREFIX + "/wearing/profile-image")
-                .file(wearingAvatarPart("{}"))
-                .file(profileImagePart())
-                .with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                })
-        )
+        mockMvc
+            .perform(
+                multipart(PREFIX + "/wearing/profile-image")
+                    .file(wearingAvatarPart("{}"))
+                    .file(profileImagePart())
+                    .with(request -> {
+                        request.setMethod("PUT");
+                        return request;
+                    })
+            )
             .andExpect(status().is4xxClientError());
     }
 
     @Test
     @DisplayName("로컬 프론트엔드의 착용 저장 preflight 요청을 허용한다")
-    void wearingAvatarSave_preflightFromLocalFrontend_isAllowed() throws Exception {
-        mockMvc.perform(
-            options(PREFIX + "/wearing/profile-image")
-                .header("Origin", "http://localhost:6050")
-                .header("Access-Control-Request-Method", "PUT")
-                .header("Access-Control-Request-Headers", "authorization,content-type")
-        )
+    void wearingAvatarSave_preflightFromLocalFrontend_isAllowed()
+        throws Exception {
+        mockMvc
+            .perform(
+                options(PREFIX + "/wearing/profile-image")
+                    .header("Origin", "http://localhost:6050")
+                    .header("Access-Control-Request-Method", "PUT")
+                    .header(
+                        "Access-Control-Request-Headers",
+                        "authorization,content-type"
+                    )
+            )
             .andExpect(status().isOk())
-            .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:6050"))
-            .andExpect(header().string("Access-Control-Allow-Methods", org.hamcrest.Matchers.containsString("PUT")))
-            .andExpect(header().string("Access-Control-Allow-Headers", org.hamcrest.Matchers.containsString("authorization")));
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Origin",
+                    "http://localhost:6050"
+                )
+            )
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Methods",
+                    org.hamcrest.Matchers.containsString("PUT")
+                )
+            )
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Headers",
+                    org.hamcrest.Matchers.containsString("authorization")
+                )
+            );
     }
 
     @Test
-    @DisplayName("로그인 유저의 지갑 잔액이 있는 thumbnail token NFT Item만 조회된다")
+    @DisplayName(
+        "로그인 유저의 지갑 잔액이 있는 thumbnail token NFT Item만 조회된다"
+    )
     void getMyNftAvatarItems_ownedItemsOnly() throws Exception {
         String token = getTestUserToken1();
         Map<String, BigInteger> balances = new LinkedHashMap<>();
@@ -117,26 +200,39 @@ public class NftAvatarItemApiTest extends TestSupport {
         balances.put("300", BigInteger.ZERO);
         balances.put("500", BigInteger.ONE);
         balances.put("600", BigInteger.ONE);
-        when(nftBalanceReader.getBalances(USER_ADDRESS, List.of("100", "200", "300", "500", "600")))
-            .thenReturn(balances);
+        when(
+            nftBalanceReader.getBalances(
+                USER_ADDRESS,
+                List.of("100", "200", "300", "500", "600")
+            )
+        ).thenReturn(balances);
 
-        mockMvc.perform(
-            get(PREFIX)
-                .header(AUTH_HEADER, token)
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        mockMvc
+            .perform(
+                get(PREFIX)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Owned NFT avatar items fetched successfully"))
+            .andExpect(
+                jsonPath("$.message").value(
+                    "Owned NFT avatar items fetched successfully"
+                )
+            )
             .andExpect(jsonPath("$.data", hasSize(4)))
             .andExpect(jsonPath("$.data[0].id").value("100"))
             .andExpect(jsonPath("$.data[0].tokenId").value("100"))
             .andExpect(jsonPath("$.data[0].balance").value("1"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
             .andExpect(jsonPath("$.data[0].rarity").value("common"))
-            .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
+            .andExpect(
+                jsonPath("$.data[0].mainCategory").value("upperClothing")
+            )
             .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
             .andExpect(jsonPath("$.data[0].imageUrl").value(GW + "01b0" + F))
-            .andExpect(jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F))
+            .andExpect(
+                jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F)
+            )
             .andExpect(jsonPath("$.data[1].tokenId").value("200"))
             .andExpect(jsonPath("$.data[1].balance").value("2"))
             .andExpect(jsonPath("$.data[1].name").value("테스트 헤어"))
@@ -146,94 +242,145 @@ public class NftAvatarItemApiTest extends TestSupport {
             .andExpect(jsonPath("$.data[1].imageUrl[1]").value(GW + "02c0" + F))
             .andExpect(jsonPath("$.data[2].tokenId").value("500"))
             .andExpect(jsonPath("$.data[2].mainCategory").value("accessories"))
-            .andExpect(jsonPath("$.data[2].subCategory").value("eye-accessories"))
+            .andExpect(
+                jsonPath("$.data[2].subCategory").value("eye-accessories")
+            )
             .andExpect(jsonPath("$.data[3].tokenId").value("600"))
             .andExpect(jsonPath("$.data[3].mainCategory").value("hair"))
             .andExpect(jsonPath("$.data[3].imageUrl", hasSize(1)));
 
-        verify(nftBalanceReader).getBalances(USER_ADDRESS, List.of("100", "200", "300", "500", "600"));
+        verify(nftBalanceReader).getBalances(
+            USER_ADDRESS,
+            List.of("100", "200", "300", "500", "600")
+        );
     }
 
     @Test
     @DisplayName("착용 NFT 아바타와 프로필 이미지를 한 번에 저장한다")
     void saveWearingAvatarWithProfileImage_isOk() throws Exception {
         String token = getTestUserToken1();
-        when(nftBalanceReader.getBalances(USER_ADDRESS, List.of("100", "200", "500")))
-            .thenReturn(Map.of(
-                "100", BigInteger.ONE,
-                "200", BigInteger.ONE,
-                "500", BigInteger.ONE
-            ));
+        when(
+            nftBalanceReader.getBalances(
+                USER_ADDRESS,
+                List.of("100", "200", "500")
+            )
+        ).thenReturn(
+            Map.of(
+                "100",
+                BigInteger.ONE,
+                "200",
+                BigInteger.ONE,
+                "500",
+                BigInteger.ONE
+            )
+        );
 
-        mockMvc.perform(
-            multipart(PREFIX + "/wearing/profile-image")
-                .file(wearingAvatarPart("""
-                    {
-                      "fullSet": null,
-                      "upperClothing": "100",
-                      "lowerClothing": null,
-                      "footwear": null,
-                      "face": null,
-                      "skin": null,
-                      "hair": "200",
-                      "accessories": {
-                        "head-accessories": null,
-                        "eye-accessories": "500",
-                        "ear-accessories": null,
-                        "body-accessories": null
-                      }
-                    }
-                    """))
-                .file(profileImagePart())
-                .header(AUTH_HEADER, token)
-                .with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                })
-        )
+        mockMvc
+            .perform(
+                multipart(PREFIX + "/wearing/profile-image")
+                    .file(
+                        wearingAvatarPart(
+                            """
+                            {
+                              "fullSet": null,
+                              "upperClothing": "100",
+                              "lowerClothing": null,
+                              "footwear": null,
+                              "face": null,
+                              "skin": null,
+                              "hair": "200",
+                              "accessories": {
+                                "head-accessories": null,
+                                "eye-accessories": "500",
+                                "ear-accessories": null,
+                                "body-accessories": null
+                              }
+                            }
+                            """
+                        )
+                    )
+                    .file(profileImagePart())
+                    .header(AUTH_HEADER, token)
+                    .with(request -> {
+                        request.setMethod("PUT");
+                        return request;
+                    })
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Wearing NFT avatar and profile image saved successfully"))
+            .andExpect(
+                jsonPath("$.message").value(
+                    "Wearing NFT avatar and profile image saved successfully"
+                )
+            )
             .andExpect(jsonPath("$.data.fullSet").value(nullValue()))
             .andExpect(jsonPath("$.data.upperClothing.tokenId").value("100"))
             .andExpect(jsonPath("$.data.hair.tokenId").value("200"))
-            .andExpect(jsonPath("$.data.accessories.eye-accessories.tokenId").value("500"));
+            .andExpect(
+                jsonPath("$.data.accessories.eye-accessories.tokenId").value(
+                    "500"
+                )
+            );
 
-        String expectedKey = "profile-images/users/" + TEST_USER_ID + "/profile.png";
-        verify(gcsStorageService).upload(eq(expectedKey), any(byte[].class), eq(MediaType.IMAGE_PNG_VALUE));
-        assertThat(userJpaRepository.findByUserId(TEST_USER_ID).orElseThrow().getProfileImageStorageKey())
-            .isEqualTo(expectedKey);
+        String expectedKey =
+            "profile-images/users/" + TEST_USER_ID + "/profile.png";
+        verify(gcsStorageService).upload(
+            eq(expectedKey),
+            any(byte[].class),
+            eq(MediaType.IMAGE_PNG_VALUE)
+        );
+        assertThat(
+            userJpaRepository
+                .findByUserId(TEST_USER_ID)
+                .orElseThrow()
+                .getProfileImageStorageKey()
+        ).isEqualTo(expectedKey);
 
-        mockMvc.perform(
-            get(PREFIX + "/wearing")
-                .header(AUTH_HEADER, token)
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        mockMvc
+            .perform(
+                get(PREFIX + "/wearing")
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Wearing NFT avatar fetched successfully"))
+            .andExpect(
+                jsonPath("$.message").value(
+                    "Wearing NFT avatar fetched successfully"
+                )
+            )
             .andExpect(jsonPath("$.data.upperClothing.tokenId").value("100"))
             .andExpect(jsonPath("$.data.hair.tokenId").value("200"))
-            .andExpect(jsonPath("$.data.accessories.eye-accessories.tokenId").value("500"));
+            .andExpect(
+                jsonPath("$.data.accessories.eye-accessories.tokenId").value(
+                    "500"
+                )
+            );
     }
 
     @Test
     @DisplayName("착용 검증에 실패하면 프로필 이미지를 저장하지 않는다")
-    void saveWearingAvatarWithProfileImage_rejectsInvalidWearingBeforeImageStorage() throws Exception {
+    void saveWearingAvatarWithProfileImage_rejectsInvalidWearingBeforeImageStorage()
+        throws Exception {
         String token = getTestUserToken1();
 
-        mockMvc.perform(
-            multipart(PREFIX + "/wearing/profile-image")
-                .file(wearingAvatarPart("""
-                    {
-                      "upperClothing": "200"
-                    }
-                    """))
-                .file(profileImagePart())
-                .header(AUTH_HEADER, token)
-                .with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                })
-        )
+        mockMvc
+            .perform(
+                multipart(PREFIX + "/wearing/profile-image")
+                    .file(
+                        wearingAvatarPart(
+                            """
+                            {
+                              "upperClothing": "200"
+                            }
+                            """
+                        )
+                    )
+                    .file(profileImagePart())
+                    .header(AUTH_HEADER, token)
+                    .with(request -> {
+                        request.setMethod("PUT");
+                        return request;
+                    })
+            )
             .andExpect(status().isBadRequest());
 
         verify(gcsStorageService, never()).upload(any(), any(), any());
@@ -241,25 +388,32 @@ public class NftAvatarItemApiTest extends TestSupport {
 
     @Test
     @DisplayName("보유하지 않은 NFT Item은 착용 저장할 수 없다")
-    void saveWearingAvatarWithProfileImage_rejectsUnownedItem() throws Exception {
+    void saveWearingAvatarWithProfileImage_rejectsUnownedItem()
+        throws Exception {
         String token = getTestUserToken1();
-        when(nftBalanceReader.getBalances(USER_ADDRESS, List.of("100")))
-            .thenReturn(Map.of("100", BigInteger.ZERO));
+        when(
+            nftBalanceReader.getBalances(USER_ADDRESS, List.of("100"))
+        ).thenReturn(Map.of("100", BigInteger.ZERO));
 
-        mockMvc.perform(
-            multipart(PREFIX + "/wearing/profile-image")
-                .file(wearingAvatarPart("""
-                    {
-                      "upperClothing": "100"
-                    }
-                    """))
-                .file(profileImagePart())
-                .header(AUTH_HEADER, token)
-                .with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                })
-        )
+        mockMvc
+            .perform(
+                multipart(PREFIX + "/wearing/profile-image")
+                    .file(
+                        wearingAvatarPart(
+                            """
+                            {
+                              "upperClothing": "100"
+                            }
+                            """
+                        )
+                    )
+                    .file(profileImagePart())
+                    .header(AUTH_HEADER, token)
+                    .with(request -> {
+                        request.setMethod("PUT");
+                        return request;
+                    })
+            )
             .andExpect(status().isBadRequest());
 
         verify(gcsStorageService, never()).upload(any(), any(), any());
@@ -270,20 +424,25 @@ public class NftAvatarItemApiTest extends TestSupport {
     void saveWearingAvatarWithProfileImage_rejectsFullSet() throws Exception {
         String token = getTestUserToken1();
 
-        mockMvc.perform(
-            multipart(PREFIX + "/wearing/profile-image")
-                .file(wearingAvatarPart("""
-                    {
-                      "fullSet": 1
-                    }
-                    """))
-                .file(profileImagePart())
-                .header(AUTH_HEADER, token)
-                .with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                })
-        )
+        mockMvc
+            .perform(
+                multipart(PREFIX + "/wearing/profile-image")
+                    .file(
+                        wearingAvatarPart(
+                            """
+                            {
+                              "fullSet": 1
+                            }
+                            """
+                        )
+                    )
+                    .file(profileImagePart())
+                    .header(AUTH_HEADER, token)
+                    .with(request -> {
+                        request.setMethod("PUT");
+                        return request;
+                    })
+            )
             .andExpect(status().isBadRequest());
 
         verify(gcsStorageService, never()).upload(any(), any(), any());
@@ -299,6 +458,11 @@ public class NftAvatarItemApiTest extends TestSupport {
     }
 
     private MockMultipartFile profileImagePart() {
-        return new MockMultipartFile("image", "profile.png", MediaType.IMAGE_PNG_VALUE, PNG_BYTES);
+        return new MockMultipartFile(
+            "image",
+            "profile.png",
+            MediaType.IMAGE_PNG_VALUE,
+            PNG_BYTES
+        );
     }
 }

@@ -10,7 +10,9 @@ public class NftAssetUrlResolver {
     private final String swarmGatewayUrl;
 
     public NftAssetUrlResolver(
-        @Value("${swarm.gateway-url:https://swarm-api.yjkellyjoo.dev}") String swarmGatewayUrl
+        @Value(
+            "${nft.swarm-gateway-url:https://api.gateway.ethswarm.org}"
+        ) String swarmGatewayUrl
     ) {
         this.swarmGatewayUrl = trimTrailingSlash(swarmGatewayUrl);
     }
@@ -21,7 +23,9 @@ public class NftAssetUrlResolver {
      * the single canonical form — never append a path to it.
      */
     public String resolve(String ref) {
-        return StringUtils.hasText(ref) ? swarmGatewayUrl + "/bzz/" + ref : null;
+        return StringUtils.hasText(ref)
+            ? swarmGatewayUrl + "/bzz/" + ref
+            : null;
     }
 
     private String trimTrailingSlash(String value) {
@@ -29,6 +33,8 @@ public class NftAssetUrlResolver {
             return "";
         }
 
-        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+        return value.endsWith("/")
+            ? value.substring(0, value.length() - 1)
+            : value;
     }
 }
