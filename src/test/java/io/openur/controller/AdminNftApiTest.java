@@ -32,9 +32,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminNftApiTest extends TestSupport {
 
     private static final String PREFIX = "/v1/admin";
-    private static final String RECIPIENT_ADDRESS = "0x9999999999999999999999999999999999999999";
-    private static final String GW = "https://swarm-api.yjkellyjoo.dev/bzz/";
-    private static final String F = "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefef";
+    private static final String RECIPIENT_ADDRESS =
+        "0x9999999999999999999999999999999999999999";
+    private static final String GW = "https://api.gateway.ethswarm.org/bzz/";
+    private static final String F =
+        "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefef";
 
     @Autowired
     private UserJpaRepository userJpaRepository;
@@ -44,165 +46,264 @@ public class AdminNftApiTest extends TestSupport {
     void adminApi_withoutAuthentication_isForbidden() throws Exception {
         SecurityContextHolder.clearContext();
 
-        mockMvc.perform(get(PREFIX + "/users"))
+        mockMvc
+            .perform(get(PREFIX + "/users"))
             .andExpect(status().is4xxClientError());
 
-        mockMvc.perform(get(PREFIX + "/nft/avatar-items"))
+        mockMvc
+            .perform(get(PREFIX + "/nft/avatar-items"))
             .andExpect(status().is4xxClientError());
 
-        mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on"))
+        mockMvc
+            .perform(get(PREFIX + "/nft/avatar-items/try-on"))
             .andExpect(status().is4xxClientError());
 
-        mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+        mockMvc
+            .perform(
+                post(PREFIX + "/nft/avatar-items/grants")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}")
+            )
             .andExpect(status().is4xxClientError());
     }
 
     @Test
     @DisplayName("인증된 사용자는 admin 권한을 가진다")
     void getAdminMe_returnsAdminStatus() throws Exception {
-        mockMvc.perform(get(PREFIX + "/me")
-                .header(AUTH_HEADER, getTestUserToken1()))
+        mockMvc
+            .perform(
+                get(PREFIX + "/me").header(AUTH_HEADER, getTestUserToken1())
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.admin").value(true));
 
-        mockMvc.perform(get(PREFIX + "/me")
-                .header(AUTH_HEADER, getTestUserToken2()))
+        mockMvc
+            .perform(
+                get(PREFIX + "/me").header(AUTH_HEADER, getTestUserToken2())
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.admin").value(true));
     }
 
     @Test
-    @DisplayName("로컬 프론트엔드의 admin users preflight와 실제 조회 응답에 CORS 헤더를 포함한다")
+    @DisplayName(
+        "로컬 프론트엔드의 admin users preflight와 실제 조회 응답에 CORS 헤더를 포함한다"
+    )
     void adminUsers_corsFromLocalFrontend_isAllowed() throws Exception {
-        mockMvc.perform(
-            options(PREFIX + "/users")
-                .header("Origin", "http://localhost:6050")
-                .header("Access-Control-Request-Method", "GET")
-                .header("Access-Control-Request-Headers", "authorization,content-type")
-        )
+        mockMvc
+            .perform(
+                options(PREFIX + "/users")
+                    .header("Origin", "http://localhost:6050")
+                    .header("Access-Control-Request-Method", "GET")
+                    .header(
+                        "Access-Control-Request-Headers",
+                        "authorization,content-type"
+                    )
+            )
             .andExpect(status().isOk())
-            .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:6050"))
-            .andExpect(header().string("Access-Control-Allow-Methods", org.hamcrest.Matchers.containsString("GET")))
-            .andExpect(header().string("Access-Control-Allow-Headers", org.hamcrest.Matchers.containsString("authorization")));
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Origin",
+                    "http://localhost:6050"
+                )
+            )
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Methods",
+                    org.hamcrest.Matchers.containsString("GET")
+                )
+            )
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Headers",
+                    org.hamcrest.Matchers.containsString("authorization")
+                )
+            );
 
-        mockMvc.perform(get(PREFIX + "/users")
-                .header("Origin", "http://localhost:6050")
-                .header(AUTH_HEADER, getTestUserToken1()))
+        mockMvc
+            .perform(
+                get(PREFIX + "/users")
+                    .header("Origin", "http://localhost:6050")
+                    .header(AUTH_HEADER, getTestUserToken1())
+            )
             .andExpect(status().isOk())
-            .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:6050"));
+            .andExpect(
+                header().string(
+                    "Access-Control-Allow-Origin",
+                    "http://localhost:6050"
+                )
+            );
     }
 
     @Test
-    @DisplayName("admin은 유효한 wallet address를 가진 비차단 유저 목록을 nickname 기준으로 조회한다")
+    @DisplayName(
+        "admin은 유효한 wallet address를 가진 비차단 유저 목록을 nickname 기준으로 조회한다"
+    )
     void getAdminUsers_returnsGrantableUsers() throws Exception {
         LocalDateTime now = LocalDateTime.now();
-        userJpaRepository.save(new UserEntity(
-            "10000000-0000-0000-0000-000000000001",
-            "zzz",
-            false,
-            Provider.smart_wallet,
-            false,
-            now,
-            now,
-            "0x2222222222222222222222222222222222222222",
-            null,
-            null,
-            0
-        ));
-        userJpaRepository.save(new UserEntity(
-            "10000000-0000-0000-0000-000000000002",
-            null,
-            false,
-            Provider.smart_wallet,
-            false,
-            now,
-            now,
-            "0x3333333333333333333333333333333333333333",
-            null,
-            null,
-            0
-        ));
-        userJpaRepository.save(new UserEntity(
-            "10000000-0000-0000-0000-000000000003",
-            "aaa-invalid",
-            false,
-            Provider.smart_wallet,
-            false,
-            now,
-            now,
-            "not-address",
-            null,
-            null,
-            0
-        ));
-        userJpaRepository.save(new UserEntity(
-            "10000000-0000-0000-0000-000000000004",
-            "bbb-blocked",
-            false,
-            Provider.smart_wallet,
-            true,
-            now,
-            now,
-            "0x4444444444444444444444444444444444444444",
-            null,
-            null,
-            0
-        ));
+        userJpaRepository.save(
+            new UserEntity(
+                "10000000-0000-0000-0000-000000000001",
+                "zzz",
+                false,
+                Provider.smart_wallet,
+                false,
+                now,
+                now,
+                "0x2222222222222222222222222222222222222222",
+                null,
+                null,
+                0
+            )
+        );
+        userJpaRepository.save(
+            new UserEntity(
+                "10000000-0000-0000-0000-000000000002",
+                null,
+                false,
+                Provider.smart_wallet,
+                false,
+                now,
+                now,
+                "0x3333333333333333333333333333333333333333",
+                null,
+                null,
+                0
+            )
+        );
+        userJpaRepository.save(
+            new UserEntity(
+                "10000000-0000-0000-0000-000000000003",
+                "aaa-invalid",
+                false,
+                Provider.smart_wallet,
+                false,
+                now,
+                now,
+                "not-address",
+                null,
+                null,
+                0
+            )
+        );
+        userJpaRepository.save(
+            new UserEntity(
+                "10000000-0000-0000-0000-000000000004",
+                "bbb-blocked",
+                false,
+                Provider.smart_wallet,
+                true,
+                now,
+                now,
+                "0x4444444444444444444444444444444444444444",
+                null,
+                null,
+                0
+            )
+        );
 
-        mockMvc.perform(get(PREFIX + "/users")
-                .header(AUTH_HEADER, getTestUserToken1()))
+        mockMvc
+            .perform(
+                get(PREFIX + "/users").header(AUTH_HEADER, getTestUserToken1())
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Admin users fetched successfully"))
+            .andExpect(
+                jsonPath("$.message").value("Admin users fetched successfully")
+            )
             .andExpect(jsonPath("$.data", hasSize(5)))
             .andExpect(jsonPath("$.data[0].nickname").value("test"))
-            .andExpect(jsonPath("$.data[0].blockchainAddress").value("0x1234567890123456789012345678901234567890"))
+            .andExpect(
+                jsonPath("$.data[0].blockchainAddress").value(
+                    "0x1234567890123456789012345678901234567890"
+                )
+            )
             .andExpect(jsonPath("$.data[3].nickname").value("zzz"))
             .andExpect(jsonPath("$.data[4].nickname").value(nullValue()))
-            .andExpect(jsonPath("$.data[*].blockchainAddress").value(not(hasItem("not-address"))))
-            .andExpect(jsonPath("$.data[*].blockchainAddress").value(not(hasItem("0x4444444444444444444444444444444444444444"))));
+            .andExpect(
+                jsonPath("$.data[*].blockchainAddress").value(
+                    not(hasItem("not-address"))
+                )
+            )
+            .andExpect(
+                jsonPath("$.data[*].blockchainAddress").value(
+                    not(hasItem("0x4444444444444444444444444444444444444444"))
+                )
+            );
     }
 
     @Test
     @DisplayName("admin은 민팅 완료된 enabled NFT Item 목록만 조회한다")
     void getMintedNftAvatarItems_adminOnly() throws Exception {
-        mockMvc.perform(get(PREFIX + "/nft/avatar-items")
-                .header(AUTH_HEADER, getTestUserToken1()))
+        mockMvc
+            .perform(
+                get(PREFIX + "/nft/avatar-items").header(
+                    AUTH_HEADER,
+                    getTestUserToken1()
+                )
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Admin NFT avatar items fetched successfully"))
+            .andExpect(
+                jsonPath("$.message").value(
+                    "Admin NFT avatar items fetched successfully"
+                )
+            )
             .andExpect(jsonPath("$.data", hasSize(5)))
             .andExpect(jsonPath("$.data[0].tokenId").value("100"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
             .andExpect(jsonPath("$.data[0].category").value("top"))
-            .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
+            .andExpect(
+                jsonPath("$.data[0].mainCategory").value("upperClothing")
+            )
             .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
             .andExpect(jsonPath("$.data[0].rarity").value("common"))
-            .andExpect(jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F))
+            .andExpect(
+                jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F)
+            )
             .andExpect(jsonPath("$.data[3].tokenId").value("500"))
             .andExpect(jsonPath("$.data[3].mainCategory").value("accessories"))
-            .andExpect(jsonPath("$.data[3].subCategory").value("eye-accessories"))
+            .andExpect(
+                jsonPath("$.data[3].subCategory").value("eye-accessories")
+            )
             .andExpect(jsonPath("$.data[*].tokenId").value(hasItem("600")))
-            .andExpect(jsonPath("$.data[*].name").value(not(hasItem("토큰 없는 아이템"))))
-            .andExpect(jsonPath("$.data[*].name").value(not(hasItem("비활성 하의"))));
+            .andExpect(
+                jsonPath("$.data[*].name").value(
+                    not(hasItem("토큰 없는 아이템"))
+                )
+            )
+            .andExpect(
+                jsonPath("$.data[*].name").value(not(hasItem("비활성 하의")))
+            );
     }
 
     @Test
     @DisplayName("admin은 catalog NFT 전체를 아바타 장착 테스트용으로 조회한다")
     void getTryOnNftAvatarItems_returnsAllCatalogItems() throws Exception {
-        mockMvc.perform(get(PREFIX + "/nft/avatar-items/try-on")
-                .header(AUTH_HEADER, getTestUserToken1()))
+        mockMvc
+            .perform(
+                get(PREFIX + "/nft/avatar-items/try-on").header(
+                    AUTH_HEADER,
+                    getTestUserToken1()
+                )
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Admin NFT avatar try-on items fetched successfully"))
+            .andExpect(
+                jsonPath("$.message").value(
+                    "Admin NFT avatar try-on items fetched successfully"
+                )
+            )
             .andExpect(jsonPath("$.data", hasSize(9)))
             .andExpect(jsonPath("$.data[0].id").value("100"))
             .andExpect(jsonPath("$.data[0].tokenId").value("100"))
             .andExpect(jsonPath("$.data[0].name").value("테스트 상의"))
-            .andExpect(jsonPath("$.data[0].mainCategory").value("upperClothing"))
+            .andExpect(
+                jsonPath("$.data[0].mainCategory").value("upperClothing")
+            )
             .andExpect(jsonPath("$.data[0].subCategory").value(nullValue()))
             .andExpect(jsonPath("$.data[0].rarity").value("common"))
             .andExpect(jsonPath("$.data[0].imageUrl").value(GW + "01b0" + F))
-            .andExpect(jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F))
+            .andExpect(
+                jsonPath("$.data[0].thumbnailUrl").value(GW + "01a0" + F)
+            )
             .andExpect(jsonPath("$.data[1].tokenId").value("200"))
             .andExpect(jsonPath("$.data[1].imageUrl", hasSize(2)))
             .andExpect(jsonPath("$.data[1].imageUrl[0]").value(GW + "02b0" + F))
@@ -211,56 +312,92 @@ public class AdminNftApiTest extends TestSupport {
             .andExpect(jsonPath("$.data[2].tokenId").value(nullValue()))
             .andExpect(jsonPath("$.data[4].name").value("비활성 하의"))
             .andExpect(jsonPath("$.data[4].tokenId").value(nullValue()))
-            .andExpect(jsonPath("$.data[7].name").value("장착 이미지 없는 아이템"))
+            .andExpect(
+                jsonPath("$.data[7].name").value("장착 이미지 없는 아이템")
+            )
             .andExpect(jsonPath("$.data[7].tokenId").value(nullValue()))
             .andExpect(jsonPath("$.data[7].imageUrl").value(nullValue()))
-            .andExpect(jsonPath("$.data[7].thumbnailUrl").value(GW + "08a0" + F))
-            .andExpect(jsonPath("$.data[8].name").value("장착 이미지 없는 헤어"))
+            .andExpect(
+                jsonPath("$.data[7].thumbnailUrl").value(GW + "08a0" + F)
+            )
+            .andExpect(
+                jsonPath("$.data[8].name").value("장착 이미지 없는 헤어")
+            )
             .andExpect(jsonPath("$.data[8].imageUrl").value(nullValue()))
-            .andExpect(jsonPath("$.data[8].thumbnailUrl").value(GW + "09a0" + F));
+            .andExpect(
+                jsonPath("$.data[8].thumbnailUrl").value(GW + "09a0" + F)
+            );
     }
 
     @Test
-    @DisplayName("admin은 mint 완료된 NFT Item을 대상 address에 추가 mint로 부여한다")
+    @DisplayName(
+        "admin은 mint 완료된 NFT Item을 대상 address에 추가 mint로 부여한다"
+    )
     void grantNftAvatarItem_mintsTokenToRecipient() throws Exception {
-        when(nftMintClient.mintToken(
-            RECIPIENT_ADDRESS,
-            BigInteger.valueOf(100),
-            BigInteger.ONE
-        )).thenReturn("0xtxhash");
+        when(
+            nftMintClient.mintToken(
+                RECIPIENT_ADDRESS,
+                BigInteger.valueOf(100),
+                BigInteger.ONE
+            )
+        ).thenReturn("0xtxhash");
 
-        mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "recipientAddress": "0x9999999999999999999999999999999999999999",
-                      "tokenId": "100"
-                    }
-                    """))
+        mockMvc
+            .perform(
+                post(PREFIX + "/nft/avatar-items/grants")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "recipientAddress": "0x9999999999999999999999999999999999999999",
+                          "tokenId": "100"
+                        }
+                        """
+                    )
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Admin NFT avatar item granted successfully"))
-            .andExpect(jsonPath("$.data.recipientAddress").value(RECIPIENT_ADDRESS))
+            .andExpect(
+                jsonPath("$.message").value(
+                    "Admin NFT avatar item granted successfully"
+                )
+            )
+            .andExpect(
+                jsonPath("$.data.recipientAddress").value(RECIPIENT_ADDRESS)
+            )
             .andExpect(jsonPath("$.data.tokenId").value("100"))
             .andExpect(jsonPath("$.data.transactionHash").value("0xtxhash"));
 
-        verify(nftMintClient).mintToken(RECIPIENT_ADDRESS, BigInteger.valueOf(100), BigInteger.ONE);
+        verify(nftMintClient).mintToken(
+            RECIPIENT_ADDRESS,
+            BigInteger.valueOf(100),
+            BigInteger.ONE
+        );
     }
 
     @Test
     @DisplayName("avatar token이 없는 tokenId는 부여할 수 없다")
     void grantNftAvatarItem_rejectsUnmintedItem() throws Exception {
-        mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "recipientAddress": "0x9999999999999999999999999999999999999999",
-                      "tokenId": "999"
-                    }
-                    """))
+        mockMvc
+            .perform(
+                post(PREFIX + "/nft/avatar-items/grants")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "recipientAddress": "0x9999999999999999999999999999999999999999",
+                          "tokenId": "999"
+                        }
+                        """
+                    )
+            )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value(containsString("has no minted token")));
+            .andExpect(
+                jsonPath("$.message").value(
+                    containsString("has no minted token")
+                )
+            );
 
         verifyNoInteractions(nftMintClient);
     }
@@ -268,17 +405,26 @@ public class AdminNftApiTest extends TestSupport {
     @Test
     @DisplayName("잘못된 recipient address는 부여할 수 없다")
     void grantNftAvatarItem_rejectsInvalidRecipientAddress() throws Exception {
-        mockMvc.perform(post(PREFIX + "/nft/avatar-items/grants")
-                .header(AUTH_HEADER, getTestUserToken1())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "recipientAddress": "not-address",
-                      "tokenId": "100"
-                    }
-                    """))
+        mockMvc
+            .perform(
+                post(PREFIX + "/nft/avatar-items/grants")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "recipientAddress": "not-address",
+                          "tokenId": "100"
+                        }
+                        """
+                    )
+            )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value(containsString("Invalid Ethereum address")));
+            .andExpect(
+                jsonPath("$.message").value(
+                    containsString("Invalid Ethereum address")
+                )
+            );
 
         verifyNoInteractions(nftMintClient);
     }
