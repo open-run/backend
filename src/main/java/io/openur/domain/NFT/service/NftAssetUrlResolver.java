@@ -7,14 +7,11 @@ import org.springframework.util.StringUtils;
 @Component
 public class NftAssetUrlResolver {
 
-    private final String publicBaseUrl;
     private final String swarmGatewayUrl;
 
     public NftAssetUrlResolver(
-        @Value("${openrun.gcs.public-base-url}") String publicBaseUrl,
         @Value("${swarm.gateway-url:https://swarm-api.yjkellyjoo.dev}") String swarmGatewayUrl
     ) {
-        this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
         this.swarmGatewayUrl = trimTrailingSlash(swarmGatewayUrl);
     }
 
@@ -25,21 +22,6 @@ public class NftAssetUrlResolver {
      */
     public String resolve(String ref) {
         return StringUtils.hasText(ref) ? swarmGatewayUrl + "/bzz/" + ref : null;
-    }
-
-    /**
-     * Legacy GCS resolution (storageKey path under the public bucket, with a stored
-     * URL fallback). Retained only until all NFT callers migrate to Swarm refs.
-     *
-     * @deprecated use {@link #resolve(String)} with a Swarm reference.
-     */
-    @Deprecated
-    public String resolve(String storedUrl, String storageKey) {
-        if (StringUtils.hasText(storageKey)) {
-            return publicBaseUrl + "/" + storageKey;
-        }
-
-        return StringUtils.hasText(storedUrl) ? storedUrl : null;
     }
 
     private String trimTrailingSlash(String value) {
