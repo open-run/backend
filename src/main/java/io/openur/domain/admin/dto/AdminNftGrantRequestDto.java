@@ -12,6 +12,6 @@ public class AdminNftGrantRequestDto {
     @ValidEthereumAddress
     private String recipientAddress;
 
-    @NotNull(message = "nftItemId is required")
-    private Long nftItemId;
+    @NotNull(message = "tokenId is required")
+    private String tokenId;
 }

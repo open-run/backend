@@ -5,16 +5,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * User wearing state. Keyed on the stable avatar {@code token_id} (NOT the volatile
+ * {@code tb_nfts.nft_id}), so wearing rows survive catalog re-syncs by the
+ * openrun-nft-tools. No FK into the tool-owned catalog tables.
+ */
 @Entity
 @Getter
 @NoArgsConstructor
@@ -32,7 +34,6 @@ public class NftAvatarWearingEntity {
     @Column(name = "wearing_slot")
     private NftAvatarWearingSlot wearingSlot;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nft_item_id")
-    private NftItemEntity nftItemEntity;
+    @Column(name = "token_id")
+    private String tokenId;
 }

@@ -11,17 +11,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NftWearingAvatarRequestDto {
 
-    private Long fullSet;
-    private Long upperClothing;
-    private Long lowerClothing;
-    private Long footwear;
-    private Long face;
-    private Long skin;
-    private Long hair;
+    private String fullSet;
+    private String upperClothing;
+    private String lowerClothing;
+    private String footwear;
+    private String face;
+    private String skin;
+    private String hair;
     private Accessories accessories;
 
-    public Map<NftAvatarWearingSlot, Long> toSlotItemIds() {
-        Map<NftAvatarWearingSlot, Long> result = new LinkedHashMap<>();
+    public Map<NftAvatarWearingSlot, String> toSlotTokenIds() {
+        Map<NftAvatarWearingSlot, String> result = new LinkedHashMap<>();
         result.put(NftAvatarWearingSlot.upper_clothing, upperClothing);
         result.put(NftAvatarWearingSlot.lower_clothing, lowerClothing);
         result.put(NftAvatarWearingSlot.footwear, footwear);
@@ -44,15 +44,15 @@ public class NftWearingAvatarRequestDto {
     public static class Accessories {
 
         @JsonProperty("head-accessories")
-        private Long headAccessories;
+        private String headAccessories;
 
         @JsonProperty("eye-accessories")
-        private Long eyeAccessories;
+        private String eyeAccessories;
 
         @JsonProperty("ear-accessories")
-        private Long earAccessories;
+        private String earAccessories;
 
         @JsonProperty("body-accessories")
-        private Long bodyAccessories;
+        private String bodyAccessories;
     }
 }

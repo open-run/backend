@@ -1,6 +1,5 @@
 package io.openur.domain.admin.dto;
 
-import io.openur.domain.NFT.entity.NftItemEntity;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,19 +8,17 @@ import lombok.Getter;
 public class AdminNftGrantResponseDto {
 
     private String recipientAddress;
-    private Long nftItemId;
     private String tokenId;
     private String transactionHash;
 
     public static AdminNftGrantResponseDto from(
         String recipientAddress,
-        NftItemEntity nftItem,
+        String tokenId,
         String transactionHash
     ) {
         return AdminNftGrantResponseDto.builder()
             .recipientAddress(recipientAddress)
-            .nftItemId(nftItem.getNftItemId())
-            .tokenId(nftItem.getNftTokenId())
+            .tokenId(tokenId)
             .transactionHash(transactionHash)
             .build();
     }

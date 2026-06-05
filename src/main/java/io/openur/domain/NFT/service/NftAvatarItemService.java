@@ -4,12 +4,11 @@ import io.openur.domain.NFT.dto.NftAvatarItemDto;
 import io.openur.domain.NFT.dto.NftWearingAvatarDto;
 import io.openur.domain.NFT.dto.NftWearingAvatarRequestDto;
 import io.openur.domain.NFT.entity.NftAvatarWearingEntity;
-import io.openur.domain.NFT.entity.NftItemEntity;
-import io.openur.domain.NFT.entity.NftItemEquipImageEntity;
+import io.openur.domain.NFT.entity.NftTokenEntity;
 import io.openur.domain.NFT.enums.NftAvatarWearingSlot;
+import io.openur.domain.NFT.enums.NftImageRole;
 import io.openur.domain.NFT.repository.NftAvatarWearingJpaRepository;
-import io.openur.domain.NFT.repository.NftItemEquipImageJpaRepository;
-import io.openur.domain.NFT.repository.NftItemJpaRepository;
+import io.openur.domain.NFT.repository.NftTokenJpaRepository;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
 import io.openur.domain.user.service.UserProfileImageStorageService;
@@ -17,9 +16,9 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +35,7 @@ public class NftAvatarItemService {
 
     private static final BigInteger ZERO = BigInteger.ZERO;
 
-    private final NftItemJpaRepository nftItemJpaRepository;
-    private final NftItemEquipImageJpaRepository nftItemEquipImageJpaRepository;
+    private final NftTokenJpaRepository nftTokenJpaRepository;
     private final NftAvatarWearingJpaRepository nftAvatarWearingJpaRepository;
     private final NftBalanceReader nftBalanceReader;
     private final NftAvatarItemViewMapper nftAvatarItemViewMapper;
@@ -46,33 +44,24 @@ public class NftAvatarItemService {
     private final UserProfileImageStorageService userProfileImageStorageService;
 
     public List<NftAvatarItemDto> getOwnedAvatarItems(String ownerAddress) {
-        List<NftItemEntity> candidates = runInReadOnlyTransaction(this::getNftItemCandidates);
+        List<NftTokenEntity> candidates = runInReadOnlyTransaction(
+            () -> nftTokenJpaRepository.findByImageRole(NftImageRole.avatar));
         if (candidates.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<String> tokenIds = candidates.stream()
-            .map(NftItemEntity::getNftTokenId)
+            .map(NftTokenEntity::getTokenId)
             .distinct()
             .toList();
         Map<String, BigInteger> balances = nftBalanceReader.getBalances(ownerAddress, tokenIds);
 
-        List<NftItemEntity> ownedItems = candidates.stream()
-            .filter(item -> balances.getOrDefault(item.getNftTokenId(), ZERO).compareTo(ZERO) > 0)
-            .toList();
-        if (ownedItems.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        Map<Long, List<NftItemEquipImageEntity>> equipImagesByItemId = runInReadOnlyTransaction(
-            () -> getEquipImagesByItemId(ownedItems)
-        );
-
-        return ownedItems.stream()
-            .map(item -> nftAvatarItemViewMapper.toDto(
-                item,
-                balances.get(item.getNftTokenId()),
-                equipImagesByItemId.getOrDefault(item.getNftItemId(), Collections.emptyList())
+        return candidates.stream()
+            .filter(token -> balances.getOrDefault(token.getTokenId(), ZERO).compareTo(ZERO) > 0)
+            .map(token -> nftAvatarItemViewMapper.toDto(
+                token.getNft(),
+                token.getTokenId(),
+                balances.get(token.getTokenId())
             ))
             .toList();
     }
@@ -80,20 +69,27 @@ public class NftAvatarItemService {
     public NftWearingAvatarDto getWearingAvatar(String userId) {
         return runInReadOnlyTransaction(() -> {
             List<NftAvatarWearingEntity> wearingEntities = nftAvatarWearingJpaRepository.findByUserId(userId);
-            Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot = wearingEntities.stream()
-                .filter(wearingEntity -> Boolean.TRUE.equals(wearingEntity.getNftItemEntity().getEnabled()))
-                .filter(wearingEntity -> nftAvatarItemViewMapper.matchesSlot(
-                    wearingEntity.getWearingSlot(),
-                    wearingEntity.getNftItemEntity()
-                ))
-                .collect(Collectors.toMap(
-                    NftAvatarWearingEntity::getWearingSlot,
-                    NftAvatarWearingEntity::getNftItemEntity,
-                    (left, right) -> left,
-                    () -> new EnumMap<>(NftAvatarWearingSlot.class)
-                ));
+            if (wearingEntities.isEmpty()) {
+                return NftWearingAvatarDto.empty();
+            }
 
-            return buildWearingAvatarDto(wearingItemsBySlot);
+            Map<String, NftTokenEntity> tokensById = getAvatarTokensById(
+                wearingEntities.stream().map(NftAvatarWearingEntity::getTokenId).toList());
+
+            Map<NftAvatarWearingSlot, NftTokenEntity> wearingTokensBySlot =
+                new EnumMap<>(NftAvatarWearingSlot.class);
+            for (NftAvatarWearingEntity wearingEntity : wearingEntities) {
+                NftTokenEntity token = tokensById.get(wearingEntity.getTokenId());
+                if (token == null) {
+                    continue;
+                }
+                if (!nftAvatarItemViewMapper.matchesSlot(wearingEntity.getWearingSlot(), token.getNft())) {
+                    continue;
+                }
+                wearingTokensBySlot.putIfAbsent(wearingEntity.getWearingSlot(), token);
+            }
+
+            return buildWearingAvatarDto(wearingTokensBySlot);
         });
     }
 
@@ -104,19 +100,19 @@ public class NftAvatarItemService {
         NftWearingAvatarRequestDto request,
         MultipartFile image
     ) {
-        Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot = resolveWearingItems(ownerAddress, request);
+        Map<NftAvatarWearingSlot, NftTokenEntity> wearingTokensBySlot = resolveWearingItems(ownerAddress, request);
         String storageKey = userProfileImageStorageService.store(userId, image);
 
-        replaceWearingItems(userId, wearingItemsBySlot);
+        replaceWearingItems(userId, wearingTokensBySlot);
 
         User user = userRepository.findById(userId);
         user.updateProfileImageStorageKey(storageKey);
         userRepository.update(user);
 
-        return buildWearingAvatarDto(wearingItemsBySlot);
+        return buildWearingAvatarDto(wearingTokensBySlot);
     }
 
-    private Map<NftAvatarWearingSlot, NftItemEntity> resolveWearingItems(
+    private Map<NftAvatarWearingSlot, NftTokenEntity> resolveWearingItems(
         String ownerAddress,
         NftWearingAvatarRequestDto request
     ) {
@@ -130,140 +126,111 @@ public class NftAvatarItemService {
             throw new IllegalArgumentException("fullSet is not supported yet");
         }
 
-        Map<NftAvatarWearingSlot, Long> requestedSlotItemIds = request.toSlotItemIds()
+        Map<NftAvatarWearingSlot, String> requestedSlotTokenIds = request.toSlotTokenIds()
             .entrySet()
             .stream()
-            .filter(entry -> entry.getValue() != null)
+            .filter(entry -> StringUtils.hasText(entry.getValue()))
             .collect(Collectors.toMap(
                 Map.Entry::getKey,
                 Map.Entry::getValue,
                 (left, right) -> left,
                 () -> new EnumMap<>(NftAvatarWearingSlot.class)
             ));
-        Map<Long, NftItemEntity> itemsById = getItemsById(requestedSlotItemIds.values());
-        Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot = new EnumMap<>(NftAvatarWearingSlot.class);
+        Map<String, NftTokenEntity> tokensById = getAvatarTokensById(requestedSlotTokenIds.values());
+        Map<NftAvatarWearingSlot, NftTokenEntity> wearingTokensBySlot =
+            new EnumMap<>(NftAvatarWearingSlot.class);
 
-        requestedSlotItemIds.forEach((slot, nftItemId) -> {
-            NftItemEntity nftItem = itemsById.get(nftItemId);
-            if (nftItem == null || !Boolean.TRUE.equals(nftItem.getEnabled())) {
-                throw new IllegalArgumentException("invalid nftItemId: " + nftItemId);
+        requestedSlotTokenIds.forEach((slot, tokenId) -> {
+            NftTokenEntity token = tokensById.get(tokenId);
+            if (token == null) {
+                throw new IllegalArgumentException("invalid tokenId: " + tokenId);
             }
-            if (!nftAvatarItemViewMapper.matchesSlot(slot, nftItem)) {
-                throw new IllegalArgumentException("nftItemId " + nftItemId + " does not match wearing slot " + slot);
+            if (!nftAvatarItemViewMapper.matchesSlot(slot, token.getNft())) {
+                throw new IllegalArgumentException(
+                    "tokenId " + tokenId + " does not match wearing slot " + slot);
             }
 
-            wearingItemsBySlot.put(slot, nftItem);
+            wearingTokensBySlot.put(slot, token);
         });
-        assertOwnedAvatarItems(ownerAddress, wearingItemsBySlot.values());
+        assertOwnedAvatarItems(ownerAddress, wearingTokensBySlot.values());
 
-        return wearingItemsBySlot;
+        return wearingTokensBySlot;
     }
 
-    private void replaceWearingItems(String userId, Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot) {
+    private void replaceWearingItems(
+        String userId,
+        Map<NftAvatarWearingSlot, NftTokenEntity> wearingTokensBySlot
+    ) {
         nftAvatarWearingJpaRepository.deleteByUserId(userId);
-        nftAvatarWearingJpaRepository.saveAll(wearingItemsBySlot.entrySet()
+        nftAvatarWearingJpaRepository.saveAll(wearingTokensBySlot.entrySet()
             .stream()
-            .map(entry -> new NftAvatarWearingEntity(userId, entry.getKey(), entry.getValue()))
+            .map(entry -> new NftAvatarWearingEntity(userId, entry.getKey(), entry.getValue().getTokenId()))
             .toList());
     }
 
-    private List<NftItemEntity> getNftItemCandidates() {
-        return nftItemJpaRepository.findByEnabledTrueAndNftTokenIdIsNotNullOrderByNftItemIdAsc()
-            .stream()
-            .filter(item -> StringUtils.hasText(item.getNftTokenId()))
-            .toList();
-    }
-
-    private Map<Long, NftItemEntity> getItemsById(Collection<Long> nftItemIds) {
-        if (nftItemIds.isEmpty()) {
+    private Map<String, NftTokenEntity> getAvatarTokensById(Collection<String> tokenIds) {
+        if (tokenIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        return nftItemJpaRepository.findByNftItemIdIn(nftItemIds).stream()
-            .collect(Collectors.toMap(NftItemEntity::getNftItemId, item -> item));
+        return nftTokenJpaRepository.findByTokenIdInAndImageRole(tokenIds, NftImageRole.avatar)
+            .stream()
+            .collect(Collectors.toMap(NftTokenEntity::getTokenId, Function.identity()));
     }
 
-    private void assertOwnedAvatarItems(String ownerAddress, Collection<NftItemEntity> nftItems) {
-        if (nftItems.isEmpty()) {
+    private void assertOwnedAvatarItems(String ownerAddress, Collection<NftTokenEntity> tokens) {
+        if (tokens.isEmpty()) {
             return;
         }
 
-        boolean hasUnmintedItem = nftItems.stream()
-            .anyMatch(nftItem -> !StringUtils.hasText(nftItem.getNftTokenId()));
-        if (hasUnmintedItem) {
-            throw new IllegalArgumentException("wearing nftItem has no minted token");
-        }
-
-        List<String> tokenIds = nftItems.stream()
-            .map(NftItemEntity::getNftTokenId)
+        List<String> tokenIds = tokens.stream()
+            .map(NftTokenEntity::getTokenId)
             .distinct()
             .toList();
 
         Map<String, BigInteger> balances = nftBalanceReader.getBalances(ownerAddress, tokenIds);
-        nftItems.forEach(nftItem -> {
-            BigInteger balance = balances.getOrDefault(nftItem.getNftTokenId(), ZERO);
+        tokens.forEach(token -> {
+            BigInteger balance = balances.getOrDefault(token.getTokenId(), ZERO);
             if (balance.compareTo(ZERO) <= 0) {
-                throw new IllegalArgumentException("nftItemId is not owned by user: " + nftItem.getNftItemId());
+                throw new IllegalArgumentException("tokenId is not owned by user: " + token.getTokenId());
             }
         });
     }
 
-    private Map<Long, List<NftItemEquipImageEntity>> getEquipImagesByItemId(List<NftItemEntity> nftItems) {
-        List<Long> nftItemIds = nftItems.stream()
-            .map(NftItemEntity::getNftItemId)
-            .toList();
-        List<NftItemEquipImageEntity> equipImages = nftItemEquipImageJpaRepository
-            .findByNftItemEntity_NftItemIdInOrderByNftItemEntity_NftItemIdAscSortOrderAscNftItemEquipImageIdAsc(nftItemIds);
-
-        return equipImages.stream()
-            .collect(Collectors.groupingBy(
-                equipImage -> equipImage.getNftItemEntity().getNftItemId(),
-                LinkedHashMap::new,
-                Collectors.toList()
-            ));
-    }
-
-    private NftWearingAvatarDto buildWearingAvatarDto(Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot) {
-        if (wearingItemsBySlot.isEmpty()) {
+    private NftWearingAvatarDto buildWearingAvatarDto(
+        Map<NftAvatarWearingSlot, NftTokenEntity> wearingTokensBySlot
+    ) {
+        if (wearingTokensBySlot.isEmpty()) {
             return NftWearingAvatarDto.empty();
         }
 
-        Map<Long, List<NftItemEquipImageEntity>> equipImagesByItemId = getEquipImagesByItemId(
-            wearingItemsBySlot.values().stream().toList()
-        );
-
         return NftWearingAvatarDto.builder()
             .fullSet(null)
-            .upperClothing(toWearingItemDto(NftAvatarWearingSlot.upper_clothing, wearingItemsBySlot, equipImagesByItemId))
-            .lowerClothing(toWearingItemDto(NftAvatarWearingSlot.lower_clothing, wearingItemsBySlot, equipImagesByItemId))
-            .footwear(toWearingItemDto(NftAvatarWearingSlot.footwear, wearingItemsBySlot, equipImagesByItemId))
-            .face(toWearingItemDto(NftAvatarWearingSlot.face, wearingItemsBySlot, equipImagesByItemId))
-            .skin(toWearingItemDto(NftAvatarWearingSlot.skin, wearingItemsBySlot, equipImagesByItemId))
-            .hair(toWearingItemDto(NftAvatarWearingSlot.hair, wearingItemsBySlot, equipImagesByItemId))
+            .upperClothing(toWearingItemDto(NftAvatarWearingSlot.upper_clothing, wearingTokensBySlot))
+            .lowerClothing(toWearingItemDto(NftAvatarWearingSlot.lower_clothing, wearingTokensBySlot))
+            .footwear(toWearingItemDto(NftAvatarWearingSlot.footwear, wearingTokensBySlot))
+            .face(toWearingItemDto(NftAvatarWearingSlot.face, wearingTokensBySlot))
+            .skin(toWearingItemDto(NftAvatarWearingSlot.skin, wearingTokensBySlot))
+            .hair(toWearingItemDto(NftAvatarWearingSlot.hair, wearingTokensBySlot))
             .accessories(NftWearingAvatarDto.Accessories.builder()
-                .headAccessories(toWearingItemDto(NftAvatarWearingSlot.head_accessories, wearingItemsBySlot, equipImagesByItemId))
-                .eyeAccessories(toWearingItemDto(NftAvatarWearingSlot.eye_accessories, wearingItemsBySlot, equipImagesByItemId))
-                .earAccessories(toWearingItemDto(NftAvatarWearingSlot.ear_accessories, wearingItemsBySlot, equipImagesByItemId))
-                .bodyAccessories(toWearingItemDto(NftAvatarWearingSlot.body_accessories, wearingItemsBySlot, equipImagesByItemId))
+                .headAccessories(toWearingItemDto(NftAvatarWearingSlot.head_accessories, wearingTokensBySlot))
+                .eyeAccessories(toWearingItemDto(NftAvatarWearingSlot.eye_accessories, wearingTokensBySlot))
+                .earAccessories(toWearingItemDto(NftAvatarWearingSlot.ear_accessories, wearingTokensBySlot))
+                .bodyAccessories(toWearingItemDto(NftAvatarWearingSlot.body_accessories, wearingTokensBySlot))
                 .build())
             .build();
     }
 
     private NftAvatarItemDto toWearingItemDto(
         NftAvatarWearingSlot slot,
-        Map<NftAvatarWearingSlot, NftItemEntity> wearingItemsBySlot,
-        Map<Long, List<NftItemEquipImageEntity>> equipImagesByItemId
+        Map<NftAvatarWearingSlot, NftTokenEntity> wearingTokensBySlot
     ) {
-        NftItemEntity nftItem = wearingItemsBySlot.get(slot);
-        if (nftItem == null) {
+        NftTokenEntity token = wearingTokensBySlot.get(slot);
+        if (token == null) {
             return null;
         }
 
-        return nftAvatarItemViewMapper.toDto(
-            nftItem,
-            null,
-            equipImagesByItemId.getOrDefault(nftItem.getNftItemId(), Collections.emptyList())
-        );
+        return nftAvatarItemViewMapper.toDto(token.getNft(), token.getTokenId(), null);
     }
 
     private <T> T runInReadOnlyTransaction(Supplier<T> callback) {
