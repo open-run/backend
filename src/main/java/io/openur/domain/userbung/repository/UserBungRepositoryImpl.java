@@ -74,12 +74,13 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     @Override
     public Page<UserBung> findJoinedBungsByUserWithStatus(
         User user, Boolean isOwned, BungStatus status, Pageable pageable) {
-        List<UserBung> contents = queryFactory
-            .selectDistinct(userBungEntity)
+        // 1단계: 컬렉션 fetch join 없이 페이징 대상 userBungId만 SQL 레벨에서 조회한다.
+        // (hashtag 컬렉션을 fetch join 한 채로 offset/limit 을 적용하면 Hibernate 가
+        //  전체 결과를 메모리에 적재한 뒤 페이징하므로 HHH90003004 경고가 발생한다.)
+        List<Long> userBungIds = queryFactory
+            .select(userBungEntity.userBungId)
             .from(userBungEntity)
-            .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
-            .leftJoin(bungEntity.bungHashtags, bungHashtagEntity).fetchJoin()
-            .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity).fetchJoin()
+            .join(userBungEntity.bungEntity, bungEntity)
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),
@@ -88,8 +89,21 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .orderBy(withStatusOrdering(status))
-            .fetch().stream().map(UserBung::from)
-            .toList();
+            .fetch();
+
+        List<UserBung> contents = userBungIds.isEmpty()
+            ? List.of()
+            // 2단계: 페이징된 id 들에 대해서만 컬렉션을 fetch join 한다 (offset/limit 없음).
+            : queryFactory
+                .selectDistinct(userBungEntity)
+                .from(userBungEntity)
+                .join(userBungEntity.bungEntity, bungEntity).fetchJoin()
+                .leftJoin(bungEntity.bungHashtags, bungHashtagEntity).fetchJoin()
+                .leftJoin(bungHashtagEntity.hashtagEntity, hashtagEntity).fetchJoin()
+                .where(userBungEntity.userBungId.in(userBungIds))
+                .orderBy(withStatusOrdering(status))
+                .fetch().stream().map(UserBung::from)
+                .toList();
 
         JPAQuery<Long> count = queryFactory
             .selectDistinct(userBungEntity.countDistinct())
