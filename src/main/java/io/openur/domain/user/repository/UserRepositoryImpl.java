@@ -51,6 +51,16 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public long findFeedbackCountByUserId(String userId) {
+        Integer feedback = queryFactory
+            .select(userEntity.feedback)
+            .from(userEntity)
+            .where(userEntity.userId.eq(userId))
+            .fetchOne();
+        return feedback == null ? 0L : feedback.longValue();
+    }
+
+    @Override
     public List<User> findByUserNickname(String nickname) {
         List<UserEntity> userEntity = userJpaRepository.findAllByNicknameContains(nickname);
         return userEntity.stream().map(User::from).toList();

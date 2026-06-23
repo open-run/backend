@@ -52,6 +52,20 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
+    public long countCurrentOwnedBungsByUserId(String userId) {
+        Long count = queryFactory
+            .select(userBungEntity.bungEntity.bungId.countDistinct())
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                userBungEntity.isOwner.isTrue()
+            )
+            .fetchOne();
+        return count == null ? 0L : count;
+    }
+
+    @Override
     public Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId) {
         List<UserBungEntity> members = queryFactory
             .selectFrom(userBungEntity)

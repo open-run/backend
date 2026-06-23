@@ -14,6 +14,8 @@ public interface UserBungRepository {
 
     int countParticipantsByBungId(String bungId);
 
+    long countCurrentOwnedBungsByUserId(String userId);
+
     Optional<BungInfoWithMemberListDto> findBungWithUsersById(String bungId);
 
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
