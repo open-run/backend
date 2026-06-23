@@ -1,8 +1,12 @@
 package io.openur.domain.user.service;
 
+import io.openur.domain.NFT.entity.NftMintJobEntity;
+import io.openur.domain.NFT.enums.NftMintJobStatus;
+import io.openur.domain.NFT.repository.NftMintJobJpaRepository;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
+import io.openur.domain.user.dto.ProfileSummaryResponseDto;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
 import io.openur.domain.userbung.repository.UserBungRepository;
@@ -24,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserBungRepository userBungRepository;
     private final UserProfileImageUrlResolver userProfileImageUrlResolver;
+    private final NftMintJobJpaRepository nftMintJobJpaRepository;
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userRepository.findUser(userDetails.getUser());
@@ -37,6 +42,31 @@ public class UserService {
     public GetUserResponseDto getUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userRepository.findUser(userDetails.getUser());
         return new GetUserResponseDto(user, userProfileImageUrlResolver.resolve(user.getProfileImageStorageKey()));
+    }
+
+    public ProfileSummaryResponseDto getProfileSummary(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = userRepository.findUser(userDetails.getUser());
+        String userId = user.getUserId();
+
+        long receivedLikeCount = userRepository.findFeedbackCountByUserId(userId);
+        long currentOwnedBungCount = userBungRepository.countCurrentOwnedBungsByUserId(userId);
+        long acquiredNftCount = nftMintJobJpaRepository
+            .countByUserEntityUserIdAndStatusAndUserChallengeEntityCompletedDateIsNotNullAndUserChallengeEntityNftCompletedTrue(
+                userId,
+                NftMintJobStatus.SUCCESS
+            );
+        List<NftMintJobEntity> recentAcquiredNfts = nftMintJobJpaRepository
+            .findTop3ByUserEntityUserIdAndStatusAndUserChallengeEntityCompletedDateIsNotNullAndUserChallengeEntityNftCompletedTrueOrderByUpdatedAtDescMintJobIdDesc(
+                userId,
+                NftMintJobStatus.SUCCESS
+            );
+
+        return new ProfileSummaryResponseDto(
+            receivedLikeCount,
+            currentOwnedBungCount,
+            acquiredNftCount,
+            recentAcquiredNfts
+        );
     }
 
     public List<GetUserResponseDto> searchByNickname(String nickname) {

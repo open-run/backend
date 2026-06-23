@@ -24,6 +24,17 @@ public interface NftMintJobJpaRepository extends JpaRepository<NftMintJobEntity,
     List<NftMintJobEntity> findByUserChallengeEntityUserChallengeIdInAndStatus(
         Collection<Long> userChallengeIds, NftMintJobStatus status);
 
+    long countByUserEntityUserIdAndStatusAndUserChallengeEntityCompletedDateIsNotNullAndUserChallengeEntityNftCompletedTrue(
+        String userId, NftMintJobStatus status);
+
+    @EntityGraph(attributePaths = {
+        "userChallengeEntity",
+        "userChallengeEntity.challengeStageEntity",
+        "userChallengeEntity.challengeStageEntity.challengeEntity"
+    })
+    List<NftMintJobEntity> findTop3ByUserEntityUserIdAndStatusAndUserChallengeEntityCompletedDateIsNotNullAndUserChallengeEntityNftCompletedTrueOrderByUpdatedAtDescMintJobIdDesc(
+        String userId, NftMintJobStatus status);
+
     Slice<NftMintJobEntity> findByStatusAndUpdatedAtBefore(
         NftMintJobStatus status, LocalDateTime cutoff, Pageable pageable);
 }

@@ -6,6 +6,7 @@ import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
+import io.openur.domain.user.dto.ProfileSummaryResponseDto;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.domain.user.model.Provider;
 import io.openur.domain.user.service.UserService;
@@ -78,6 +79,19 @@ public class UserController {
             .body(Response.<GetUserResponseDto>builder()
                 .message("success")
                 .data(getUserResponseDto)
+                .build());
+    }
+
+    @GetMapping("/profile-summary")
+    @Operation(summary = "프로필 요약 정보 가져오기")
+    public ResponseEntity<Response<ProfileSummaryResponseDto>> getProfileSummary(
+        @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        ProfileSummaryResponseDto profileSummary = userService.getProfileSummary(userDetails);
+        return ResponseEntity.ok()
+            .body(Response.<ProfileSummaryResponseDto>builder()
+                .message("success")
+                .data(profileSummary)
                 .build());
     }
 

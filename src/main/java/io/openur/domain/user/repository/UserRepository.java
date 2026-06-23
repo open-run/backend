@@ -13,6 +13,8 @@ public interface UserRepository {
 
     User findById(String userId);
 
+    long findFeedbackCountByUserId(String userId);
+
     List<User> findByUserNickname(String nickName);
 
     boolean existsByNickname(String nickname);
