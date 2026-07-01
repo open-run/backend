@@ -15,33 +15,6 @@ CREATE TABLE IF NOT EXISTS tb_users
     feedback               INT(4) UNSIGNED                  DEFAULT 0 NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS tb_login_nonces
-(
-    login_nonce_id     VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
-    nonce              VARCHAR(96)                              NOT NULL,
-    blockchain_address VARCHAR(42)                              NOT NULL,
-    message            VARCHAR(512)                             NOT NULL,
-    expires_at         TIMESTAMP                                NOT NULL,
-    used               BOOLEAN                                  NOT NULL DEFAULT FALSE,
-    created_at         TIMESTAMP                                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    used_at            TIMESTAMP                                DEFAULT NULL,
-    CONSTRAINT uq_login_nonce_nonce UNIQUE (nonce),
-    INDEX idx_login_nonce_blockchain_address (blockchain_address)
-);
-
-CREATE TABLE IF NOT EXISTS tb_refresh_tokens
-(
-    refresh_token_id   VARCHAR(36) DEFAULT (UUID()) PRIMARY KEY NOT NULL,
-    token_hash         VARCHAR(64)                              NOT NULL,
-    blockchain_address VARCHAR(42)                              NOT NULL,
-    expires_at         TIMESTAMP                                NOT NULL,
-    revoked            BOOLEAN                                  NOT NULL DEFAULT FALSE,
-    created_at         TIMESTAMP                                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    revoked_at         TIMESTAMP                                DEFAULT NULL,
-    CONSTRAINT uq_refresh_token_hash UNIQUE (token_hash),
-    INDEX idx_refresh_token_blockchain_address (blockchain_address)
-);
-
 -- tb_bungs 테이블 생성 (존재하지 않을 경우에만)
 CREATE TABLE IF NOT EXISTS tb_bungs
 (

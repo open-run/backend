@@ -1,6 +1,5 @@
 package io.openur.global.config;
 
-import io.openur.global.filter.CookieAuthOriginFilter;
 import io.openur.global.filter.JwtAuthenticationFilter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +25,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CookieAuthOriginFilter cookieAuthOriginFilter;
-    private final CorsAllowedOriginPatterns corsAllowedOriginPatterns;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(corsAllowedOriginPatterns.values());
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -56,9 +53,6 @@ public class SecurityConfig {
             sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
 
-        http.addFilterBefore(cookieAuthOriginFilter,
-            UsernamePasswordAuthenticationFilter.class);
-
         http.addFilterBefore(jwtAuthenticationFilter,
             UsernamePasswordAuthenticationFilter.class); // UsernamePasswordAuthenticationFilter 이전에 필터 추가
 
@@ -67,9 +61,6 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/v1/users/login/**",
                     "/v1/users/nickname/exist",
-                    "/v1/auth/login-nonce",
-                    "/v1/auth/refresh",
-                    "/v1/auth/logout",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/health",

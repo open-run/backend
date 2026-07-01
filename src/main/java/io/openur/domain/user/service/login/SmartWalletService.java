@@ -5,7 +5,6 @@ import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.SmartWalletUserInfoDto;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepositoryImpl;
-import io.openur.domain.user.service.LoginNonceService;
 import io.openur.global.common.validation.ValidEthereumAddress;
 import io.openur.global.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,29 +17,21 @@ import org.springframework.web.client.RestTemplate;
 public class SmartWalletService extends LoginService {
     private final JwtUtil jwtUtil;
     private final UserRepositoryImpl userRepository;
-    private final LoginNonceService loginNonceService;
 
     public SmartWalletService(
         RestTemplate restTemplate,
         JwtUtil jwtUtil,
-        UserRepositoryImpl userRepository,
-        LoginNonceService loginNonceService
+        UserRepositoryImpl userRepository
     ) {
         super(restTemplate);
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
-        this.loginNonceService = loginNonceService;
     }
 
     @Override
-    public GetUsersLoginDto login(
-        @ValidEthereumAddress String walletAddress,
-        String signature,
-        String nonce
-    ) throws JsonProcessingException {
+    public GetUsersLoginDto login(@ValidEthereumAddress String walletAddress, String signature) throws JsonProcessingException {
         try {
             log.info("Starting Smart Wallet login process for address: {}", walletAddress);
-            loginNonceService.consume(walletAddress, nonce, signature);
 
             User user = registerUserIfNew(SmartWalletUserInfoDto.of(walletAddress));
             log.info("User found/created successfully. User ID: {}", user.getUserId());

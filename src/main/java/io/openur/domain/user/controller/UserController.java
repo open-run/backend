@@ -7,11 +7,8 @@ import io.openur.domain.user.dto.GetUsersLoginDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.dto.ProfileSummaryResponseDto;
-import io.openur.domain.user.dto.SmartWalletLoginRequestDto;
 import io.openur.domain.user.exception.UserNotFoundException;
 import io.openur.domain.user.model.Provider;
-import io.openur.domain.user.service.RefreshTokenCookieFactory;
-import io.openur.domain.user.service.RefreshTokenService;
 import io.openur.domain.user.service.UserService;
 import io.openur.domain.user.service.login.LoginService;
 import io.openur.domain.user.service.login.LoginServiceFactory;
@@ -30,17 +27,15 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,30 +48,21 @@ public class UserController {
 
     private final LoginServiceFactory loginServiceFactory;
     private final UserService userService;
-    private final RefreshTokenService refreshTokenService;
-    private final RefreshTokenCookieFactory refreshTokenCookieFactory;
 
-    @PostMapping("/login/{authServer}")
+    @GetMapping("/login/{authServer}")
     @Operation(summary = "유저 로그인 성공 시 정보 반환")
     public ResponseEntity<Response<GetUsersLoginDto>> getUser(
         @PathVariable Provider authServer,
-        @RequestBody @Valid SmartWalletLoginRequestDto smartWalletLoginRequestDto
+        @RequestParam String code,
+        @RequestParam(required = false) String state
     ) {
         LoginService loginService = loginServiceFactory.getLoginService(
             authServer);
         try {
-            GetUsersLoginDto loginResponse = loginService.login(
-                smartWalletLoginRequestDto.getCode(),
-                smartWalletLoginRequestDto.getState(),
-                smartWalletLoginRequestDto.getNonce()
-            );
-            String refreshToken = refreshTokenService.issueRefreshToken(loginResponse.getIdentifier());
-
             return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, refreshTokenCookieFactory.create(refreshToken).toString())
                 .body(Response.<GetUsersLoginDto>builder()
                     .message("success")
-                    .data(loginResponse)
+                    .data(loginService.login(code, state))
                     .build());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
