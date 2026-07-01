@@ -10,18 +10,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
-    private final CorsAllowedOriginPatterns corsAllowedOriginPatterns;
-
-    public WebConfig(CorsAllowedOriginPatterns corsAllowedOriginPatterns) {
-        this.corsAllowedOriginPatterns = corsAllowedOriginPatterns;
-    }
-
     // Swagger uses http "OPTIONS" method before sending actual request
     // We call this as pre-flight : Swagger CORS issue
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOriginPatterns(corsAllowedOriginPatterns.values().toArray(String[]::new))
+            .allowedOriginPatterns("*")
             .allowedMethods("GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE")
             .allowedHeaders("*")
             .allowCredentials(true)

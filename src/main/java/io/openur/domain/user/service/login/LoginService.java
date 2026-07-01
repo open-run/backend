@@ -19,7 +19,7 @@ public abstract class LoginService {
 
     private final RestTemplate restTemplate;
 
-    public abstract GetUsersLoginDto login(String code, String state, String nonce) throws JsonProcessingException;
+    public abstract GetUsersLoginDto login(String code, String state) throws JsonProcessingException;
 
     protected String getAccessToken(String code, String clientId, String redirectUri, String tokenUri)
         throws JsonProcessingException {
