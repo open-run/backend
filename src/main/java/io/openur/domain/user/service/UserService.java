@@ -3,15 +3,20 @@ package io.openur.domain.user.service;
 import io.openur.domain.NFT.entity.NftMintJobEntity;
 import io.openur.domain.NFT.enums.NftMintJobStatus;
 import io.openur.domain.NFT.repository.NftMintJobJpaRepository;
+import io.openur.domain.bung.enums.CompleteBungResultEnum;
+import io.openur.domain.bung.exception.CompleteBungException;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
 import io.openur.domain.user.dto.ProfileSummaryResponseDto;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
+import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -107,10 +112,45 @@ public class UserService {
     @PreAuthorize("@methodSecurityService.isBungParticipant(#userDetails, #bungId)")
     public List<String> increaseFeedback(UserDetailsImpl userDetails, String bungId, List<String> targetUserIds
     ) {
-        if (targetUserIds == null || targetUserIds.isEmpty()) {
-            throw new IllegalArgumentException("Target user IDs cannot be null or empty");
+        if (targetUserIds == null) {
+            throw new IllegalArgumentException("Target user IDs cannot be null");
         }
 
-        return userRepository.batchIncrementFeedback(targetUserIds);
+        UserBung reviewerBung = userBungRepository.findByUserIdAndBungId(
+            userDetails.getUser().getUserId(),
+            bungId
+        );
+        if (reviewerBung.getFeedbackSubmittedAt() != null) {
+            return List.of();
+        }
+        if (!reviewerBung.getBung().isCompleted()) {
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_COMPLETED);
+        }
+
+        String reviewerUserId = userDetails.getUser().getUserId();
+        Set<String> memberUserIds = new LinkedHashSet<>(
+            userBungRepository.findMemberUserIdsByBungId(bungId)
+        );
+        List<String> invalidTargetUserIds = targetUserIds.stream()
+            .filter(targetUserId ->
+                !memberUserIds.contains(targetUserId) || reviewerUserId.equals(targetUserId)
+            )
+            .distinct()
+            .toList();
+        if (!invalidTargetUserIds.isEmpty()) {
+            return invalidTargetUserIds;
+        }
+
+        boolean submitted = userBungRepository.markFeedbackSubmittedIfPending(
+            reviewerUserId,
+            bungId
+        );
+        if (!submitted) {
+            return List.of();
+        }
+
+        return targetUserIds.isEmpty()
+            ? List.of()
+            : userRepository.batchIncrementFeedback(targetUserIds);
     }
 }

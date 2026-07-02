@@ -41,6 +41,9 @@ public class UserBungEntity {
     @Column(name = "participation_status")
     private boolean participationStatus;
 
+    @Column(name = "feedback_submitted_at")
+    private LocalDateTime feedbackSubmittedAt;
+
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime modifiedAt;

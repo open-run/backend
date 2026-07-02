@@ -18,6 +18,7 @@ public class UserBung {
     private Bung bung;
     @Setter
     private boolean participationStatus;
+    private LocalDateTime feedbackSubmittedAt;
     private LocalDateTime modifiedAt;
     private boolean isOwner;
 
@@ -25,6 +26,7 @@ public class UserBung {
         this.user = user;
         this.bung = bung;
         this.participationStatus = false;
+        this.feedbackSubmittedAt = null;
         this.modifiedAt = LocalDateTime.now();
         this.isOwner = false;
     }
@@ -41,6 +43,7 @@ public class UserBung {
             User.from(userBungEntity.getUserEntity()),
             Bung.from(userBungEntity.getBungEntity()),
             userBungEntity.isParticipationStatus(),
+            userBungEntity.getFeedbackSubmittedAt(),
             userBungEntity.getModifiedAt(),
             userBungEntity.isOwner()
         );
@@ -60,6 +63,7 @@ public class UserBung {
             this.bung.toEntity(Collections.emptyList()),
             this.user.toEntity(),
             this.participationStatus,
+            this.feedbackSubmittedAt,
             this.modifiedAt,
             this.isOwner
         );

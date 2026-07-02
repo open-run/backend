@@ -20,7 +20,7 @@ import io.openur.domain.bunghashtag.model.BungHashtag;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.service.UserProfileImageUrlResolver;
 import io.openur.domain.userbung.entity.UserBungEntity;
-
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,6 +49,7 @@ public class BungRepositoryImpl implements BungRepository {
     private final JPAQueryFactory queryFactory;
     private final BungJpaRepository bungJpaRepository;
     private final UserProfileImageUrlResolver userProfileImageUrlResolver;
+    private final EntityManager entityManager;
 
     @Override
     public Page<BungInfoWithMemberListDto> findBungs(
@@ -264,6 +265,9 @@ public class BungRepositoryImpl implements BungRepository {
             .set(bungEntity.completed, true)
             .where(bungEntity.bungId.eq(bungId))
             .execute();
+
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Override
