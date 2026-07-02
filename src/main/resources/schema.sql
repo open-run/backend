@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS tb_users_bungs
     bung_id              VARCHAR(36) DEFAULT (UUID())          NOT NULL,
     user_id              VARCHAR(36) DEFAULT (UUID())          NOT NULL,
     participation_status BOOLEAN     DEFAULT FALSE             NOT NULL,
+    feedback_submitted_at DATETIME   DEFAULT NULL,
     modified_at          TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     is_owner             BOOLEAN     DEFAULT FALSE             NOT NULL,
     CONSTRAINT tb_users_bungs_tb_bungs_bung_id_fk

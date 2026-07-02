@@ -326,6 +326,107 @@ public class BungApiTest extends TestSupport {
             assert startDateTimes.equals(
                 sortedStartDateTimes) : "The list is not in descending order of startDateTime";
         }
+
+        @Test
+        @DisplayName("200 OK. isOwned = false, status = ACCOMPLISHED. 일반 참여자가 완료된 벙 피드백 창구로 볼 수 있다.")
+        @Transactional
+        void getMyBungList_completedParticipantBungsForFeedback() throws Exception {
+            String completedBungId = "a1234567-89ab-cdef-0123-456789abcdef";
+
+            mockMvc.perform(
+                patch(PREFIX + "/" + completedBungId + "/complete")
+                    .header(AUTH_HEADER, getTestUserToken2())
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+
+            MvcResult result = mockMvc.perform(
+                get(PREFIX + "/my-bungs")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .param("isOwned", "false")
+                    .param("status", "ACCOMPLISHED")
+                    .param("feedbackPending", "true")
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoWithOwnershipDto> response = parseResponse(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+
+            assertThat(response.getData())
+                .extracting(BungInfoDto::getBungId)
+                .containsExactly(completedBungId);
+            assertThat(response.getData())
+                .allMatch(bung -> !bung.isHasOwnership());
+        }
+
+        @Test
+        @DisplayName("200 OK. feedbackPending = true. 피드백 제출을 완료한 벙은 목록에서 제외된다.")
+        @Transactional
+        void getMyBungList_feedbackPendingExcludesSubmittedBungs() throws Exception {
+            String completedBungId = "a1234567-89ab-cdef-0123-456789abcdef";
+
+            mockMvc.perform(
+                patch(PREFIX + "/" + completedBungId + "/complete")
+                    .header(AUTH_HEADER, getTestUserToken2())
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+
+            var feedbackRequest = new HashMap<>();
+            feedbackRequest.put("bungId", completedBungId);
+            feedbackRequest.put("targetUserIds", List.of());
+
+            mockMvc.perform(
+                patch("/v1/users/feedback")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonify(feedbackRequest))
+            ).andExpect(status().isOk());
+
+            MvcResult pendingResult = mockMvc.perform(
+                get(PREFIX + "/my-bungs")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .param("isOwned", "false")
+                    .param("status", "ACCOMPLISHED")
+                    .param("feedbackPending", "true")
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoWithOwnershipDto> pendingResponse = parseResponse(
+                pendingResult.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+
+            assertThat(pendingResponse.getData())
+                .extracting(BungInfoDto::getBungId)
+                .doesNotContain(completedBungId);
+
+            MvcResult allCompletedResult = mockMvc.perform(
+                get(PREFIX + "/my-bungs")
+                    .header(AUTH_HEADER, getTestUserToken1())
+                    .param("isOwned", "false")
+                    .param("status", "ACCOMPLISHED")
+                    .param("page", "0")
+                    .param("limit", "10")
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk()).andReturn();
+
+            PagedResponse<BungInfoWithOwnershipDto> allCompletedResponse = parseResponse(
+                allCompletedResult.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                }
+            );
+
+            assertThat(allCompletedResponse.getData())
+                .extracting(BungInfoDto::getBungId)
+                .contains(completedBungId);
+        }
     }
 
     @Nested

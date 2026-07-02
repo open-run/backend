@@ -1,6 +1,5 @@
 package io.openur.domain.userbung.repository;
 
-
 import static io.openur.domain.bung.entity.QBungEntity.bungEntity;
 import static io.openur.domain.bung.enums.BungStatus.ACCOMPLISHED;
 import static io.openur.domain.bunghashtag.entity.QBungHashtagEntity.bungHashtagEntity;
@@ -20,6 +19,7 @@ import io.openur.domain.user.model.User;
 import io.openur.domain.user.service.UserProfileImageUrlResolver;
 import io.openur.domain.userbung.entity.UserBungEntity;
 import io.openur.domain.userbung.model.UserBung;
+import jakarta.persistence.EntityManager;
 import java.awt.HeadlessException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,6 +40,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     private final UserBungJpaRepository userBungJpaRepository;
     private final JPAQueryFactory queryFactory;
     private final UserProfileImageUrlResolver userProfileImageUrlResolver;
+    private final EntityManager entityManager;
 
     @Override
     public int countParticipantsByBungId(String bungId) {
@@ -87,7 +88,7 @@ public class UserBungRepositoryImpl implements UserBungRepository {
 
     @Override
     public Page<UserBung> findJoinedBungsByUserWithStatus(
-        User user, Boolean isOwned, BungStatus status, Pageable pageable) {
+        User user, Boolean isOwned, BungStatus status, Boolean feedbackPending, Pageable pageable) {
         // 1단계: 컬렉션 fetch join 없이 페이징 대상 userBungId만 SQL 레벨에서 조회한다.
         // (hashtag 컬렉션을 fetch join 한 채로 offset/limit 을 적용하면 Hibernate 가
         //  전체 결과를 메모리에 적재한 뒤 페이징하므로 HHH90003004 경고가 발생한다.)
@@ -98,7 +99,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),
-                withStatusCondition(status)
+                withStatusCondition(status),
+                feedbackPendingOnly(feedbackPending)
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -126,7 +128,8 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .where(
                 userBungEntity.userEntity.eq(user.toEntity()),
                 ownedBungsOnly(isOwned),
-                withStatusCondition(status)
+                withStatusCondition(status),
+                feedbackPendingOnly(feedbackPending)
             );
 
         return PageableExecutionUtils.getPage(contents, pageable, count::fetchOne);
@@ -139,6 +142,15 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             .from(userBungEntity)
             .join(userBungEntity.bungEntity, bungEntity)
             .where(userBungEntity.userEntity.eq(user.toEntity()))
+            .fetch();
+    }
+
+    @Override
+    public List<String> findMemberUserIdsByBungId(String bungId) {
+        return queryFactory
+            .select(userBungEntity.userEntity.userId)
+            .from(userBungEntity)
+            .where(userBungEntity.bungEntity.bungId.eq(bungId))
             .fetch();
     }
 
@@ -189,6 +201,25 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
+    @Transactional
+    public boolean markFeedbackSubmittedIfPending(String userId, String bungId) {
+        long updatedCount = queryFactory
+            .update(userBungEntity)
+            .set(userBungEntity.feedbackSubmittedAt, LocalDateTime.now())
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                userBungEntity.bungEntity.bungId.eq(bungId),
+                userBungEntity.feedbackSubmittedAt.isNull()
+            )
+            .execute();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        return updatedCount > 0;
+    }
+
+    @Override
     public Boolean existsByUserIdAndBungId(String userId, String bungId) {
         return userBungJpaRepository.existsByUserEntity_UserIdAndBungEntity_BungId(userId, bungId);
     }
@@ -234,6 +265,13 @@ public class UserBungRepositoryImpl implements UserBungRepository {
             return null;
         }
         return userBungEntity.isOwner.eq(isOwned);
+    }
+
+    private BooleanExpression feedbackPendingOnly(Boolean feedbackPending) {
+        if (!Boolean.TRUE.equals(feedbackPending)) {
+            return null;
+        }
+        return userBungEntity.feedbackSubmittedAt.isNull();
     }
 
     private BooleanExpression withStatusCondition(BungStatus status) {

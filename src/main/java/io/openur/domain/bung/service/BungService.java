@@ -99,12 +99,12 @@ public class BungService {
     }
     
     public Page<BungInfoWithOwnershipDto> getMyBungLists(
-        UserDetailsImpl userDetails, Boolean isOwned, BungStatus status, Pageable pageable
+        UserDetailsImpl userDetails, Boolean isOwned, BungStatus status, Boolean feedbackPending, Pageable pageable
     ) {
         User user = userRepository.findUser(userDetails.getUser());
 
         return userBungRepository
-            .findJoinedBungsByUserWithStatus(user, isOwned, status, pageable)
+            .findJoinedBungsByUserWithStatus(user, isOwned, status, feedbackPending, pageable)
             .map(BungInfoWithOwnershipDto::new);
     }
 

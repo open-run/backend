@@ -21,15 +21,19 @@ public interface UserBungRepository {
     Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user, Pageable pageable);
     
     Page<UserBung> findJoinedBungsByUserWithStatus(
-        User user, Boolean isOwned, BungStatus status, Pageable pageable);
+        User user, Boolean isOwned, BungStatus status, Boolean feedbackPending, Pageable pageable);
 
     List<String> findJoinedBungsId(User user);
+
+    List<String> findMemberUserIdsByBungId(String bungId);
 
     Boolean existsByUserIdAndBungId(String userId, String bungId);
 
     UserBung save(UserBung userBung);
 
     UserBung findByUserIdAndBungId(String userId, String bungId);
+
+    boolean markFeedbackSubmittedIfPending(String userId, String bungId);
 
     UserBung findCurrentOwner(String bungId);
 

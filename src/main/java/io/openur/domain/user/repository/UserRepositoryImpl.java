@@ -94,14 +94,17 @@ public class UserRepositoryImpl implements UserRepository {
             return List.of();
         }
 
-        // 1. 존재 확인 (1 SELECT) — N+1 find 제거
         Set<String> existingIds = new HashSet<>();
         userJpaRepository.findAllById(targetUserIds)
             .forEach(entity -> existingIds.add(entity.getUserId()));
 
-        // 2. 존재하는 사용자 feedback 단일 bulk update (1 UPDATE)
-        // 기존 dirty checking + merge 패턴은 영속 entity 에 대한 중복 호출이라 제거.
-        // QueryDSL bulk update 는 즉시 DB 반영되며, 호출자 트랜잭션 컨텍스트를 건드리지 않음.
+        List<String> notFoundUserIds = targetUserIds.stream()
+            .filter(id -> !existingIds.contains(id))
+            .toList();
+        if (!notFoundUserIds.isEmpty()) {
+            return notFoundUserIds;
+        }
+
         if (!existingIds.isEmpty()) {
             queryFactory
                 .update(userEntity)
@@ -109,14 +112,10 @@ public class UserRepositoryImpl implements UserRepository {
                 .where(userEntity.userId.in(existingIds))
                 .execute();
 
-            // bulk update 는 1차 캐시를 우회하므로 flush → clear 로 stale entity 정리.
             entityManager.flush();
             entityManager.clear();
         }
 
-        // 3. 미존재 userId 리스트 (입력 순서 보존)
-        return targetUserIds.stream()
-            .filter(id -> !existingIds.contains(id))
-            .toList();
+        return List.of();
     }
 }

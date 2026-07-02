@@ -111,12 +111,14 @@ public class BungController {
         @RequestParam(required = false, defaultValue = "") Boolean isOwned,
         @Parameter(description = "null : 전부 || PARTICIPATING : 아직 시작하지 않은 || ACCOMPLISHED : 완료된")
         @RequestParam(required = false, defaultValue = "ALL") BungStatus status,
+        @Parameter(description = "true : 피드백 미제출 벙만")
+        @RequestParam(required = false, defaultValue = "false") Boolean feedbackPending,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int limit
     ) {
         Pageable pageable = PageRequest.of(page, limit);
         Page<BungInfoWithOwnershipDto> contents = bungService.getMyBungLists(
-            userDetails, isOwned, status, pageable);
+            userDetails, isOwned, status, feedbackPending, pageable);
 
         return ResponseEntity.ok().body(
             PagedResponse.build(contents, "success"));
