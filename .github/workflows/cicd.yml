@@ -83,13 +83,18 @@ jobs:
           echo "Instance already exists, skipping creation."
         else
           echo "Instance does not exist, creating a new one..."
-          gcloud compute instances create-with-container ${{ env.INSTANCE_NAME }} \
-            --container-image=${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest \
+          # Plain Container-Optimized OS VM (no deprecated container startup agent / Konlet).
+          # Containers are launched by deploy/gce-startup.sh on first boot and by the SSH
+          # steps below on every deploy. See docs: compute/docs/containers/migrate-containers.
+          gcloud compute instances create ${{ env.INSTANCE_NAME }} \
             --zone=${{ env.ZONE }} \
             --machine-type=$MACHINE_TYPE \
+            --image-family=cos-stable \
+            --image-project=cos-cloud \
             --service-account=${{ secrets.GCP_DEPLOYMENT_SA_PRINCIPAL }} \
             --scopes=https://www.googleapis.com/auth/cloud-platform \
-            --tags=mysql-access
+            --tags=mysql-access \
+            --metadata-from-file=startup-script=deploy/gce-startup.sh
           sleep 5  # Give the instance time to get configured and started.
         fi
 
@@ -113,6 +118,7 @@ jobs:
           gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
             --name mysql \
             --network openur-network \
+            --restart always \
             -p 3306:3306 \
             -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             -e MYSQL_DATABASE=openur \
@@ -124,47 +130,10 @@ jobs:
           echo "MySQL container already exists, skipping creation."
         fi
 
-    - name: Run a Redis container in the GCE
-      run: |
-        # Check if Redis container exists
-        REDIS_CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q -f name=redis" | tr -d '\n')
-        if [ -z "$REDIS_CONTAINER_ID" ]; then
-          echo "Redis container does not exist, running a new one..."
-          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
-            --name redis \
-            --network openur-network \
-            -p 6379:6379 \
-            -v redis-data:/data \
-            -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-            redis:7.2 redis-server --requirepass ${{ secrets.REDIS_PASSWORD }}"
-        else
-          echo "Redis container already exists, skipping creation."
-        fi
+    # Redis is unused and has been dropped. MySQL is reached by the app over the
+    # openur-network docker network (jdbc:mysql://mysql:3306/...), so no public
+    # firewall rule for 3306 is created here. Manage any admin ingress out-of-band.
 
-    - name: Create firewall rule for MySQL access
-      run: |
-        if ! gcloud compute firewall-rules describe allow-mysql --format='get(name)'; then
-          gcloud compute firewall-rules create allow-mysql \
-            --allow tcp:3306 \
-            --source-ranges 0.0.0.0/0 \
-            --target-tags mysql-access \
-            --description "Allow external MySQL access on port 3306"
-        else
-          echo "Firewall rule already exists, skipping creation."
-        fi
-
-    - name: Create firewall rule for Redis access
-      run: |
-        if ! gcloud compute firewall-rules describe allow-redis --format='get(name)'; then
-          gcloud compute firewall-rules create allow-redis \
-            --allow tcp:6379 \
-            --source-ranges 0.0.0.0/0 \
-            --target-tags mysql-access \
-            --description "Allow external Redis access on port 6379"
-        else
-          echo "Firewall rule already exists, skipping creation."
-        fi
-    
     - name: Pull the latest docker image in GCE and run it
       run: |
         # Authenticate to Google Artifact Registry
@@ -183,5 +152,6 @@ jobs:
         gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
           --name openrun \
           --network openur-network \
+          --restart always \
           -p 80:8080 \
           ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
