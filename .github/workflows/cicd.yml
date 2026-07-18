@@ -142,11 +142,9 @@ jobs:
         # Pull the latest docker image
         gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker pull ${{ env.DOCKER_CONTAINER_PATH }}/${{ env.DOCKER_REPOSITORY_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
 
-        CONTAINER_ID=$(gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker ps -q -f name=openrun" | tr -d '\n')
-        if [ -n "$CONTAINER_ID" ]; then
-          echo "Openrun container already exists, stopping and removing it..."
-          gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker stop $CONTAINER_ID && docker rm $CONTAINER_ID"
-        fi
+        # 이전 컨테이너를 정확한 이름으로 제거한다. name 필터는 부분 일치라
+        # 같은 VM의 openrun-web/openrun-admin까지 걸리므로 사용하지 않는다.
+        gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker rm -f openrun 2>/dev/null || true"
         
         # Run the application container on the same Docker network as MySQL
         gcloud compute ssh ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} --command="docker run -d \
