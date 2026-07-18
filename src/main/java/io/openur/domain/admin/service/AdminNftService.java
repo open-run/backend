@@ -6,11 +6,13 @@ import io.openur.domain.NFT.enums.NftImageRole;
 import io.openur.domain.NFT.repository.NftJpaRepository;
 import io.openur.domain.NFT.repository.NftTokenJpaRepository;
 import io.openur.domain.NFT.service.NftAssetUrlResolver;
+import io.openur.domain.NFT.service.NftAvatarItemService;
 import io.openur.domain.NFT.service.NftAvatarItemViewMapper;
 import io.openur.domain.NFT.service.NftMintClient;
 import io.openur.domain.admin.dto.AdminNftGrantRequestDto;
 import io.openur.domain.admin.dto.AdminNftGrantResponseDto;
 import io.openur.domain.admin.dto.AdminNftItemDto;
+import io.openur.global.common.validation.EthereumAddressValidator;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +32,15 @@ public class AdminNftService {
     private final NftTokenJpaRepository nftTokenJpaRepository;
     private final NftAssetUrlResolver nftAssetUrlResolver;
     private final NftAvatarItemViewMapper nftAvatarItemViewMapper;
+    private final NftAvatarItemService nftAvatarItemService;
     private final NftMintClient nftMintClient;
+    private final EthereumAddressValidator ethereumAddressValidator;
 
     @Transactional(readOnly = true)
     public List<AdminNftItemDto> getMintedAvatarItems() {
-        return nftTokenJpaRepository.findByImageRoleOrderByNftNftIdAsc(NftImageRole.thumbnail)
+        // 발급(grant)·보유 조회 모두 avatar role 토큰 기준이므로 목록도 avatar 토큰의 tokenId를 내려준다.
+        // thumbnail role 토큰의 tokenId를 내려주면 grant 검증(findByTokenIdAndImageRole(avatar))에서 실패한다.
+        return nftTokenJpaRepository.findByImageRoleOrderByNftNftIdAsc(NftImageRole.avatar)
             .stream()
             .map(token -> AdminNftItemDto.from(
                 token.getNft(), token.getTokenId(), nftAssetUrlResolver, nftAvatarItemViewMapper))
@@ -56,6 +62,19 @@ public class AdminNftService {
                 nft, avatarTokenIdByNftId.get(nft.getNftId()), null))
             .map(this::normalizeEmptyImageUrl)
             .toList();
+    }
+
+    public List<NftAvatarItemDto> getOwnedAvatarItems(String ownerAddress) {
+        if (!ethereumAddressValidator.isValid(ownerAddress)) {
+            throw new IllegalArgumentException("invalid ethereum address");
+        }
+
+        try {
+            return nftAvatarItemService.getOwnedAvatarItems(ownerAddress);
+        } catch (RuntimeException e) {
+            // RPC 실패 등 내부 예외 메시지를 어드민 화면에 그대로 노출하지 않는다
+            throw new IllegalStateException("블록체인 잔액 조회에 실패했습니다. 잠시 후 다시 시도해 주세요.", e);
+        }
     }
 
     public AdminNftGrantResponseDto grantAvatarItem(AdminNftGrantRequestDto request) {
