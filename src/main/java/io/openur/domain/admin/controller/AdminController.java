@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -84,6 +85,19 @@ public class AdminController {
         return ResponseEntity.ok(Response.<List<NftAvatarItemDto>>builder()
             .data(adminNftService.getTryOnAvatarItems())
             .message("Admin NFT avatar try-on items fetched successfully")
+            .build());
+    }
+
+    @GetMapping("/nft/avatar-items/owned")
+    public ResponseEntity<Response<List<NftAvatarItemDto>>> getOwnedNftAvatarItems(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam("address") String address
+    ) {
+        adminAuthorizationService.assertAdmin(userDetails);
+
+        return ResponseEntity.ok(Response.<List<NftAvatarItemDto>>builder()
+            .data(adminNftService.getOwnedAvatarItems(address))
+            .message("Admin owned NFT avatar items fetched successfully")
             .build());
     }
 
