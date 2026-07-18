@@ -1,6 +1,7 @@
 package io.openur.domain.admin.controller;
 
 import io.openur.domain.NFT.dto.NftAvatarItemDto;
+import io.openur.domain.admin.dto.AdminChallengeCompletionDto;
 import io.openur.domain.admin.dto.AdminChallengeDto;
 import io.openur.domain.admin.dto.AdminChallengeRequestDto;
 import io.openur.domain.admin.dto.AdminMeDto;
@@ -121,6 +122,19 @@ public class AdminController {
         return ResponseEntity.ok(Response.<AdminChallengeDto>builder()
             .data(adminChallengeService.getChallenge(challengeId))
             .message("Admin challenge fetched successfully")
+            .build());
+    }
+
+    @GetMapping("/challenges/{challengeId}/completions")
+    public ResponseEntity<Response<List<AdminChallengeCompletionDto>>> getAdminChallengeCompletions(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long challengeId
+    ) {
+        adminAuthorizationService.assertAdmin(userDetails);
+
+        return ResponseEntity.ok(Response.<List<AdminChallengeCompletionDto>>builder()
+            .data(adminChallengeService.getChallengeCompletions(challengeId))
+            .message("Admin challenge completions fetched successfully")
             .build());
     }
 

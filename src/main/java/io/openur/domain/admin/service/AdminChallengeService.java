@@ -1,5 +1,6 @@
 package io.openur.domain.admin.service;
 
+import io.openur.domain.admin.dto.AdminChallengeCompletionDto;
 import io.openur.domain.admin.dto.AdminChallengeDto;
 import io.openur.domain.admin.dto.AdminChallengeRequestDto;
 import io.openur.domain.admin.dto.AdminChallengeStageRequestDto;
@@ -37,6 +38,16 @@ public class AdminChallengeService {
     @Transactional(readOnly = true)
     public AdminChallengeDto getChallenge(Long challengeId) {
         return toDto(getChallengeEntity(challengeId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminChallengeCompletionDto> getChallengeCompletions(Long challengeId) {
+        getChallengeEntity(challengeId);
+
+        return userChallengeJpaRepository.findCompletionsByChallengeId(challengeId)
+            .stream()
+            .map(AdminChallengeCompletionDto::from)
+            .toList();
     }
 
     @Transactional
