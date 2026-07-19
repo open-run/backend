@@ -31,6 +31,12 @@ public interface UserBungRepository {
 
     UserBung save(UserBung userBung);
 
+    /**
+     * 참여 인증을 조건부 UPDATE로 처리한다.
+     * @return 미인증 → 인증으로 실제 전환됐으면 true, 이미 인증 상태였으면 false
+     */
+    boolean confirmParticipation(String userId, String bungId);
+
     UserBung findByUserIdAndBungId(String userId, String bungId);
 
     boolean markFeedbackSubmittedIfPending(String userId, String bungId);
