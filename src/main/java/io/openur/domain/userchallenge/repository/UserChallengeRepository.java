@@ -5,6 +5,7 @@ import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,7 @@ public interface UserChallengeRepository {
 
     void markNftCompleted(Long userChallengeId);
 
-    boolean existsByUserId(String userId);
+    Set<Long> findChallengeIdsByUserId(String userId);
 
     Page<ChallengeRow> findUncompletedChallengesByUserId(
         String userId, Pageable pageable
@@ -52,9 +53,7 @@ public interface UserChallengeRepository {
         String userId, Long challengeId
     );
 
-    Optional<UserChallenge> findFirstBySimpleRepetitiveChallenge(String userId);
-
-    List<UserChallenge> findAllBySimpleRepetitiveChallenge(String userId);
+    List<UserChallenge> findAllUncompletedByChallengeIds(String userId, List<Long> challengeIds);
 
     void delete(UserChallenge userChallenge);
 }

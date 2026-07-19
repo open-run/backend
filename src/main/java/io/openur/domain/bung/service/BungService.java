@@ -22,12 +22,12 @@ import io.openur.domain.bung.exception.SearchBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepository;
+import io.openur.domain.challenge.enums.ChallengeActivityType;
 import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepository;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
-import io.openur.domain.userbung.dto.UserBungInfoDto;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
@@ -62,7 +62,10 @@ public class BungService {
     ) {
         List<Hashtag> hashtags = hashtagRepository.saveNotListedTags(dto.getHashtags());
         Bung bung = this.saveNewBung(userDetails, dto, hashtags);
-        
+
+        challengeEventsPublisher.publishChallengeCheck(
+            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_CREATE);
+
         return new BungInfoDto(bung);
     }
     
@@ -166,6 +169,10 @@ public class BungService {
         }
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
+
+        challengeEventsPublisher.publishChallengeCheck(
+            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_JOIN);
+
         return JoinBungResultEnum.SUCCESSFULLY_JOINED;
     }
 
@@ -233,11 +240,9 @@ public class BungService {
 
         bungRepository.setAsCompleted(bungId);
 
-        //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
-        getBungDetail(bungId).getMemberList().stream()
-            .filter(UserBungInfoDto::isParticipationStatus)
-            .map(UserBungInfoDto::getUserId)
-            .forEach(challengeEventsPublisher::publishBulkChallengeCheck);
+        // 완주 과제는 벙주는 완료 시점에, 벙원은 피드백 제출 시점에 카운트한다
+        challengeEventsPublisher.publishChallengeCheck(
+            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_COMPLETE);
 
         return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }

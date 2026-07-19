@@ -28,6 +28,8 @@ import io.openur.domain.bunghashtag.repository.BungHashtagRepository;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepository;
 import io.openur.domain.userbung.repository.UserBungJpaRepository;
+import io.openur.domain.userchallenge.entity.UserChallengeEntity;
+import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import io.openur.global.dto.PagedResponse;
 import io.openur.global.dto.Response;
 import io.openur.global.dto.ExceptionDto;
@@ -60,7 +62,9 @@ public class BungApiTest extends TestSupport {
     protected BungHashtagRepository bungHashtagRepository;
     @Autowired
     private BungRepository bungRepository;
-    
+    @Autowired
+    private UserChallengeJpaRepository userChallengeJpaRepository;
+
     @Test
     @DisplayName("벙 생성")
     @Transactional
@@ -101,6 +105,211 @@ public class BungApiTest extends TestSupport {
         assert hashtagRepository.findByHashtagStrIn(hashtags).stream().map(Hashtag::getHashtagStr)
             .toList().containsAll(hashtags);
         assert bungEntity.getMainImage().equals("image1.jpg");
+    }
+
+    @Test
+    @DisplayName("벙 생성 시 벙 생성 도전과제만 카운트된다")
+    @Transactional
+    void createBung_countsCreateChallenges() throws Exception {
+        // user2: 도전과제 진행 기록이 없는 유저 (lazy 초기화부터 트리거까지 전체 경로 검증)
+        String token = getTestUserToken2();
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        createBung(token, "도전과제 트리거 벙");
+
+        List<UserChallengeEntity> rows = findUserChallenges(userId);
+
+        // 벙 생성 매핑 과제 2번(repetitive): 1단계(조건 1) 완료 + 2단계 발급, 누적 1 승계
+        UserChallengeEntity challenge2Stage1 = findRow(rows, 2L, 1);
+        assertThat(challenge2Stage1.getCompletedDate()).isNotNull();
+        assertThat(challenge2Stage1.getCurrentCount()).isEqualTo(1);
+
+        UserChallengeEntity challenge2Stage2 = findRow(rows, 2L, 2);
+        assertThat(challenge2Stage2.getCompletedDate()).isNull();
+        assertThat(challenge2Stage2.getCurrentCount()).isEqualTo(1);
+
+        // 벙 생성 매핑 과제 6번(normal, 조건 1회): 첫 생성으로 완료
+        UserChallengeEntity challenge6 = findRow(rows, 6L, 1);
+        assertThat(challenge6.getCompletedDate()).isNotNull();
+        assertThat(challenge6.getCurrentCount()).isEqualTo(1);
+
+        // 벙 생성과 무관한 과제(1번)는 초기화만 되고 카운트되지 않는다
+        UserChallengeEntity unrelated = findRow(rows, 1L, 1);
+        assertThat(unrelated.getCompletedDate()).isNull();
+        assertThat(unrelated.getCurrentCount()).isZero();
+
+        // 2번째 생성: 2단계(누적 3회 조건) 미달이므로 카운트만 오른다 (raise 경로)
+        createBung(token, "도전과제 트리거 벙 2");
+
+        UserChallengeEntity stage2After = findRow(findUserChallenges(userId), 2L, 2);
+        assertThat(stage2After.getCompletedDate()).isNull();
+        assertThat(stage2After.getCurrentCount()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("진행 기록이 있는 기존 유저에게도 새 도전과제가 차집합 발급되고 트리거가 동작한다")
+    @Transactional
+    void createBung_issuesNewChallengesToExistingUser() throws Exception {
+        // user1: 시드에 과제 1, 2 진행 기록이 이미 있는 유저
+        String token = getTestUserToken1();
+        String userId = "9e1bfc60-f76a-47dc-9147-803653707192";
+
+        createBung(token, "기존 유저 차집합 발급 벙");
+
+        List<UserChallengeEntity> rows = findUserChallenges(userId);
+
+        // 기록이 없던 과제 6은 새로 발급되고, 벙 생성 트리거로 즉시 완료된다
+        UserChallengeEntity challenge6 = findRow(rows, 6L, 1);
+        assertThat(challenge6.getCompletedDate()).isNotNull();
+        assertThat(challenge6.getCurrentCount()).isEqualTo(1);
+
+        // 이미 row가 있는 과제 2는 차집합 발급 대상이 아니다 (기존 완료 row 1개 그대로)
+        List<UserChallengeEntity> challenge2Rows = rows.stream()
+            .filter(uc -> uc.getChallengeStageEntity().getChallengeEntity()
+                .getChallengeId().equals(2L))
+            .toList();
+        assertThat(challenge2Rows).hasSize(1);
+        assertThat(challenge2Rows.get(0).getCompletedDate()).isNotNull();
+
+        // 벙 생성과 무관한 신규 과제(3번)는 발급만 되고 카운트되지 않는다
+        UserChallengeEntity challenge3 = findRow(rows, 3L, 1);
+        assertThat(challenge3.getCompletedDate()).isNull();
+        assertThat(challenge3.getCurrentCount()).isZero();
+    }
+
+    private void createBung(String token, String name) throws Exception {
+        var submittedBung = new HashMap<>();
+        submittedBung.put("name", name);
+        submittedBung.put("description", "설명");
+        submittedBung.put("location", "장소");
+        submittedBung.put("startDateTime", LocalDateTime.now().plusDays(3).toString());
+        submittedBung.put("endDateTime", LocalDateTime.now().plusDays(4).toString());
+        submittedBung.put("distance", "5.0");
+        submittedBung.put("pace", "6'00\"");
+        submittedBung.put("memberNumber", 5);
+        submittedBung.put("hasAfterRun", false);
+        submittedBung.put("afterRunDescription", "");
+        submittedBung.put("hashtags", List.of());
+        submittedBung.put("mainImage", "image1.jpg");
+
+        mockMvc.perform(
+            post(PREFIX)
+                .header(AUTH_HEADER, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonify(submittedBung))
+        ).andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("벙 참여 시 벙 참여 도전과제만 카운트된다")
+    @Transactional
+    void joinBung_countsJoinChallenges() throws Exception {
+        // user2가 user3 소유의 미시작 벙에 참여한다
+        String token = getTestUserToken2();
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+        String bungId = "90477004-1422-4551-acce-04584b34612e";
+
+        mockMvc.perform(
+            get(PREFIX + "/{bungId}/join", bungId)
+                .header(AUTH_HEADER, token)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        List<UserChallengeEntity> rows = findUserChallenges(userId);
+
+        // 벙 참여 매핑 과제 3번(repetitive): 1단계(조건 1) 완료 + 2단계 발급, 누적 1 승계
+        UserChallengeEntity challenge3Stage1 = findRow(rows, 3L, 1);
+        assertThat(challenge3Stage1.getCompletedDate()).isNotNull();
+        assertThat(challenge3Stage1.getCurrentCount()).isEqualTo(1);
+
+        UserChallengeEntity challenge3Stage2 = findRow(rows, 3L, 2);
+        assertThat(challenge3Stage2.getCompletedDate()).isNull();
+        assertThat(challenge3Stage2.getCurrentCount()).isEqualTo(1);
+
+        // 벙 참여 매핑 과제 5번(normal, 조건 1회): 첫 참여로 완료
+        UserChallengeEntity challenge5 = findRow(rows, 5L, 1);
+        assertThat(challenge5.getCompletedDate()).isNotNull();
+        assertThat(challenge5.getCurrentCount()).isEqualTo(1);
+
+        // 벙 생성 매핑 과제(2번, 6번)는 참여로는 오르지 않는다
+        UserChallengeEntity challenge2 = findRow(rows, 2L, 1);
+        assertThat(challenge2.getCompletedDate()).isNull();
+        assertThat(challenge2.getCurrentCount()).isZero();
+
+        UserChallengeEntity challenge6 = findRow(rows, 6L, 1);
+        assertThat(challenge6.getCompletedDate()).isNull();
+        assertThat(challenge6.getCurrentCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("완주 과제는 벙주는 완료 시점, 벙원은 피드백 제출 시점에 카운트된다")
+    @Transactional
+    void completeBung_countsOwnerThenMemberOnFeedback() throws Exception {
+        // 시드: user2(벙주), user3(벙원)
+        String bungId = "b1234567-89ab-cdef-0123-456789abcdef";
+        String ownerUserId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+        String memberUserId = "5d22bd65-f1ed-4e7b-bc7b-0a59580d3176";
+
+        mockMvc.perform(
+            patch(PREFIX + "/{bungId}/complete", bungId)
+                .header(AUTH_HEADER, getTestUserToken2())
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+
+        // 벙주: 완료 즉시 19번 1단계 완료 + 2단계 승계(누적 1), 7번 완료
+        List<UserChallengeEntity> ownerRows = findUserChallenges(ownerUserId);
+        assertThat(findRow(ownerRows, 19L, 1).getCompletedDate()).isNotNull();
+        assertThat(findRow(ownerRows, 19L, 2).getCurrentCount()).isEqualTo(1);
+        assertThat(findRow(ownerRows, 7L, 1).getCompletedDate()).isNotNull();
+
+        // 벙원: 완료 시점에는 아직 카운트되지 않는다 (진행표 발급 전)
+        assertThat(findUserChallenges(memberUserId)).isEmpty();
+
+        // 벙원이 피드백 제출 → 완주 과제 카운트
+        submitFeedback(getTestUserToken3(), bungId);
+        List<UserChallengeEntity> memberRows = findUserChallenges(memberUserId);
+        assertThat(findRow(memberRows, 19L, 1).getCompletedDate()).isNotNull();
+        assertThat(findRow(memberRows, 19L, 2).getCurrentCount()).isEqualTo(1);
+        assertThat(findRow(memberRows, 7L, 1).getCompletedDate()).isNotNull();
+
+        // 벙원 피드백 재제출은 무시된다
+        submitFeedback(getTestUserToken3(), bungId);
+        assertThat(findRow(findUserChallenges(memberUserId), 19L, 2).getCurrentCount())
+            .isEqualTo(1);
+
+        // 벙주는 피드백을 제출해도 다시 카운트되지 않는다
+        submitFeedback(getTestUserToken2(), bungId);
+        assertThat(findRow(findUserChallenges(ownerUserId), 19L, 2).getCurrentCount())
+            .isEqualTo(1);
+    }
+
+    private void submitFeedback(String token, String bungId) throws Exception {
+        var feedbackRequest = new HashMap<>();
+        feedbackRequest.put("bungId", bungId);
+        feedbackRequest.put("targetUserIds", List.of());
+
+        mockMvc.perform(
+            patch("/v1/users/feedback")
+                .header(AUTH_HEADER, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonify(feedbackRequest))
+        ).andExpect(status().isOk());
+    }
+
+    private List<UserChallengeEntity> findUserChallenges(String userId) {
+        return userChallengeJpaRepository.findAll().stream()
+            .filter(uc -> uc.getUserEntity().getUserId().equals(userId))
+            .toList();
+    }
+
+    private UserChallengeEntity findRow(
+        List<UserChallengeEntity> rows, Long challengeId, int stageNumber
+    ) {
+        return rows.stream()
+            .filter(uc -> uc.getChallengeStageEntity().getChallengeEntity()
+                .getChallengeId().equals(challengeId))
+            .filter(uc -> uc.getChallengeStageEntity().getStageNumber() == stageNumber)
+            .findFirst().orElseThrow();
     }
 
     @Nested

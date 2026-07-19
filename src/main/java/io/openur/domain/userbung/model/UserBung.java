@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
@@ -16,7 +15,6 @@ public class UserBung {
     private Long userBungId;
     private User user;
     private Bung bung;
-    @Setter
     private boolean participationStatus;
     private LocalDateTime feedbackSubmittedAt;
     private LocalDateTime modifiedAt;

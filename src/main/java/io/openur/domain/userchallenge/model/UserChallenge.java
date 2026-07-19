@@ -30,7 +30,9 @@ public class UserChallenge {
         this.challengeStage = nextStage;
         this.completedDate = null;
         this.nftCompleted = false;
-        this.currentCount = prevChallenge.getCurrentCount();
+        // 단계 조건은 누적 회수 기준. prevChallenge는 완료 직전에 조회된 스냅샷이라
+        // 완료 처리에서 더해진 +1이 빠져 있으므로 여기서 보정해 승계한다.
+        this.currentCount = prevChallenge.getCurrentCount() + 1;
         this.currentProgress = (float) this.currentCount / nextStage.getConditionAsCount();
     }
 

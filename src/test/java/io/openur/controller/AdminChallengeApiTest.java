@@ -27,7 +27,8 @@ public class AdminChallengeApiTest extends TestSupport {
                 .header(AUTH_HEADER, getTestUserToken1()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Admin challenges fetched successfully"))
-            .andExpect(jsonPath("$.data", hasSize(2)))
+            // 시드 도전과제: 1, 2, 3, 4, 5, 6, 7, 19 (challengeId asc)
+            .andExpect(jsonPath("$.data", hasSize(8)))
             .andExpect(jsonPath("$.data[0].challengeId").value(1))
             .andExpect(jsonPath("$.data[0].name").value("test_challenge"))
             .andExpect(jsonPath("$.data[0].assignedUserChallengeCount").value(1))
@@ -36,6 +37,7 @@ public class AdminChallengeApiTest extends TestSupport {
             .andExpect(jsonPath("$.data[0].stages[0].stageId").value(1))
             .andExpect(jsonPath("$.data[0].stages[0].assignedUserChallengeCount").value(1))
             .andExpect(jsonPath("$.data[0].stages[0].removable").value(false))
+            .andExpect(jsonPath("$.data[1].challengeId").value(2))
             .andExpect(jsonPath("$.data[1].stages", hasSize(3)));
     }
 

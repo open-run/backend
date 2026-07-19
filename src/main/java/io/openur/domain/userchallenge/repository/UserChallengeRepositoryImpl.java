@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -98,7 +99,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
             .set(userChallengeEntity.completedDate, LocalDateTime.now())
             .set(userChallengeEntity.nftCompleted, false)
-            .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
+            .where(
+                userChallengeEntity.userChallengeId.in(userChallengeIds),
+                // 동시 요청이 같은 행을 중복 완료 처리하지 않도록 멱등 가드
+                userChallengeEntity.completedDate.isNull()
+            )
             .execute();
 
         entityManager.flush();
@@ -121,13 +126,14 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public boolean existsByUserId(String userId) {
-        Integer one = queryFactory
-            .selectOne()
+    public Set<Long> findChallengeIdsByUserId(String userId) {
+        return Set.copyOf(queryFactory
+            .selectDistinct(challengeEntity.challengeId)
             .from(userChallengeEntity)
+            .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .join(challengeStageEntity.challengeEntity, challengeEntity)
             .where(userChallengeEntity.userEntity.userId.eq(userId))
-            .fetchFirst();
-        return one != null;
+            .fetch());
     }
 
     @Override
@@ -318,26 +324,9 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public Optional<UserChallenge> findFirstBySimpleRepetitiveChallenge(String userId
+    public List<UserChallenge> findAllUncompletedByChallengeIds(
+        String userId, List<Long> challengeIds
     ) {
-        return Optional.ofNullable(
-            queryFactory
-                .selectFrom(userChallengeEntity)
-                .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
-                .join(challengeStageEntity.challengeEntity, challengeEntity)
-                .where(
-                    userChallengeEntity.userEntity.userId.eq(userId),
-                    userChallengeEntity.completedDate.isNull(),
-                    challengeEntity.conditionAsDate.isNull(),
-                    challengeEntity.conditionAsText.isNull()
-                )
-                .orderBy(challengeStageEntity.stageNumber.asc())
-                .fetchFirst()
-        ).map(UserChallenge::from);
-    }
-
-    @Override
-    public List<UserChallenge> findAllBySimpleRepetitiveChallenge(String userId) {
         return queryFactory
             .selectFrom(userChallengeEntity)
             .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
@@ -345,8 +334,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
                 userChallengeEntity.completedDate.isNull(),
-                challengeEntity.conditionAsDate.isNull(),
-                challengeEntity.conditionAsText.isNull()
+                challengeEntity.challengeId.in(challengeIds)
             )
             .orderBy(challengeStageEntity.stageNumber.asc())
             .fetch()

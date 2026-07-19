@@ -251,6 +251,24 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
+    @Transactional
+    public boolean confirmParticipation(String userId, String bungId) {
+        long updated = queryFactory
+            .update(userBungEntity)
+            .set(userBungEntity.participationStatus, true)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                userBungEntity.bungEntity.bungId.eq(bungId),
+                userBungEntity.participationStatus.isFalse()
+            )
+            .execute();
+
+        entityManager.flush();
+        entityManager.clear();
+        return updated > 0;
+    }
+
+    @Override
     public void removeUserFromBung(UserBung userBung) {
         userBungJpaRepository.delete(userBung.toEntity());
     }

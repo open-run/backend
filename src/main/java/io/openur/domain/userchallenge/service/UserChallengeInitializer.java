@@ -1,6 +1,7 @@
 package io.openur.domain.userchallenge.service;
 
 import io.openur.domain.challenge.model.ChallengeStage;
+import io.openur.domain.challenge.repository.ChallengeJpaRepository;
 import io.openur.domain.challenge.repository.ChallengeStageRepository;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
@@ -9,6 +10,7 @@ import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,13 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
  * 별도 컴포넌트로 분리한 이유:
  * Self-invocation 회피 — 같은 빈 안에서 호출해도 Spring AOP가 트랜잭션을 적용하도록.
  *
+ * 진행 기록이 이미 있는 유저도 "아직 row가 없는 challenge"의 최소 단계를 차집합으로
+ * 발급한다. (운영 중 challenge가 추가돼도 기존 유저에게 발급되도록)
+ *
  * 동시성 주의: 같은 userId에 대한 두 호출이 동시에 도달하면 양쪽 모두
- * existsByUserId == false를 보고 INSERT를 시도해 row가 중복될 수 있음.
+ * 같은 차집합을 보고 INSERT를 시도해 row가 중복될 수 있음.
  * 후속 PR에서 tb_users_challenges에 (user_id, challenge_stage_id) UNIQUE 제약을
  * 추가하고 DataIntegrityViolationException을 graceful하게 처리하는 것을 권장.
  *
-     * 트랜잭션 propagation: REQUIRED를 사용하여 호출자(예: BungService.completeBung)와
-     * 같은 트랜잭션 안에서 동작한다.
+ * 트랜잭션 propagation: REQUIRED를 사용하여 호출자(예: BungService.completeBung)와
+ * 같은 트랜잭션 안에서 동작한다.
  */
 @Component
 @RequiredArgsConstructor
@@ -37,11 +42,14 @@ public class UserChallengeInitializer {
 
     private final UserChallengeRepository userChallengeRepository;
     private final ChallengeStageRepository stageRepository;
+    private final ChallengeJpaRepository challengeJpaRepository;
     private final UserRepository userRepository;
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void ensureInitialized(String userId) {
-        if (userChallengeRepository.existsByUserId(userId)) {
+        Set<Long> existingChallengeIds =
+            userChallengeRepository.findChallengeIdsByUserId(userId);
+        if (existingChallengeIds.size() == challengeJpaRepository.count()) {
             return;
         }
 
@@ -58,9 +66,11 @@ public class UserChallengeInitializer {
 
         do {
             challengeStages = stageRepository.findAllByMinimumStages(pageable);
-            challengeStages.forEach(stage ->
-                newUserChallenges.add(new UserChallenge(user, stage))
-            );
+            challengeStages.forEach(stage -> {
+                if (!existingChallengeIds.contains(stage.getChallengeId())) {
+                    newUserChallenges.add(new UserChallenge(user, stage));
+                }
+            });
             pageable = pageable.next();
         } while (challengeStages.hasNext());
 
