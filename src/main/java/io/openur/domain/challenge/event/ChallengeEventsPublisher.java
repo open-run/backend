@@ -1,5 +1,6 @@
 package io.openur.domain.challenge.event;
 
+import io.openur.domain.challenge.enums.ChallengeActivityType;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
 import io.openur.domain.userchallenge.service.UserChallengeInitializer;
@@ -18,29 +19,18 @@ public class ChallengeEventsPublisher {
     private final UserChallengeInitializer userChallengeInitializer;
 
     @Transactional
-    public void publishChallengeCheck(String userId) {
+    public void publishChallengeCheck(String userId, ChallengeActivityType activity) {
         userChallengeInitializer.ensureInitialized(userId);
 
-        userChallengeRepository.findFirstBySimpleRepetitiveChallenge(userId)
-            .ifPresent(userChallenge -> {
-                if (userChallenge.getCurrentCount() + 1 < userChallenge.getChallengeStage().getConditionAsCount())
-                    publisher.publishEvent(new OnRaise(List.of(userChallenge)));
-                else
-                    publisher.publishEvent(new OnEvolution(List.of(userChallenge)));
-            });
-    }
+        List<UserChallenge> targets =
+            userChallengeRepository.findAllUncompletedByChallengeIds(
+                userId, activity.getChallengeIds());
+        if (targets.isEmpty()) return;
 
-    @Transactional
-    public void publishBulkChallengeCheck(String userId) {
-        userChallengeInitializer.ensureInitialized(userId);
-
-        List<UserChallenge> all = userChallengeRepository.findAllBySimpleRepetitiveChallenge(userId);
-        if (all.isEmpty()) return;
-
-        List<UserChallenge> toRaise = all.stream()
+        List<UserChallenge> toRaise = targets.stream()
             .filter(uc -> uc.getCurrentCount() + 1 < uc.getChallengeStage().getConditionAsCount())
             .toList();
-        List<UserChallenge> toEvolve = all.stream()
+        List<UserChallenge> toEvolve = targets.stream()
             .filter(uc -> uc.getCurrentCount() + 1 >= uc.getChallengeStage().getConditionAsCount())
             .toList();
 

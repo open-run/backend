@@ -10,7 +10,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
+import io.openur.domain.userchallenge.entity.UserChallengeEntity;
+import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import io.openur.global.dto.ExceptionDto;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +30,8 @@ public class UserBungApiTest extends TestSupport {
     private static final String PREFIX = "/v1/bungs";
     @Autowired
     protected UserBungRepositoryImpl userBungRepository;
+    @Autowired
+    private UserChallengeJpaRepository userChallengeJpaRepository;
 
     @Nested
     @DisplayName("멤버 제거")
@@ -231,6 +236,50 @@ public class UserBungApiTest extends TestSupport {
             String bungId = "c0477004-1632-455f-acc9-04584b55921f";
 
             isOkTest(token, userId, bungId);
+        }
+
+        @Test
+        @DisplayName("200 Ok. 참여 인증 시 인증 도전과제가 오르고 재호출해도 중복 카운트되지 않는다")
+        void confirmParticipation_countsCertifyOnce() throws Exception {
+            // user2: participation_status=false 참가자
+            String token = getTestUserToken2();
+            String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+            String bungId = "c0477004-1632-455f-acc9-04584b55921f";
+
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/participated", bungId)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+
+            // 참여 인증 매핑 과제 4번(repetitive): 1단계(조건 1) 완료 + 2단계 발급, 누적 1 승계
+            UserChallengeEntity stage1 = findCertifyChallengeRow(userId, 1);
+            assertThat(stage1.getCompletedDate()).isNotNull();
+            assertThat(stage1.getCurrentCount()).isEqualTo(1);
+
+            UserChallengeEntity stage2 = findCertifyChallengeRow(userId, 2);
+            assertThat(stage2.getCompletedDate()).isNull();
+            assertThat(stage2.getCurrentCount()).isEqualTo(1);
+
+            // 이미 인증된 상태에서 같은 API를 재호출하면 카운트가 그대로다 (중복 방지 가드)
+            mockMvc.perform(
+                patch(PREFIX + "/{bungId}/participated", bungId)
+                    .header(AUTH_HEADER, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+
+            UserChallengeEntity stage2After = findCertifyChallengeRow(userId, 2);
+            assertThat(stage2After.getCompletedDate()).isNull();
+            assertThat(stage2After.getCurrentCount()).isEqualTo(1);
+        }
+
+        private UserChallengeEntity findCertifyChallengeRow(String userId, int stageNumber) {
+            return userChallengeJpaRepository.findAll().stream()
+                .filter(uc -> uc.getUserEntity().getUserId().equals(userId))
+                .filter(uc -> uc.getChallengeStageEntity().getChallengeEntity()
+                    .getChallengeId().equals(4L))
+                .filter(uc -> uc.getChallengeStageEntity().getStageNumber() == stageNumber)
+                .findFirst().orElseThrow();
         }
 
         @Test

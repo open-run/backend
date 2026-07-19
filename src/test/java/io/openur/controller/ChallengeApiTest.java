@@ -56,7 +56,11 @@ public class ChallengeApiTest extends TestSupport {
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).hasSize(1);
+            // 시드 normal challenge: 1, 5, 6, 7. 보상 수령 가능(1)이 최우선 정렬된다.
+            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(1L, 5L, 6L, 7L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(1L);
             assertThat(first.getUserChallengeId()).isEqualTo(1L);
@@ -109,14 +113,17 @@ public class ChallengeApiTest extends TestSupport {
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
 
-            // then: tb_challenges에 normal 1개(challenge_id=1, stage 1)가 있으므로 1건
+            // then: tb_challenges에 normal 4개(challenge_id=1, 5, 6, 7)가 있으므로 4건
             PagedResponse<GeneralChallengeDto> response = parseResponse(
                 result.getResponse().getContentAsString(),
                 new TypeReference<>() {}
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).hasSize(1);
+            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(1L, 5L, 6L, 7L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(1L);
             assertThat(first.getStageCount()).isEqualTo(1);
@@ -141,14 +148,17 @@ public class ChallengeApiTest extends TestSupport {
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk()).andReturn();
 
-            // then: tb_challenges에 repetitive 1개(challenge_id=2)이고 stage 1이 노출
+            // then: tb_challenges에 repetitive 4개(challenge_id=2, 3, 4, 19)이고 각 stage 1이 노출
             PagedResponse<GeneralChallengeDto> response = parseResponse(
                 result.getResponse().getContentAsString(),
                 new TypeReference<>() {}
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).hasSize(1);
+            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(2L, 3L, 4L, 19L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(2L);
             assertThat(first.getStageCount()).isEqualTo(1); // 최소 stage_number는 1
@@ -214,7 +224,11 @@ public class ChallengeApiTest extends TestSupport {
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).hasSize(1);
+            // 시드 repetitive challenge: 2, 3, 4, 19. 보상 수령 가능(2)이 최우선 정렬된다.
+            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(2L, 3L, 4L, 19L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(2L);
             assertThat(first.getUserChallengeId()).isEqualTo(2L);
@@ -258,8 +272,14 @@ public class ChallengeApiTest extends TestSupport {
                 new TypeReference<>() {}
             );
 
-            assertThat(generalResponse.getData()).isEmpty();
-            assertThat(repetitiveResponse.getData()).isEmpty();
+            // NFT 보상까지 완료한 challenge 1(normal), 2(repetitive)는 목록에서 빠지고
+            // 나머지 시드 도전과제만 남는다.
+            assertThat(generalResponse.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(5L, 6L, 7L);
+            assertThat(repetitiveResponse.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(3L, 4L, 19L);
         }
 
         @Test
@@ -293,7 +313,12 @@ public class ChallengeApiTest extends TestSupport {
                 new TypeReference<>() {}
             );
 
-            assertThat(response.getData()).hasSize(1);
+            // 시드 repetitive challenge 4개 중 challenge 2는 보상 수령 가능 stage 2가
+            // 진행 중 stage 3(60%)보다 우선 노출된다.
+            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData())
+                .extracting(GeneralChallengeDto::getChallengeId)
+                .containsExactly(2L, 3L, 4L, 19L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(2L);
             assertThat(first.getUserChallengeId()).isEqualTo(2L);
