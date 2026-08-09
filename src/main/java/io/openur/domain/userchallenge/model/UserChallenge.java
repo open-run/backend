@@ -33,7 +33,18 @@ public class UserChallenge {
         // 단계 조건은 누적 회수 기준. prevChallenge는 완료 직전에 조회된 스냅샷이라
         // 완료 처리에서 더해진 +1이 빠져 있으므로 여기서 보정해 승계한다.
         this.currentCount = prevChallenge.getCurrentCount() + 1;
-        this.currentProgress = (float) this.currentCount / nextStage.getConditionAsCount();
+        this.currentProgress = toProgressPercent(this.currentCount, nextStage.getConditionAsCount());
+    }
+
+    /**
+     * 진행률은 퍼센트(0~100)로 표기한다. currentProgress 는 가공 없이 응답에 실리므로
+     * 저장 시점과 조회 시점의 스케일이 반드시 같아야 한다.
+     */
+    public static float toProgressPercent(int currentCount, int conditionAsCount) {
+        if (conditionAsCount <= 0) {
+            return 0.0f;
+        }
+        return (float) currentCount / conditionAsCount * 100;
     }
 
     public UserChallenge(User user, ChallengeStage stage) {
