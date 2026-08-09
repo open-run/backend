@@ -25,9 +25,13 @@ public interface UserChallengeRepository {
 
     /**
      * Marks challenges as achieved and ready for NFT reward issuance.
+     * 이미 완료된 행은 건너뛰므로, 동시 요청 중 실제로 전환에 성공한 쪽만 결과에 담긴다.
+     * 호출자는 반환된 ID에 대해서만 다음 단계를 발급해야 중복 발급을 피할 수 있다.
+     *
      * @param completedUserChallengeIds List of challenges that reached their completion condition
+     * @return 이 호출이 실제로 완료 처리한 user_challenge ID 목록
      */
-    void bulkUpdateCompletedChallenges(List<Long> completedUserChallengeIds);
+    List<Long> markCompletedIfPending(List<Long> completedUserChallengeIds);
 
     void markNftCompleted(Long userChallengeId);
 

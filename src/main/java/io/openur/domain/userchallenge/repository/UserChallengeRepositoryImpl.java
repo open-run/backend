@@ -20,6 +20,7 @@ import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,25 +90,39 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     @Transactional
-    public void bulkUpdateCompletedChallenges(List<Long> userChallengeIds) {
+    public List<Long> markCompletedIfPending(List<Long> userChallengeIds) {
         if (userChallengeIds.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
 
-        queryFactory
-            .update(userChallengeEntity)
-            .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
-            .set(userChallengeEntity.completedDate, LocalDateTime.now())
-            .set(userChallengeEntity.nftCompleted, false)
-            .where(
-                userChallengeEntity.userChallengeId.in(userChallengeIds),
-                // 동시 요청이 같은 행을 중복 완료 처리하지 않도록 멱등 가드
-                userChallengeEntity.completedDate.isNull()
-            )
-            .execute();
+        // 행 단위로 조건부 UPDATE 한다. 한 번의 bulk UPDATE 는 멱등 가드로 데이터는 지켜주지만
+        // "어느 행이 실제로 전환됐는지"를 알려주지 못해, 호출자가 이미 완료된 행에도
+        // 다음 단계를 발급하게 된다. 한 이벤트가 담는 행은 많아야 두어 개라 비용은 무시할 수준.
+        LocalDateTime completedAt = LocalDateTime.now();
+        List<Long> transitioned = new ArrayList<>();
+
+        for (Long userChallengeId : userChallengeIds) {
+            long updated = queryFactory
+                .update(userChallengeEntity)
+                .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
+                .set(userChallengeEntity.completedDate, completedAt)
+                .set(userChallengeEntity.nftCompleted, false)
+                .where(
+                    userChallengeEntity.userChallengeId.eq(userChallengeId),
+                    // 동시 요청이 같은 행을 중복 완료 처리하지 않도록 멱등 가드
+                    userChallengeEntity.completedDate.isNull()
+                )
+                .execute();
+
+            if (updated > 0) {
+                transitioned.add(userChallengeId);
+            }
+        }
 
         entityManager.flush();
         entityManager.clear();
+
+        return transitioned;
     }
 
     @Override
