@@ -305,7 +305,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
                     .when(userChallengeEntity.currentCount.coalesce(0)
                         .goe(challengeStageEntity.conditionAsCount))
                     .then(0).otherwise(1).asc(),
-                userChallengeEntity.currentProgress.coalesce(0.0f).desc(),
+                // 저장된 current_progress 대신 카운트/조건으로 계산해 정렬한다.
+                // 저장값은 카운트 증가 경로에서 갱신되지 않아 순서를 흐트러뜨린다.
+                Expressions.numberTemplate(Double.class, "1.0 * {0} / {1}",
+                    userChallengeEntity.currentCount.coalesce(0),
+                    challengeStageEntity.conditionAsCount).desc(),
                 challengeStageEntity.challengeEntity.challengeId.asc(),
                 challengeStageEntity.stageId.asc()
             )

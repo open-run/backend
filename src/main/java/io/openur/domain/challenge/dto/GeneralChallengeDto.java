@@ -43,13 +43,15 @@ public class GeneralChallengeDto {
             this.completedDate = userChallenge.getCompletedDate();
             this.accomplished = userChallenge.getCompletedDate() != null;
             this.nftCompleted = userChallenge.getNftCompleted();
-            this.progressStat = userChallenge.getCurrentProgress();
         } else {
             this.currentCount = 0;
         }
 
         this.conditionCount = challengeStage.getConditionAsCount();
         this.stageCount = challengeStage.getStageNumber();
+        // 진행률은 응답 시점에 계산한다. 저장된 current_progress 는 카운트 증가 경로에서
+        // 갱신되지 않아 stale 이므로 읽지 않는다.
+        this.progressStat = UserChallenge.toProgressPercent(this.currentCount, this.conditionCount);
 
         Challenge challenge = challengeStage.getChallenge();
         this.challengeId = challenge.getChallengeId();
