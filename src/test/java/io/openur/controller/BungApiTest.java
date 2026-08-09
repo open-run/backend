@@ -283,6 +283,62 @@ public class BungApiTest extends TestSupport {
             .isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("토요일 벙 완주는 주말 과제만 올리고 새벽 과제는 건드리지 않는다")
+    @Transactional
+    void completeBung_countsWeekendChallengeOnly() throws Exception {
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        completeBungAsOwner(getTestUserToken2(), "aa000000-0000-4000-8000-000000000001");
+
+        List<UserChallengeEntity> rows = findUserChallenges(userId);
+        assertThat(findRow(rows, 16L, 1).getCurrentCount()).isEqualTo(1);
+        assertThat(findRow(rows, 17L, 1).getCurrentCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("새벽 벙 완주는 새벽 과제만 올리고, 06:59는 포함 07:00은 제외된다")
+    @Transactional
+    void completeBung_countsDawnChallengeWithinBoundary() throws Exception {
+        String token = getTestUserToken2();
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        // 05:30 → 새벽 1회. 평일이라 주말 과제는 오르지 않는다.
+        completeBungAsOwner(token, "aa000000-0000-4000-8000-000000000002");
+        List<UserChallengeEntity> rows = findUserChallenges(userId);
+        assertThat(findRow(rows, 17L, 1).getCurrentCount()).isEqualTo(1);
+        assertThat(findRow(rows, 16L, 1).getCurrentCount()).isZero();
+
+        // 06:59 → 경계 하한 포함. 2회째라 조건(2회) 충족으로 완료된다.
+        completeBungAsOwner(token, "aa000000-0000-4000-8000-000000000003");
+        UserChallengeEntity dawn = findRow(findUserChallenges(userId), 17L, 1);
+        assertThat(dawn.getCurrentCount()).isEqualTo(2);
+        assertThat(dawn.getCompletedDate()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("07:00 시작 벙은 새벽 과제로 카운트되지 않는다")
+    @Transactional
+    void completeBung_atSevenOclock_doesNotCountAsDawn() throws Exception {
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        completeBungAsOwner(getTestUserToken2(), "aa000000-0000-4000-8000-000000000004");
+
+        List<UserChallengeEntity> rows = findUserChallenges(userId);
+        assertThat(findRow(rows, 17L, 1).getCurrentCount()).isZero();
+        assertThat(findRow(rows, 16L, 1).getCurrentCount()).isZero();
+        // 완주 과제 자체는 시간대와 무관하게 오른다
+        assertThat(findRow(rows, 7L, 1).getCompletedDate()).isNotNull();
+    }
+
+    private void completeBungAsOwner(String token, String bungId) throws Exception {
+        mockMvc.perform(
+            patch(PREFIX + "/{bungId}/complete", bungId)
+                .header(AUTH_HEADER, token)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
     private void submitFeedback(String token, String bungId) throws Exception {
         var feedbackRequest = new HashMap<>();
         feedbackRequest.put("bungId", bungId);

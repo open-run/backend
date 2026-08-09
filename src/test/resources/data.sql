@@ -26,7 +26,19 @@ VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'temp_description'
         CURRENT_TIMESTAMP - 4, CURRENT_TIMESTAMP - 3, 5, '7"00', 3, 3, false, null, true, false, 'image4.png'),
        -- 벙 완료 도전과제 트리거 테스트용: 시작됐지만 미완료, user2(벙주, 인증됨) / user3(미인증)
        ('b1234567-89ab-cdef-0123-456789abcdef', 'trigger_complete_bung', 'challenge_trigger_bung', 'Busan', 35.1796, 129.0756,
-        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, 2, false, null, false, false, 'image5.png')
+        CURRENT_TIMESTAMP - 2, CURRENT_TIMESTAMP - 1, 5, '7"00', 3, 2, false, null, false, false, 'image5.png'),
+       -- 주말·새벽 판정용. 시작 시각을 고정해야 요일·시간대가 결정되므로 과거 날짜를 박아둔다.
+       -- 목록 조회는 start_datetime > now 필터라 이 벙들은 기존 조회 테스트에 잡히지 않는다.
+       -- 2025-01-04 토, 2025-01-08 수, 2025-01-09 목. 전부 user2 가 벙주.
+       ('aa000000-0000-4000-8000-000000000001', 'weekend_bung', 'sat_afternoon', 'Seoul', 37.5665, 126.9780,
+        '2025-01-04 14:00:00', '2025-01-04 15:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png'),
+       ('aa000000-0000-4000-8000-000000000002', 'dawn_bung', 'wed_0530', 'Seoul', 37.5665, 126.9780,
+        '2025-01-08 05:30:00', '2025-01-08 06:30:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png'),
+       -- 06:59 는 새벽 구간 포함(경계 하한), 07:00 은 제외(경계 상한)
+       ('aa000000-0000-4000-8000-000000000003', 'dawn_edge_bung', 'wed_0659', 'Seoul', 37.5665, 126.9780,
+        '2025-01-08 06:59:00', '2025-01-08 07:59:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png'),
+       ('aa000000-0000-4000-8000-000000000004', 'morning_bung', 'thu_0700', 'Seoul', 37.5665, 126.9780,
+        '2025-01-09 07:00:00', '2025-01-09 08:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png')
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
@@ -46,7 +58,16 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-8036
        (7, 'b1234567-89ab-cdef-0123-456789abcdef', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
         CURRENT_TIMESTAMP(), true),
        (8, 'b1234567-89ab-cdef-0123-456789abcdef', '5d22bd65-f1ed-4e7b-bc7b-0a59580d3176', false,
-        CURRENT_TIMESTAMP(), false)
+        CURRENT_TIMESTAMP(), false),
+       -- 주말·새벽 판정용 벙의 벙주(user2). id 10+ 로 띄워 기존 행과 충돌을 피한다.
+       (10, 'aa000000-0000-4000-8000-000000000001', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (11, 'aa000000-0000-4000-8000-000000000002', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (12, 'aa000000-0000-4000-8000-000000000003', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (13, 'aa000000-0000-4000-8000-000000000004', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true)
 ;
 
 INSERT INTO tb_hashtags (hashtag_id, hashtag_str)
@@ -82,8 +103,10 @@ VALUES
     (6, '러너의 시작', '첫 벙 생성 도전과제', 'normal', 'footwear', 'count', null, null),
     (7, '완주왕', '첫 벙 완주 도전과제', 'normal', 'footwear', 'count', null, null),
     (19, '벙 완료하기', '벙 완료하기 반복 도전과제', 'repetitive', 'footwear', 'count', null, null),
-    -- PROFILE_COMPLETE→[8]
-    (8, '프로필 완성하기', '프로필 완성 도전과제', 'normal', 'footwear', 'count', null, null)
+    -- PROFILE_COMPLETE→[8], WEEKEND_RUN→[16], DAWN_RUN→[17]
+    (8, '프로필 완성하기', '프로필 완성 도전과제', 'normal', 'footwear', 'count', null, null),
+    (16, '주말 러너', '주말 러닝 반복 도전과제', 'repetitive', 'footwear', 'count', null, null),
+    (17, '새벽 러너', '새벽 러닝 반복 도전과제', 'repetitive', 'footwear', 'count', null, null)
 ;
 
 INSERT INTO tb_challenge_stages (stage_id, stage_number, condition_count, challenge_id, weight_common, weight_rare, weight_epic)
@@ -103,7 +126,9 @@ VALUES
     (17, 1, 1, 7, 100, 0, 0),
     (18, 1, 1, 19, 100, 0, 0),
     (19, 2, 2, 19, 100, 0, 0),
-    (20, 1, 1, 8, 100, 0, 0)
+    (20, 1, 1, 8, 100, 0, 0),
+    (22, 1, 2, 16, 100, 0, 0),
+    (23, 1, 2, 17, 100, 0, 0)
 ;
 
 INSERT INTO tb_users_challenges (user_challenge_id, user_id, challenge_stage_id, current_count, current_progress, nft_completed, completed_date)

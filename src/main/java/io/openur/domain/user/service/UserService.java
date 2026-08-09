@@ -160,8 +160,8 @@ public class UserService {
 
         // 벙원의 완주 과제는 최초 피드백 제출 시점에 카운트한다 (벙주는 완료 시점에 이미 카운트됨)
         if (!reviewerBung.isOwner()) {
-            challengeEventsPublisher.publishChallengeCheck(
-                reviewerUserId, ChallengeActivityType.BUNG_COMPLETE);
+            challengeEventsPublisher.publishBungCompleteChecks(
+                reviewerUserId, reviewerBung.getBung().getStartDateTime());
         }
 
         return targetUserIds.isEmpty()

@@ -155,10 +155,10 @@ public class ChallengeApiTest extends TestSupport {
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData()).hasSize(6);
             assertThat(response.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(2L, 3L, 4L, 19L);
+                .containsExactly(2L, 3L, 4L, 16L, 17L, 19L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(2L);
             assertThat(first.getStageCount()).isEqualTo(1); // 최소 stage_number는 1
@@ -225,10 +225,10 @@ public class ChallengeApiTest extends TestSupport {
 
             assertNotNull(response);
             // 시드 repetitive challenge: 2, 3, 4, 19. 보상 수령 가능(2)이 최우선 정렬된다.
-            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData()).hasSize(6);
             assertThat(response.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(2L, 3L, 4L, 19L);
+                .containsExactly(2L, 3L, 4L, 16L, 17L, 19L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(2L);
             assertThat(first.getUserChallengeId()).isEqualTo(2L);
@@ -279,7 +279,7 @@ public class ChallengeApiTest extends TestSupport {
                 .containsExactly(5L, 6L, 7L, 8L);
             assertThat(repetitiveResponse.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(3L, 4L, 19L);
+                .containsExactly(3L, 4L, 16L, 17L, 19L);
         }
 
         @Test
@@ -315,10 +315,10 @@ public class ChallengeApiTest extends TestSupport {
 
             // 시드 repetitive challenge 4개 중 challenge 2는 보상 수령 가능 stage 2가
             // 진행 중 stage 3(60%)보다 우선 노출된다.
-            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData()).hasSize(6);
             assertThat(response.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(2L, 3L, 4L, 19L);
+                .containsExactly(2L, 3L, 4L, 16L, 17L, 19L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(2L);
             assertThat(first.getUserChallengeId()).isEqualTo(2L);

@@ -245,8 +245,8 @@ public class BungService {
         }
 
         // 완주 과제는 벙주는 완료 시점에, 벙원은 피드백 제출 시점에 카운트한다
-        challengeEventsPublisher.publishChallengeCheck(
-            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_COMPLETE);
+        challengeEventsPublisher.publishBungCompleteChecks(
+            userDetails.getUser().getUserId(), bung.getStartDateTime());
 
         return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }
