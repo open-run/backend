@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.openur.config.TestSupport;
 import io.openur.domain.user.dto.GetUserResponseDto;
+import io.openur.domain.userchallenge.entity.UserChallengeEntity;
+import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import io.openur.global.dto.Response;
 import jakarta.persistence.EntityManager;
 import java.math.BigInteger;
@@ -34,6 +36,8 @@ public class UserApiTest extends TestSupport {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private UserChallengeJpaRepository userChallengeJpaRepository;
 
     @Test
     @DisplayName("닉네임 중복확인")
@@ -461,6 +465,70 @@ public class UserApiTest extends TestSupport {
                         .content(jsonify(surveyResult))
                 )
                 .andExpect(status().isCreated());
+        }
+
+        @Test
+        @DisplayName("이미지·페이스·빈도가 모두 채워지면 프로필 완성 도전과제가 완료된다")
+        @Transactional
+        void saveSurveyResult_completesProfileChallenge() throws Exception {
+            // user3: 프로필 이미지는 있고 페이스/빈도가 비어 있는 유저
+            String token = getTestUserToken3();
+            String userId = "5d22bd65-f1ed-4e7b-bc7b-0a59580d3176";
+
+            // 페이스만 채우면 빈도가 없어 아직 완성이 아니다
+            patchSurvey(token, "runningPace", "06'30\"");
+            assertThat(findProfileChallenge(userId))
+                .noneMatch(uc -> uc.getCompletedDate() != null);
+
+            // 빈도까지 채우면 세 항목이 모두 충족되어 과제 8이 완료된다
+            patchSurvey(token, "runningFrequency", 3);
+
+            List<UserChallengeEntity> rows = findProfileChallenge(userId);
+            assertThat(rows).hasSize(1);
+            assertThat(rows.get(0).getCompletedDate()).isNotNull();
+            assertThat(rows.get(0).getCurrentCount()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("프로필 이미지가 없으면 페이스·빈도를 채워도 완성 처리되지 않는다")
+        @Transactional
+        void saveSurveyResult_withoutImage_doesNotCompleteProfileChallenge() throws Exception {
+            // user1: 프로필 이미지가 없는 유저
+            String userId = "9e1bfc60-f76a-47dc-9147-803653707192";
+
+            var surveyResult = new HashMap<>();
+            surveyResult.put("runningPace", "05'55\"");
+            surveyResult.put("runningFrequency", 2);
+            mockMvc.perform(
+                    patch(PREFIX)
+                        .header(AUTH_HEADER, getTestUserToken1())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonify(surveyResult))
+                )
+                .andExpect(status().isCreated());
+
+            assertThat(findProfileChallenge(userId))
+                .noneMatch(uc -> uc.getCompletedDate() != null);
+        }
+
+        private void patchSurvey(String token, String field, Object value) throws Exception {
+            var body = new HashMap<>();
+            body.put(field, value);
+            mockMvc.perform(
+                    patch(PREFIX)
+                        .header(AUTH_HEADER, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonify(body))
+                )
+                .andExpect(status().isCreated());
+        }
+
+        private List<UserChallengeEntity> findProfileChallenge(String userId) {
+            return userChallengeJpaRepository.findAll().stream()
+                .filter(uc -> uc.getUserEntity().getUserId().equals(userId))
+                .filter(uc -> uc.getChallengeStageEntity().getChallengeEntity()
+                    .getChallengeId().equals(8L))
+                .toList();
         }
     }
 }

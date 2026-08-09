@@ -109,6 +109,12 @@ public class UserService {
         User user = userRepository.findUser(userDetails.getUser());
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
+
+        // 이미 완료된 과제는 발행해도 대상 조회에서 걸러지므로 반복 PATCH 는 무해하다.
+        if (user.isProfileComplete()) {
+            challengeEventsPublisher.publishChallengeCheck(
+                user.getUserId(), ChallengeActivityType.PROFILE_COMPLETE);
+        }
     }
 
     @Transactional

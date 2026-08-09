@@ -9,6 +9,8 @@ import io.openur.domain.NFT.enums.NftAvatarWearingSlot;
 import io.openur.domain.NFT.enums.NftImageRole;
 import io.openur.domain.NFT.repository.NftAvatarWearingJpaRepository;
 import io.openur.domain.NFT.repository.NftTokenJpaRepository;
+import io.openur.domain.challenge.enums.ChallengeActivityType;
+import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
 import io.openur.domain.user.service.UserProfileImageStorageService;
@@ -42,6 +44,7 @@ public class NftAvatarItemService {
     private final PlatformTransactionManager transactionManager;
     private final UserRepository userRepository;
     private final UserProfileImageStorageService userProfileImageStorageService;
+    private final ChallengeEventsPublisher challengeEventsPublisher;
 
     public List<NftAvatarItemDto> getOwnedAvatarItems(String ownerAddress) {
         List<NftTokenEntity> candidates = runInReadOnlyTransaction(
@@ -108,6 +111,12 @@ public class NftAvatarItemService {
         User user = userRepository.findById(userId);
         user.updateProfileImageStorageKey(storageKey);
         userRepository.update(user);
+
+        // 프로필 이미지는 이 경로로만 설정되므로 완성 판정도 함께 수행한다.
+        if (user.isProfileComplete()) {
+            challengeEventsPublisher.publishChallengeCheck(
+                userId, ChallengeActivityType.PROFILE_COMPLETE);
+        }
 
         return buildWearingAvatarDto(wearingTokensBySlot);
     }

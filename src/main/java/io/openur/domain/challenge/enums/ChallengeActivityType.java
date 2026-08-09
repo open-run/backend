@@ -18,7 +18,6 @@ public enum ChallengeActivityType {
     BUNG_JOIN(List.of(3L, 5L)),
     BUNG_CERTIFY(List.of(4L)),
     BUNG_COMPLETE(List.of(7L, 19L)),
-    // TODO: 프로필 완성 API에 배선 예정
     PROFILE_COMPLETE(List.of(8L));
 
     private final List<Long> challengeIds;

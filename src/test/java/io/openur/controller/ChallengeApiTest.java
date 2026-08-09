@@ -57,10 +57,10 @@ public class ChallengeApiTest extends TestSupport {
 
             assertNotNull(response);
             // 시드 normal challenge: 1, 5, 6, 7. 보상 수령 가능(1)이 최우선 정렬된다.
-            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData()).hasSize(5);
             assertThat(response.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(1L, 5L, 6L, 7L);
+                .containsExactly(1L, 5L, 6L, 7L, 8L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(1L);
             assertThat(first.getUserChallengeId()).isEqualTo(1L);
@@ -120,10 +120,10 @@ public class ChallengeApiTest extends TestSupport {
             );
 
             assertNotNull(response);
-            assertThat(response.getData()).hasSize(4);
+            assertThat(response.getData()).hasSize(5);
             assertThat(response.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(1L, 5L, 6L, 7L);
+                .containsExactly(1L, 5L, 6L, 7L, 8L);
             GeneralChallengeDto first = response.getData().get(0);
             assertThat(first.getChallengeId()).isEqualTo(1L);
             assertThat(first.getStageCount()).isEqualTo(1);
@@ -276,7 +276,7 @@ public class ChallengeApiTest extends TestSupport {
             // 나머지 시드 도전과제만 남는다.
             assertThat(generalResponse.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
-                .containsExactly(5L, 6L, 7L);
+                .containsExactly(5L, 6L, 7L, 8L);
             assertThat(repetitiveResponse.getData())
                 .extracting(GeneralChallengeDto::getChallengeId)
                 .containsExactly(3L, 4L, 19L);

@@ -81,7 +81,9 @@ VALUES
     (5, '첫 걸음', '첫 벙 참여 도전과제', 'normal', 'footwear', 'count', null, null),
     (6, '러너의 시작', '첫 벙 생성 도전과제', 'normal', 'footwear', 'count', null, null),
     (7, '완주왕', '첫 벙 완주 도전과제', 'normal', 'footwear', 'count', null, null),
-    (19, '벙 완료하기', '벙 완료하기 반복 도전과제', 'repetitive', 'footwear', 'count', null, null)
+    (19, '벙 완료하기', '벙 완료하기 반복 도전과제', 'repetitive', 'footwear', 'count', null, null),
+    -- PROFILE_COMPLETE→[8]
+    (8, '프로필 완성하기', '프로필 완성 도전과제', 'normal', 'footwear', 'count', null, null)
 ;
 
 INSERT INTO tb_challenge_stages (stage_id, stage_number, condition_count, challenge_id, weight_common, weight_rare, weight_epic)
@@ -100,7 +102,8 @@ VALUES
     (16, 1, 1, 6, 100, 0, 0),
     (17, 1, 1, 7, 100, 0, 0),
     (18, 1, 1, 19, 100, 0, 0),
-    (19, 2, 2, 19, 100, 0, 0)
+    (19, 2, 2, 19, 100, 0, 0),
+    (20, 1, 1, 8, 100, 0, 0)
 ;
 
 INSERT INTO tb_users_challenges (user_challenge_id, user_id, challenge_stage_id, current_count, current_progress, nft_completed, completed_date)
