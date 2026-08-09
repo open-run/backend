@@ -331,6 +331,70 @@ public class BungApiTest extends TestSupport {
         assertThat(findRow(rows, 7L, 1).getCompletedDate()).isNotNull();
     }
 
+    @Test
+    @DisplayName("연속 러닝은 이어진 날만 늘고, 같은 날 중복은 무시되며 건너뛰면 리셋된다")
+    @Transactional
+    void completeBung_streakCountsConsecutiveDaysOnly() throws Exception {
+        String token = getTestUserToken2();
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        // 3/3 → 1일
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000001");
+        assertThat(streakCount(userId)).isEqualTo(1);
+
+        // 3/4 → 이어졌으므로 2일
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000002");
+        assertThat(streakCount(userId)).isEqualTo(2);
+
+        // 3/4 두 번째 벙 → 같은 날이라 그대로 2일
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000003");
+        assertThat(streakCount(userId)).isEqualTo(2);
+
+        // 3/6 → 3/5 를 건너뛰었으므로 1일로 리셋. 연속 과제의 의도된 동작이다.
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000005");
+        assertThat(streakCount(userId)).isEqualTo(1);
+        assertThat(findRow(findUserChallenges(userId), 11L, 1).getCompletedDate()).isNull();
+    }
+
+    @Test
+    @DisplayName("완주 처리를 역순으로 해도 연속일 계산 결과가 같다")
+    @Transactional
+    void completeBung_streakIsIndependentOfCompletionOrder() throws Exception {
+        String token = getTestUserToken2();
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        // 나중 날짜(3/4)를 먼저 완주 처리한다
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000002");
+        assertThat(streakCount(userId)).isEqualTo(1);
+
+        // 앞선 날짜(3/3)를 뒤늦게 완주 처리해도 이력에서 다시 계산하므로 2일이 된다.
+        // 증분 방식이었다면 "이미 지난 날짜"로 밀려 1일에 머물렀을 케이스다.
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000001");
+        assertThat(streakCount(userId)).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("연속일이 조건에 도달하면 연속 과제가 완료된다")
+    @Transactional
+    void completeBung_streakCompletesWhenConditionMet() throws Exception {
+        String token = getTestUserToken2();
+        String userId = "91b4928f-8288-44dc-a04d-640911f0b2be";
+
+        // 시드 조건은 3일. 3/3 → 3/4 → 3/5 로 이어 달린다.
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000001");
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000002");
+        completeBungAsOwner(token, "bb000000-0000-4000-8000-000000000004");
+
+        UserChallengeEntity streak = findRow(findUserChallenges(userId), 11L, 1);
+        assertThat(streak.getCurrentCount()).isEqualTo(3);
+        assertThat(streak.getCompletedDate()).isNotNull();
+        assertThat(streak.getCurrentProgress()).isEqualTo(100.0f);
+    }
+
+    private int streakCount(String userId) {
+        return findRow(findUserChallenges(userId), 11L, 1).getCurrentCount();
+    }
+
     private void completeBungAsOwner(String token, String bungId) throws Exception {
         mockMvc.perform(
             patch(PREFIX + "/{bungId}/complete", bungId)

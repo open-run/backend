@@ -33,6 +33,16 @@ public interface UserChallengeRepository {
      */
     List<Long> markCompletedIfPending(List<Long> completedUserChallengeIds);
 
+    /**
+     * 연속 러닝 과제 진행 갱신. 재계산된 연속일을 그대로 덮어쓴다(리셋 포함).
+     * completing 이면 완료 처리까지 함께 수행한다.
+     *
+     * @return 이 호출이 실제로 갱신했으면 true. 이미 완료된 행이면 false
+     */
+    boolean updateStreakProgress(
+        Long userChallengeId, int streakLength, float progressPercent, boolean completing
+    );
+
     void markNftCompleted(Long userChallengeId);
 
     Set<Long> findChallengeIdsByUserId(String userId);

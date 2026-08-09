@@ -52,4 +52,30 @@ public class ChallengeEventsListener {
                 );
             });
     }
+
+    @EventListener
+    public void handleStreakProgress(OnStreakProgress event) {
+        UserChallenge userChallenge = event.getUserChallenge();
+        ChallengeStage currentStage = userChallenge.getChallengeStage();
+
+        boolean applied = userChallengeRepository.updateStreakProgress(
+            userChallenge.getUserChallengeId(),
+            event.getStreakLength(),
+            UserChallenge.toProgressPercent(
+                event.getStreakLength(), currentStage.getConditionAsCount()),
+            event.isCompleting()
+        );
+
+        if (!applied || !event.isCompleting()) {
+            return;
+        }
+
+        // 다음 단계는 재계산된 연속일을 그대로 물려받는다.
+        stageRepository.findByChallengeIdAndStageIsGreaterThan(
+            currentStage.getChallengeId(), currentStage.getStageNumber()
+        ).ifPresent(nextStage ->
+            userChallengeRepository.save(
+                UserChallenge.nextStreakStage(userChallenge, nextStage, event.getStreakLength()))
+        );
+    }
 }

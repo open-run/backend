@@ -38,7 +38,19 @@ VALUES ('c0477004-1632-455f-acc9-04584b55921f', 'test1_bung', 'temp_description'
        ('aa000000-0000-4000-8000-000000000003', 'dawn_edge_bung', 'wed_0659', 'Seoul', 37.5665, 126.9780,
         '2025-01-08 06:59:00', '2025-01-08 07:59:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png'),
        ('aa000000-0000-4000-8000-000000000004', 'morning_bung', 'thu_0700', 'Seoul', 37.5665, 126.9780,
-        '2025-01-09 07:00:00', '2025-01-09 08:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png')
+        '2025-01-09 07:00:00', '2025-01-09 08:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image6.png'),
+       -- 연속 러닝 판정용. 전부 user2 가 벙주이며 미완료 상태로 둔다.
+       -- 3/3, 3/4, 3/4(같은 날 두 번째), 3/5, 3/6(3/5 를 건너뛰면 리셋되는지 확인용)
+       ('bb000000-0000-4000-8000-000000000001', 'streak_d1_bung', 'mar03', 'Seoul', 37.5665, 126.9780,
+        '2025-03-03 12:00:00', '2025-03-03 13:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image7.png'),
+       ('bb000000-0000-4000-8000-000000000002', 'streak_d2_bung', 'mar04', 'Seoul', 37.5665, 126.9780,
+        '2025-03-04 12:00:00', '2025-03-04 13:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image7.png'),
+       ('bb000000-0000-4000-8000-000000000003', 'streak_d2_second_bung', 'mar04_evening', 'Seoul', 37.5665, 126.9780,
+        '2025-03-04 18:00:00', '2025-03-04 19:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image7.png'),
+       ('bb000000-0000-4000-8000-000000000004', 'streak_d3_bung', 'mar05', 'Seoul', 37.5665, 126.9780,
+        '2025-03-05 12:00:00', '2025-03-05 13:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image7.png'),
+       ('bb000000-0000-4000-8000-000000000005', 'streak_gap_bung', 'mar06', 'Seoul', 37.5665, 126.9780,
+        '2025-03-06 12:00:00', '2025-03-06 13:00:00', 5, '7"00', 3, 1, false, null, false, false, 'image7.png')
 ;
 
 INSERT INTO tb_users_bungs (user_bung_id, bung_id, user_id, participation_status, modified_at,
@@ -67,6 +79,17 @@ VALUES (1, 'c0477004-1632-455f-acc9-04584b55921f', '9e1bfc60-f76a-47dc-9147-8036
        (12, 'aa000000-0000-4000-8000-000000000003', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
         CURRENT_TIMESTAMP(), true),
        (13, 'aa000000-0000-4000-8000-000000000004', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       -- 연속 러닝 판정용 벙의 벙주(user2)
+       (20, 'bb000000-0000-4000-8000-000000000001', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (21, 'bb000000-0000-4000-8000-000000000002', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (22, 'bb000000-0000-4000-8000-000000000003', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (23, 'bb000000-0000-4000-8000-000000000004', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
+        CURRENT_TIMESTAMP(), true),
+       (24, 'bb000000-0000-4000-8000-000000000005', '91b4928f-8288-44dc-a04d-640911f0b2be', true,
         CURRENT_TIMESTAMP(), true)
 ;
 
@@ -106,7 +129,9 @@ VALUES
     -- PROFILE_COMPLETE→[8], WEEKEND_RUN→[16], DAWN_RUN→[17]
     (8, '프로필 완성하기', '프로필 완성 도전과제', 'normal', 'footwear', 'count', null, null),
     (16, '주말 러너', '주말 러닝 반복 도전과제', 'repetitive', 'footwear', 'count', null, null),
-    (17, '새벽 러너', '새벽 러닝 반복 도전과제', 'repetitive', 'footwear', 'count', null, null)
+    (17, '새벽 러너', '새벽 러닝 반복 도전과제', 'repetitive', 'footwear', 'count', null, null),
+    -- STREAK_RUN→[11]
+    (11, '연속 달리기', '연속 러닝 도전과제', 'normal', 'footwear', 'count', null, null)
 ;
 
 INSERT INTO tb_challenge_stages (stage_id, stage_number, condition_count, challenge_id, weight_common, weight_rare, weight_epic)
@@ -128,7 +153,10 @@ VALUES
     (19, 2, 2, 19, 100, 0, 0),
     (20, 1, 1, 8, 100, 0, 0),
     (22, 1, 2, 16, 100, 0, 0),
-    (23, 1, 2, 17, 100, 0, 0)
+    (23, 1, 2, 17, 100, 0, 0),
+    -- 연속 과제 조건은 3으로 축소한다. 운영은 7이지만 검증하려는 건 연속 판정 로직이고,
+    -- 7로 두면 달성 케이스 하나에 시드 벙이 7개 필요하다.
+    (21, 1, 3, 11, 100, 0, 0)
 ;
 
 INSERT INTO tb_users_challenges (user_challenge_id, user_id, challenge_stage_id, current_count, current_progress, nft_completed, completed_date)

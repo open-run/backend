@@ -37,6 +37,23 @@ public class UserChallenge {
     }
 
     /**
+     * 연속 러닝 과제의 다음 단계를 만든다.
+     *
+     * 일반 승계(위 생성자)는 스냅샷 카운트에 1을 더하지만, 연속 과제는 그러면 안 된다.
+     * 연속이 끊긴 직후 완료되는 경우 실제 연속일은 1인데 끊기기 전 누적값을 물려받게 된다.
+     * 재계산된 연속일을 명시적으로 받아 그대로 승계한다.
+     */
+    public static UserChallenge nextStreakStage(
+        UserChallenge prevChallenge, ChallengeStage nextStage, int streakLength
+    ) {
+        UserChallenge next = new UserChallenge(prevChallenge.getUser(), nextStage);
+        next.setCurrentCount(streakLength);
+        next.setCurrentProgress(
+            toProgressPercent(streakLength, nextStage.getConditionAsCount()));
+        return next;
+    }
+
+    /**
      * 진행률은 퍼센트(0~100)로 표기한다. currentProgress 는 가공 없이 응답에 실리므로
      * 저장 시점과 조회 시점의 스케일이 반드시 같아야 한다.
      */

@@ -127,6 +127,35 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     @Transactional
+    public boolean updateStreakProgress(
+        Long userChallengeId, int streakLength, float progressPercent, boolean completing
+    ) {
+        var update = queryFactory
+            .update(userChallengeEntity)
+            .set(userChallengeEntity.currentCount, streakLength)
+            .set(userChallengeEntity.currentProgress, progressPercent)
+            .where(
+                userChallengeEntity.userChallengeId.eq(userChallengeId),
+                // 이미 완료된 행은 건드리지 않는다. 동시 요청 중 한쪽만 통과한다.
+                userChallengeEntity.completedDate.isNull()
+            );
+
+        if (completing) {
+            update
+                .set(userChallengeEntity.completedDate, LocalDateTime.now())
+                .set(userChallengeEntity.nftCompleted, false);
+        }
+
+        long updated = update.execute();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        return updated > 0;
+    }
+
+    @Override
+    @Transactional
     public void markNftCompleted(Long userChallengeId) {
         queryFactory
             .update(userChallengeEntity)

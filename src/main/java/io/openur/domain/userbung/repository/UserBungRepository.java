@@ -5,6 +5,7 @@ import io.openur.domain.bung.dto.BungInfoWithMemberListDto;
 import io.openur.domain.bung.enums.BungStatus;
 import io.openur.domain.user.model.User;
 import io.openur.domain.userbung.model.UserBung;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,14 @@ public interface UserBungRepository {
     List<String> findJoinedBungsId(User user);
 
     List<String> findMemberUserIdsByBungId(String bungId);
+
+    /**
+     * 유저가 완주한 벙들의 시작 시각. 연속 러닝 판정의 원천 데이터다.
+     *
+     * 완주 기준은 도전과제 카운트 시점과 동일하다 — 벙주는 벙이 완료되면,
+     * 벙원은 완료된 벙에 피드백을 제출하면 완주로 본다.
+     */
+    List<LocalDateTime> findCompletedRunStartTimes(String userId);
 
     Boolean existsByUserIdAndBungId(String userId, String bungId);
 

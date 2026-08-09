@@ -23,7 +23,8 @@ public enum ChallengeActivityType {
     BUNG_COMPLETE(List.of(7L, 19L)),
     PROFILE_COMPLETE(List.of(8L)),
     WEEKEND_RUN(List.of(16L)),
-    DAWN_RUN(List.of(17L));
+    DAWN_RUN(List.of(17L)),
+    STREAK_RUN(List.of(11L));
 
     private final List<Long> challengeIds;
 }

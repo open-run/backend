@@ -3,10 +3,15 @@ package io.openur.domain.challenge.event;
 import io.openur.domain.challenge.enums.ChallengeActivityType;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import io.openur.domain.userchallenge.repository.UserChallengeRepository;
+import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.domain.userchallenge.service.UserChallengeInitializer;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -23,6 +28,7 @@ public class ChallengeEventsPublisher {
     private final ApplicationEventPublisher publisher;
     private final UserChallengeRepository userChallengeRepository;
     private final UserChallengeInitializer userChallengeInitializer;
+    private final UserBungRepository userBungRepository;
 
     @Transactional
     public void publishChallengeCheck(String userId, ChallengeActivityType activity) {
@@ -55,6 +61,54 @@ public class ChallengeEventsPublisher {
         if (hour >= DAWN_START_HOUR && hour < DAWN_END_HOUR) {
             raiseOrEvolve(userId, ChallengeActivityType.DAWN_RUN);
         }
+
+        checkStreak(userId);
+    }
+
+    /**
+     * 연속 러닝 판정. 누적 증분이 아니라 완주 이력에서 매번 다시 계산한다.
+     *
+     * 증분 방식은 완주 처리 순서에 결과가 좌우된다. 1/5 벙과 1/6 벙에 피드백을
+     * 역순으로 내면 1/5 는 "이미 지난 날짜"로 밀려 연속 2일이 1일로 남는다.
+     * 이력에서 도출하면 어떤 순서로 처리하든 같은 결과가 나온다.
+     *
+     * 하루에 여러 벙을 완주해도 날짜 집합이라 1일로 세어진다.
+     * 연속이 끊기면 값이 그대로 내려간다 — 연속 과제의 의도된 동작이다.
+     */
+    private void checkStreak(String userId) {
+        List<UserChallenge> targets =
+            userChallengeRepository.findAllUncompletedByChallengeIds(
+                userId, ChallengeActivityType.STREAK_RUN.getChallengeIds());
+        if (targets.isEmpty()) return;
+
+        int streakLength = currentStreakLength(
+            userBungRepository.findCompletedRunStartTimes(userId));
+        if (streakLength == 0) return;
+
+        for (UserChallenge userChallenge : targets) {
+            boolean completing =
+                streakLength >= userChallenge.getChallengeStage().getConditionAsCount();
+            publisher.publishEvent(
+                new OnStreakProgress(userChallenge, streakLength, completing));
+        }
+    }
+
+    /**
+     * 가장 최근 완주일에서 하루씩 거슬러 올라가며 끊기지 않고 이어진 날 수를 센다.
+     */
+    static int currentStreakLength(List<LocalDateTime> completedRunStartTimes) {
+        Set<LocalDate> runDates = completedRunStartTimes.stream()
+            .map(LocalDateTime::toLocalDate)
+            .collect(Collectors.toSet());
+        if (runDates.isEmpty()) return 0;
+
+        LocalDate cursor = Collections.max(runDates);
+        int length = 0;
+        while (runDates.contains(cursor)) {
+            length++;
+            cursor = cursor.minusDays(1);
+        }
+        return length;
     }
 
     private void raiseOrEvolve(String userId, ChallengeActivityType activity) {
