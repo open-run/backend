@@ -22,12 +22,12 @@ import io.openur.domain.bung.exception.SearchBungException;
 import io.openur.domain.bung.model.Bung;
 import io.openur.domain.bung.repository.BungRepository;
 import io.openur.domain.bunghashtag.repository.BungHashtagRepository;
+import io.openur.domain.challenge.enums.ChallengeActivityType;
 import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.hashtag.model.Hashtag;
 import io.openur.domain.hashtag.repository.HashtagRepository;
 import io.openur.domain.user.model.User;
 import io.openur.domain.user.repository.UserRepository;
-import io.openur.domain.userbung.dto.UserBungInfoDto;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepository;
 import io.openur.global.security.UserDetailsImpl;
@@ -40,7 +40,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -62,7 +61,10 @@ public class BungService {
     ) {
         List<Hashtag> hashtags = hashtagRepository.saveNotListedTags(dto.getHashtags());
         Bung bung = this.saveNewBung(userDetails, dto, hashtags);
-        
+
+        challengeEventsPublisher.publishChallengeCheck(
+            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_CREATE);
+
         return new BungInfoDto(bung);
     }
     
@@ -166,6 +168,10 @@ public class BungService {
         }
 
         userBungRepository.save(new UserBung(userDetails.getUser(), new Bung(bungWithMembers)));
+
+        challengeEventsPublisher.publishChallengeCheck(
+            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_JOIN);
+
         return JoinBungResultEnum.SUCCESSFULLY_JOINED;
     }
 
@@ -231,13 +237,15 @@ public class BungService {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED);
         }
 
-        bungRepository.setAsCompleted(bungId);
+        // 위 선검사와 이 전환 사이에 다른 요청이 완료시켰을 수 있다.
+        // 실제로 전환한 요청만 도전과제를 발행해 중복 카운트를 막는다.
+        if (!bungRepository.setAsCompletedIfPending(bungId)) {
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED);
+        }
 
-        //TODO: EventPublisher 로 도전과제 부가 기능 연산 필요, 도전과제에 따라 bung 이 가진 필드를 가져가는 DTO 가 필요할것
-        getBungDetail(bungId).getMemberList().stream()
-            .filter(UserBungInfoDto::isParticipationStatus)
-            .map(UserBungInfoDto::getUserId)
-            .forEach(challengeEventsPublisher::publishBulkChallengeCheck);
+        // 완주 과제는 벙주는 완료 시점에, 벙원은 피드백 제출 시점에 카운트한다
+        challengeEventsPublisher.publishBungCompleteChecks(
+            userDetails.getUser().getUserId(), bung.getStartDateTime());
 
         return CompleteBungResultEnum.SUCCESSFULLY_COMPLETED;
     }

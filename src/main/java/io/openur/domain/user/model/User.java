@@ -100,6 +100,16 @@ public class User {
         this.profileImageStorageKey = profileImageStorageKey;
     }
 
+    /**
+     * 프로필 완성 판정: 프로필 이미지 + 러닝 페이스 + 러닝 빈도가 모두 채워진 상태.
+     * 닉네임은 가입 시 필수로 받으므로 기준에서 제외한다.
+     */
+    public boolean isProfileComplete() {
+        return profileImageStorageKey != null && !profileImageStorageKey.isBlank()
+            && runningPace != null && !runningPace.isBlank()
+            && runningFrequency != null;
+    }
+
     public void update(PatchUserSurveyRequestDto patchUserSurveyRequestDto) {
         applyIfNotNull(patchUserSurveyRequestDto.getNickname(), newNickname -> this.nickname = newNickname);
         applyIfNotNull(patchUserSurveyRequestDto.getRunningPace(), newRunningPace -> this.runningPace = newRunningPace);

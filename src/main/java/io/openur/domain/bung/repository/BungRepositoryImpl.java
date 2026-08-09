@@ -259,15 +259,22 @@ public class BungRepositoryImpl implements BungRepository {
 
     @Override
     @Transactional
-    public void setAsCompleted(String bungId) {
-        queryFactory
+    public boolean setAsCompletedIfPending(String bungId) {
+        // 조건부 UPDATE. 서비스의 isCompleted() 선검사만으로는 동시 요청 둘이 나란히
+        // 통과해 완주 도전과제가 중복 카운트되므로, 실제 전환 여부를 DB가 판정한다.
+        long updated = queryFactory
             .update(bungEntity)
             .set(bungEntity.completed, true)
-            .where(bungEntity.bungId.eq(bungId))
+            .where(
+                bungEntity.bungId.eq(bungId),
+                bungEntity.completed.isFalse()
+            )
             .execute();
 
         entityManager.flush();
         entityManager.clear();
+
+        return updated > 0;
     }
 
     @Override

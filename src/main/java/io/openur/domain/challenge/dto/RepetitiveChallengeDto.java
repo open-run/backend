@@ -28,7 +28,8 @@ public class RepetitiveChallengeDto {
         this.stageNumber = stage.getStageNumber();
         this.conditionAsCount = stage.getConditionAsCount();
         this.currentCount = accumulatedCount;
-        this.currentProgress = (float) this.currentCount / this.conditionAsCount;
+        this.currentProgress = UserChallenge.toProgressPercent(
+            this.currentCount, this.conditionAsCount);
         // 조건 변경으로 완수 혹은 nft 발급된 것도 나와야 할듯 하다.
         // 
         if(userChallenge != null) {

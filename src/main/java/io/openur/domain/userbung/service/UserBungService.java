@@ -1,5 +1,7 @@
 package io.openur.domain.userbung.service;
 
+import io.openur.domain.challenge.enums.ChallengeActivityType;
+import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.userbung.exception.RemoveUserFromBungException;
 import io.openur.domain.userbung.model.UserBung;
 import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
@@ -17,6 +19,7 @@ public class UserBungService {
 
     private final UserBungRepositoryImpl userBungRepository;
     private final MethodSecurityService methodSecurityService;
+    private final ChallengeEventsPublisher challengeEventsPublisher;
 
     @Transactional
     @PreAuthorize("@methodSecurityService.isOwnerOfBung(#userDetails, #bungId)")
@@ -51,8 +54,13 @@ public class UserBungService {
     @Transactional
     @PreAuthorize("@methodSecurityService.isBungParticipant(#userDetails, #bungId)")
     public void confirmBungParticipation(UserDetailsImpl userDetails, String bungId) {
-        UserBung userBung = userBungRepository.findByUserIdAndBungId(userDetails.getUser().getUserId(), bungId);
-        userBung.setParticipationStatus(true);
-        userBungRepository.save(userBung);
+        boolean confirmed = userBungRepository.confirmParticipation(
+            userDetails.getUser().getUserId(), bungId);
+        if (!confirmed) {
+            return;
+        }
+
+        challengeEventsPublisher.publishChallengeCheck(
+            userDetails.getUser().getUserId(), ChallengeActivityType.BUNG_CERTIFY);
     }
 }

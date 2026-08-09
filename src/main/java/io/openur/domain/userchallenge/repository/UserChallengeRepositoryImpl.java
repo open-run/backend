@@ -20,10 +20,12 @@ import io.openur.domain.userchallenge.model.UserChallenge;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -88,21 +90,68 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
 
     @Override
     @Transactional
-    public void bulkUpdateCompletedChallenges(List<Long> userChallengeIds) {
+    public List<Long> markCompletedIfPending(List<Long> userChallengeIds) {
         if (userChallengeIds.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
 
-        queryFactory
-            .update(userChallengeEntity)
-            .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
-            .set(userChallengeEntity.completedDate, LocalDateTime.now())
-            .set(userChallengeEntity.nftCompleted, false)
-            .where(userChallengeEntity.userChallengeId.in(userChallengeIds))
-            .execute();
+        // 행 단위로 조건부 UPDATE 한다. 한 번의 bulk UPDATE 는 멱등 가드로 데이터는 지켜주지만
+        // "어느 행이 실제로 전환됐는지"를 알려주지 못해, 호출자가 이미 완료된 행에도
+        // 다음 단계를 발급하게 된다. 한 이벤트가 담는 행은 많아야 두어 개라 비용은 무시할 수준.
+        LocalDateTime completedAt = LocalDateTime.now();
+        List<Long> transitioned = new ArrayList<>();
+
+        for (Long userChallengeId : userChallengeIds) {
+            long updated = queryFactory
+                .update(userChallengeEntity)
+                .set(userChallengeEntity.currentCount, userChallengeEntity.currentCount.add(1))
+                .set(userChallengeEntity.completedDate, completedAt)
+                .set(userChallengeEntity.nftCompleted, false)
+                .where(
+                    userChallengeEntity.userChallengeId.eq(userChallengeId),
+                    // 동시 요청이 같은 행을 중복 완료 처리하지 않도록 멱등 가드
+                    userChallengeEntity.completedDate.isNull()
+                )
+                .execute();
+
+            if (updated > 0) {
+                transitioned.add(userChallengeId);
+            }
+        }
 
         entityManager.flush();
         entityManager.clear();
+
+        return transitioned;
+    }
+
+    @Override
+    @Transactional
+    public boolean updateStreakProgress(
+        Long userChallengeId, int streakLength, float progressPercent, boolean completing
+    ) {
+        var update = queryFactory
+            .update(userChallengeEntity)
+            .set(userChallengeEntity.currentCount, streakLength)
+            .set(userChallengeEntity.currentProgress, progressPercent)
+            .where(
+                userChallengeEntity.userChallengeId.eq(userChallengeId),
+                // 이미 완료된 행은 건드리지 않는다. 동시 요청 중 한쪽만 통과한다.
+                userChallengeEntity.completedDate.isNull()
+            );
+
+        if (completing) {
+            update
+                .set(userChallengeEntity.completedDate, LocalDateTime.now())
+                .set(userChallengeEntity.nftCompleted, false);
+        }
+
+        long updated = update.execute();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        return updated > 0;
     }
 
     @Override
@@ -121,13 +170,14 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public boolean existsByUserId(String userId) {
-        Integer one = queryFactory
-            .selectOne()
+    public Set<Long> findChallengeIdsByUserId(String userId) {
+        return Set.copyOf(queryFactory
+            .selectDistinct(challengeEntity.challengeId)
             .from(userChallengeEntity)
+            .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
+            .join(challengeStageEntity.challengeEntity, challengeEntity)
             .where(userChallengeEntity.userEntity.userId.eq(userId))
-            .fetchFirst();
-        return one != null;
+            .fetch());
     }
 
     @Override
@@ -255,7 +305,11 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
                     .when(userChallengeEntity.currentCount.coalesce(0)
                         .goe(challengeStageEntity.conditionAsCount))
                     .then(0).otherwise(1).asc(),
-                userChallengeEntity.currentProgress.coalesce(0.0f).desc(),
+                // 저장된 current_progress 대신 카운트/조건으로 계산해 정렬한다.
+                // 저장값은 카운트 증가 경로에서 갱신되지 않아 순서를 흐트러뜨린다.
+                Expressions.numberTemplate(Double.class, "1.0 * {0} / {1}",
+                    userChallengeEntity.currentCount.coalesce(0),
+                    challengeStageEntity.conditionAsCount).desc(),
                 challengeStageEntity.challengeEntity.challengeId.asc(),
                 challengeStageEntity.stageId.asc()
             )
@@ -318,26 +372,9 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
     }
 
     @Override
-    public Optional<UserChallenge> findFirstBySimpleRepetitiveChallenge(String userId
+    public List<UserChallenge> findAllUncompletedByChallengeIds(
+        String userId, List<Long> challengeIds
     ) {
-        return Optional.ofNullable(
-            queryFactory
-                .selectFrom(userChallengeEntity)
-                .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
-                .join(challengeStageEntity.challengeEntity, challengeEntity)
-                .where(
-                    userChallengeEntity.userEntity.userId.eq(userId),
-                    userChallengeEntity.completedDate.isNull(),
-                    challengeEntity.conditionAsDate.isNull(),
-                    challengeEntity.conditionAsText.isNull()
-                )
-                .orderBy(challengeStageEntity.stageNumber.asc())
-                .fetchFirst()
-        ).map(UserChallenge::from);
-    }
-
-    @Override
-    public List<UserChallenge> findAllBySimpleRepetitiveChallenge(String userId) {
         return queryFactory
             .selectFrom(userChallengeEntity)
             .join(userChallengeEntity.challengeStageEntity, challengeStageEntity)
@@ -345,8 +382,7 @@ public class UserChallengeRepositoryImpl implements UserChallengeRepository {
             .where(
                 userChallengeEntity.userEntity.userId.eq(userId),
                 userChallengeEntity.completedDate.isNull(),
-                challengeEntity.conditionAsDate.isNull(),
-                challengeEntity.conditionAsText.isNull()
+                challengeEntity.challengeId.in(challengeIds)
             )
             .orderBy(challengeStageEntity.stageNumber.asc())
             .fetch()

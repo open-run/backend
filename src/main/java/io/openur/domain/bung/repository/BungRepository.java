@@ -27,7 +27,11 @@ public interface BungRepository {
 
     void updateBung(Bung bung);
 
-    void setAsCompleted(String bungId);
+    /**
+     * 미완료 상태일 때만 완료로 전환한다.
+     * @return 이 호출이 실제로 완료 처리했으면 true, 이미 완료된 벙이면 false
+     */
+    boolean setAsCompletedIfPending(String bungId);
 
     Boolean isBungStarted(String bungId);
 

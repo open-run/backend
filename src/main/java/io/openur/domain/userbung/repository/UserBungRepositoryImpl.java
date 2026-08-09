@@ -155,6 +155,24 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     }
 
     @Override
+    public List<LocalDateTime> findCompletedRunStartTimes(String userId) {
+        // 날짜 절삭은 DB 함수(DATE 등)가 벤더마다 달라 Java 쪽에서 처리한다.
+        // 유저 한 명의 완주 벙 수만큼만 나오므로 전체 조회로 충분하다.
+        return queryFactory
+            .select(userBungEntity.bungEntity.startDateTime)
+            .from(userBungEntity)
+            .join(userBungEntity.bungEntity, bungEntity)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                bungEntity.completed.isTrue(),
+                // 벙주는 완료만으로, 벙원은 피드백을 내야 완주로 인정한다
+                userBungEntity.isOwner.isTrue()
+                    .or(userBungEntity.feedbackSubmittedAt.isNotNull())
+            )
+            .fetch();
+    }
+
+    @Override
     public Page<Tuple> findAllFrequentUsers(List<String> bungIds, User user,
         Pageable pageable) {
         List<Tuple> contents = queryFactory
@@ -248,6 +266,24 @@ public class UserBungRepositoryImpl implements UserBungRepository {
     @Override
     public UserBung save(UserBung userBung) {
         return UserBung.from(userBungJpaRepository.save(userBung.toEntity()));
+    }
+
+    @Override
+    @Transactional
+    public boolean confirmParticipation(String userId, String bungId) {
+        long updated = queryFactory
+            .update(userBungEntity)
+            .set(userBungEntity.participationStatus, true)
+            .where(
+                userBungEntity.userEntity.userId.eq(userId),
+                userBungEntity.bungEntity.bungId.eq(bungId),
+                userBungEntity.participationStatus.isFalse()
+            )
+            .execute();
+
+        entityManager.flush();
+        entityManager.clear();
+        return updated > 0;
     }
 
     @Override

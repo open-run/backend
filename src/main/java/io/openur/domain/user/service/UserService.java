@@ -5,6 +5,8 @@ import io.openur.domain.NFT.enums.NftMintJobStatus;
 import io.openur.domain.NFT.repository.NftMintJobJpaRepository;
 import io.openur.domain.bung.enums.CompleteBungResultEnum;
 import io.openur.domain.bung.exception.CompleteBungException;
+import io.openur.domain.challenge.enums.ChallengeActivityType;
+import io.openur.domain.challenge.event.ChallengeEventsPublisher;
 import io.openur.domain.user.dto.GetUserResponseDto;
 import io.openur.domain.user.dto.GetUsersResponseDto;
 import io.openur.domain.user.dto.PatchUserSurveyRequestDto;
@@ -34,6 +36,7 @@ public class UserService {
     private final UserBungRepository userBungRepository;
     private final UserProfileImageUrlResolver userProfileImageUrlResolver;
     private final NftMintJobJpaRepository nftMintJobJpaRepository;
+    private final ChallengeEventsPublisher challengeEventsPublisher;
 
     public String getUserById(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userRepository.findUser(userDetails.getUser());
@@ -106,6 +109,12 @@ public class UserService {
         User user = userRepository.findUser(userDetails.getUser());
         user.update(patchUserSurveyRequestDto);
         userRepository.update(user);
+
+        // 이미 완료된 과제는 발행해도 대상 조회에서 걸러지므로 반복 PATCH 는 무해하다.
+        if (user.isProfileComplete()) {
+            challengeEventsPublisher.publishChallengeCheck(
+                user.getUserId(), ChallengeActivityType.PROFILE_COMPLETE);
+        }
     }
 
     @Transactional
@@ -147,6 +156,12 @@ public class UserService {
         );
         if (!submitted) {
             return List.of();
+        }
+
+        // 벙원의 완주 과제는 최초 피드백 제출 시점에 카운트한다 (벙주는 완료 시점에 이미 카운트됨)
+        if (!reviewerBung.isOwner()) {
+            challengeEventsPublisher.publishBungCompleteChecks(
+                reviewerUserId, reviewerBung.getBung().getStartDateTime());
         }
 
         return targetUserIds.isEmpty()
