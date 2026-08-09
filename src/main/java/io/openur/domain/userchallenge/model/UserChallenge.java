@@ -97,12 +97,4 @@ public class UserChallenge {
         );
     }
 
-    public void raiseCount() {
-        this.currentCount++;
-    }
-
-    public void completeChallenge() {
-        this.currentCount++;
-        this.completedDate = LocalDateTime.now();
-    }
 }

@@ -13,7 +13,6 @@ import io.openur.domain.userbung.repository.UserBungRepositoryImpl;
 import io.openur.domain.userchallenge.entity.UserChallengeEntity;
 import io.openur.domain.userchallenge.repository.UserChallengeJpaRepository;
 import io.openur.global.dto.ExceptionDto;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;

@@ -4,7 +4,6 @@ import io.openur.domain.userchallenge.dto.ChallengeRow;
 import io.openur.domain.userchallenge.model.UserChallenge;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
