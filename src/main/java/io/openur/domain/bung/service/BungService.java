@@ -238,7 +238,11 @@ public class BungService {
             throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_NOT_STARTED);
         }
 
-        bungRepository.setAsCompleted(bungId);
+        // 위 선검사와 이 전환 사이에 다른 요청이 완료시켰을 수 있다.
+        // 실제로 전환한 요청만 도전과제를 발행해 중복 카운트를 막는다.
+        if (!bungRepository.setAsCompletedIfPending(bungId)) {
+            throw new CompleteBungException(CompleteBungResultEnum.BUNG_HAS_ALREADY_COMPLETED);
+        }
 
         // 완주 과제는 벙주는 완료 시점에, 벙원은 피드백 제출 시점에 카운트한다
         challengeEventsPublisher.publishChallengeCheck(
